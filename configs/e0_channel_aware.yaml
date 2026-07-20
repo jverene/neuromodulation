@@ -1,0 +1,31 @@
+# E0' — channel-aware parent (PRD §5): E0 retrained with K=3 modulator
+# channels present and the controller frozen at neutral (m = 0). This is the
+# parent model for ALL E1/E2 channel conditions (ablation is input-side, m=0).
+run_name: e0_channel_aware
+seed: 0
+target:
+  emoji: "\U0001F98E"   # lizard
+  size: 40
+  canvas: 96
+model:
+  channel_size: 16
+  hidden_size: 128
+  cell_dropout_rate: 0.5
+  num_mod_channels: 3
+train:
+  num_train_steps: 8000
+  pool_size: 1024
+  batch_size: 8
+  learning_rate: 2.0e-3
+  num_steps: 128
+  damage_prob: 0.5
+  damage_min_side: 8
+  damage_max_side: 24
+  log_interval: 50
+  print_interval: 250
+  checkpoint_interval: 500
+  mod_noise: false          # escape hatch: train with random modulator inputs (default off per PRD §5)
+eval:
+  num_steps: 256
+  lesion_side: 20
+  gif_fps: 30
