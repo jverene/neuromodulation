@@ -233,7 +233,8 @@ def run_lesion_sweep(cs, *, state0, target_mask, controller_params, cfg: dict, r
         mode = "closed_loop" if condition == "intact" else "ablated"
         rkeys = jax.random.split(jax.random.key(cfg["seed"] + 313 * len(idx)), len(idx))
         _, (hamming, alive) = batch_rollout(
-            cs, states[idx], params_b, masks[idx], rkeys, mode=mode, rollout_kwargs=rollout_kwargs
+            cs, states[jnp.array(idx)], params_b, masks[jnp.array(idx)], rkeys,
+            mode=mode, rollout_kwargs=rollout_kwargs,
         )
         trajectories[condition] = (np.asarray(hamming), np.asarray(alive), idx)
 

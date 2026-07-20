@@ -1,5 +1,7 @@
 .venv/
 results/
+figures/
+figures_smoke/
 __pycache__/
 *.pyc
 .pytest_cache/
