@@ -1,0 +1,50 @@
+# E2 — closed-loop vs. baselines under recurring damage (PRD §7-§8).
+# Fitness: mean Hamming(bin alpha, target) over T=2000, damage every 250 steps.
+run_name: e2_closedloop
+seed: 0
+target:
+  emoji: "\U0001F98E"
+  size: 40
+  canvas: 96
+model:
+  channel_size: 16
+  hidden_size: 128
+  cell_dropout_rate: 0.5
+  parent_params: null        # path to channel-aware parent params.pkl (K=3)
+  baseline_params: null      # path to E0 baseline params.pkl (K=0, no-modulation condition)
+rollout:
+  T: 2000
+  lesion_interval: 250
+  tau_decision: 10
+  K: 3
+  grow_steps: 128
+  traj_stride: 10
+  gif_frame_every: 10
+evolve:
+  population_size: 64
+  std_init: 0.3
+  num_generations: 300        # hard eval budget cap (PRD §7)
+  train_seeds: 8
+  test_seeds: 8               # held-out damage seeds, always reported (PRD §12)
+  checkpoint_interval: 10
+  log_interval: 5
+  alive_floor: 0.0            # >0 adds an alive-fraction floor to fitness (anti-hacking, PRD §12)
+eval:
+  num_condition_seeds: 5
+  const_grid: [-1.0, -0.5, 0.0, 0.5, 1.0]
+  gif_fps: 30
+  survival_eps: 0.1
+  half_life_window: 250
+smoke:
+  rollout:
+    T: 200
+    lesion_interval: 50
+  evolve:
+    population_size: 8
+    num_generations: 3
+    train_seeds: 2
+    test_seeds: 2
+    checkpoint_interval: 1000
+    log_interval: 1
+  eval:
+    num_condition_seeds: 1

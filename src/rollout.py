@@ -104,7 +104,7 @@ def run_rollout(
     K: int = 3,
     tau_decision: int = 10,
     const_level: jnp.ndarray | None = None,
-    rng_seed: int = 0,
+    rand_key: jax.Array | None = None,
     emit_frames: bool = False,
 ):
     """Run one closed-loop rollout. Returns (final_state, ys) with ys the
@@ -117,7 +117,9 @@ def run_rollout(
         from src.controller import zero_params
 
         controller_params = zero_params(K=K)
-    u_rand = jax.random.uniform(jax.random.key(rng_seed), (T, K), minval=-1.0, maxval=1.0)
+    if rand_key is None:
+        rand_key = jax.random.key(0)
+    u_rand = jax.random.uniform(rand_key, (T, K), minval=-1.0, maxval=1.0)
 
     step_fn = _make_step_fn(
         mode,
@@ -152,14 +154,13 @@ def grow_from_seed(cs, spatial_dims: tuple[int, int], channel_size: int, num_ste
 
 
 def _vmapped_rollout(mode: str, emit_frames: bool, rollout_kwargs: dict):
-    """run_rollout vmapped over a leading batch of (state0, controller_params, lesion_masks).
+    """run_rollout vmapped over a leading batch of (state0, controller_params, lesion_masks,
+    rand_keys). Any of these may be shared (pass in_axes=None entries)."""
 
-    Any of state0/controller_params/lesion_masks may be shared (pass in_axes=None entries)."""
-
-    def one(cs, state0, cparams, masks):
+    def one(cs, state0, cparams, masks, rkey):
         return run_rollout(
             cs, state0, mode=mode, controller_params=cparams, lesion_masks=masks,
-            emit_frames=emit_frames, **rollout_kwargs,
+            rand_key=rkey, emit_frames=emit_frames, **rollout_kwargs,
         )
 
     return one
@@ -170,20 +171,21 @@ def batch_rollout(
     states0: jnp.ndarray,
     params_batch,
     masks_batch: jnp.ndarray,
+    rkeys: jax.Array,
     *,
     mode: str,
     rollout_kwargs: dict,
     emit_frames: bool = False,
 ):
     """Vmap run_rollout over batch dims. states0 (B,...), params_batch pytree with
-    leading B (or None for shared), masks_batch (B, T, H, W)."""
+    leading B (or None for shared), masks_batch (B, T, H, W), rkeys (B,) PRNG keys."""
     state_axes = nnx.StateAxes({nnx.RngState: 0, nnx.Intermediate: 0, ...: None})
     one = _vmapped_rollout(mode, emit_frames, rollout_kwargs)
     b = states0.shape[0]
     fn = nnx.split_rngs(splits=b)(
-        nnx.vmap(one, in_axes=(state_axes, 0, 0 if params_batch is not None else None, 0))
+        nnx.vmap(one, in_axes=(state_axes, 0, 0 if params_batch is not None else None, 0, 0))
     )
-    return fn(cs, states0, params_batch, masks_batch)
+    return fn(cs, states0, params_batch, masks_batch, rkeys)
 
 
 def run_lesion_sweep(cs, *, state0, target_mask, controller_params, cfg: dict, run_dir: Path) -> None:
@@ -218,8 +220,7 @@ def run_lesion_sweep(cs, *, state0, target_mask, controller_params, cfg: dict, r
 
     states = jnp.stack(states)
     masks = jnp.stack(masks)
-    rollout_kwargs = dict(T=T, target_mask=target_mask, K=K, tau_decision=rc["tau_decision"],
-                          rng_seed=cfg["seed"])
+    rollout_kwargs = dict(T=T, target_mask=target_mask, K=K, tau_decision=rc["tau_decision"])
 
     # one vmapped call per condition (a batch mixes only same-mode rollouts)
     trajectories = {}
@@ -230,8 +231,9 @@ def run_lesion_sweep(cs, *, state0, target_mask, controller_params, cfg: dict, r
             if condition == "intact" else None
         )
         mode = "closed_loop" if condition == "intact" else "ablated"
+        rkeys = jax.random.split(jax.random.key(cfg["seed"] + 313 * len(idx)), len(idx))
         _, (hamming, alive) = batch_rollout(
-            cs, states[idx], params_b, masks[idx], mode=mode, rollout_kwargs=rollout_kwargs
+            cs, states[idx], params_b, masks[idx], rkeys, mode=mode, rollout_kwargs=rollout_kwargs
         )
         trajectories[condition] = (np.asarray(hamming), np.asarray(alive), idx)
 

@@ -36,7 +36,7 @@ def make_inputs(t=T):
 def run(mode, cs, state0, target_mask, dense, params, **kw):
     return run_rollout(
         cs, state0, mode=mode, T=T, lesion_masks=dense, target_mask=target_mask,
-        controller_params=params, K=K, tau_decision=10, rng_seed=0, **kw,
+        controller_params=params, K=K, tau_decision=10, rand_key=jax.random.key(0), **kw,
     )
 
 
@@ -85,9 +85,10 @@ def test_batch_rollout_vmap():
     states = jnp.stack([state0] * b)
     masks = jnp.stack([dense] * b)
     params = jax.tree.map(lambda x: jnp.stack([x] * b), init_params(jax.random.key(0)))
+    rkeys = jax.random.split(jax.random.key(0), b)
     finals, ys = batch_rollout(
-        cs, states, params, masks, mode="closed_loop",
-        rollout_kwargs=dict(T=T, target_mask=target_mask, K=K, tau_decision=10, rng_seed=0),
+        cs, states, params, masks, rkeys, mode="closed_loop",
+        rollout_kwargs=dict(T=T, target_mask=target_mask, K=K, tau_decision=10),
     )
     hamming, alive = ys
     assert finals.shape == (b, *CANVAS, 16)

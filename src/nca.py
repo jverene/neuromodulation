@@ -128,5 +128,7 @@ def load_params(cs: GrowingNCA, path: str | Path) -> GrowingNCA:
     """Load params saved with save_params into an existing model (in place)."""
     with open(path, "rb") as f:
         pure = pickle.load(f)
-    nnx.replace_by_pure_dict(cs, pure)
+    state = nnx.state(cs, nnx.Param)
+    nnx.replace_by_pure_dict(state, pure)
+    nnx.update(cs, state)
     return cs
