@@ -1,0 +1,28 @@
+# E0 — baseline GNCA (PRD §3). K=0 modulator channels.
+run_name: e0_baseline
+seed: 0
+target:
+  emoji: "\U0001F98E"   # lizard
+  size: 40
+  canvas: 96
+model:
+  channel_size: 16
+  hidden_size: 128
+  cell_dropout_rate: 0.5
+  num_mod_channels: 0
+train:
+  num_train_steps: 8000
+  pool_size: 1024
+  batch_size: 8
+  learning_rate: 2.0e-3
+  num_steps: 128            # episode length; mid-episode damage at step 64
+  damage_prob: 0.5
+  damage_min_side: 8
+  damage_max_side: 24
+  log_interval: 50
+  print_interval: 250
+  checkpoint_interval: 500
+eval:
+  num_steps: 256
+  lesion_side: 20           # centered 20x20 lesion for the recovery GIF
+  gif_fps: 30
