@@ -1,0 +1,30 @@
+# E1 — lesion-size x channel-ablation sweep (PRD §8): recovery vs. radius.
+# Runs on the channel-aware parent; "intact" = closed_loop with the controller
+# (neutral zeros until controller_params points at an evolved one).
+run_name: e1_lesion_sweep
+seed: 0
+target:
+  emoji: "\U0001F98E"
+  size: 40
+  canvas: 96
+model:
+  channel_size: 16
+  hidden_size: 128
+  cell_dropout_rate: 0.5
+  parent_params: null        # path to channel-aware parent params.pkl
+controller_params: null      # path to evolved controller_params.pkl (null -> neutral)
+rollout:
+  K: 3
+  tau_decision: 10
+  grow_steps: 128
+  traj_stride: 5
+sweep:
+  radii: [2, 4, 8, 16]
+  kinds: [single, multi]
+  conditions: [intact, ablated]
+  n_seeds: 5
+  T: 500
+smoke:
+  sweep:
+    n_seeds: 1
+    T: 60
