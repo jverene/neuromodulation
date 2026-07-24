@@ -164,6 +164,37 @@ def save_gifs(cs, cfg: dict, run_dir: Path) -> None:
     print(f"post-lesion final MSE: {final_mse:.4e}")
 
 
+def take_snapshot(cs, cfg: dict, step: int, snap_dir: Path) -> None:
+    """Render one tiled PNG of the current growth pattern at this training step.
+
+    Grows `snapshot_num_show` seeds for `eval.num_steps` and tiles their final
+    frames side-by-side into `snapshots/step_<NNNNNN>.png`. Cheap relative to a
+    train step; called every `train.snapshot_interval` (default 50) steps so the
+    whole run can be replayed as a 'watch it learn' time-lapse.
+    """
+    snap_dir.mkdir(parents=True, exist_ok=True)
+    canvas = cfg["target"]["canvas"]
+    channel_size = cfg["model"]["channel_size"]
+    n_eval = cfg["eval"]["num_steps"]
+    n_show = cfg["train"].get("snapshot_num_show", 4)
+
+    state_init = jax.vmap(lambda _: seed_state((canvas, canvas), channel_size))(jnp.zeros(n_show))
+    states = sow_rollout(cs, state_init, n_eval)
+    frames = render_states(cs, states)
+    tiled = np.concatenate([frames[b, -1] for b in range(n_show)], axis=1)  # final frame, side-by-side
+    imageio.imwrite(snap_dir / f"step_{step:06d}.png", tiled)
+
+
+def assemble_progress_gif(snap_dir: Path, run_dir: Path, fps: int) -> None:
+    """Concatenate all snapshots (sorted by step) into a progress.gif time-lapse."""
+    pngs = sorted(snap_dir.glob("step_*.png"))
+    if not pngs:
+        return
+    frames = [imageio.imread(p) for p in pngs]
+    imageio.mimsave(run_dir / "progress.gif", frames, fps=fps)
+    print(f"progress.gif: {len(frames)} snapshots")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
@@ -203,6 +234,8 @@ def main() -> None:
     train_step = make_train_step(target, cfg)
 
     tc = cfg["train"]
+    snapshot_interval = tc.get("snapshot_interval", 50)
+    snap_dir = run_dir / "snapshots"
     t0 = time.time()
     with open(run_dir / "metrics.csv", "w", newline="") as f:
         writer = csv.writer(f)
@@ -210,16 +243,19 @@ def main() -> None:
         for step in range(tc["num_train_steps"]):
             key, subkey = jax.random.split(key)
             loss, pool = train_step(cs, optimizer, pool, subkey)
-            if step % tc["log_interval"] == 0 or step == tc["num_train_steps"] - 1:
-                writer.writerow([step, f"{float(loss):.6e}", f"{time.time() - t0:.1f}"])
-                f.flush()
+            # Per-step loss to CSV (continuous curve; ~8000 rows).
+            writer.writerow([step, f"{float(loss):.6e}", f"{time.time() - t0:.1f}"])
+            f.flush()
             if step % tc["print_interval"] == 0:
                 print(f"step {step:6d}  loss {float(loss):.4e}  elapsed {time.time() - t0:.0f}s", flush=True)
             if (step + 1) % tc["checkpoint_interval"] == 0:
                 save_params(cs, run_dir / f"params_step{step + 1:05d}.pkl")
+            if step % snapshot_interval == 0 or step == tc["num_train_steps"] - 1:
+                take_snapshot(cs, cfg, step, snap_dir)
 
     save_params(cs, run_dir / "params.pkl")
     save_gifs(cs, cfg, run_dir)
+    assemble_progress_gif(snap_dir, run_dir, cfg["eval"]["gif_fps"])
     print(f"done in {time.time() - t0:.0f}s -> {run_dir}")
 
 
