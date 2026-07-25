@@ -1,9 +1,9 @@
 """Lesion generators and recurring-damage schedules (PRD §4).
 
-Lesion kinds: disc, multi_disc(n), edge_disc. Radii r in {2, 4, 8, 16} px.
-A lesion mask is a boolean (H, W) array; applying it zeroes all channels of
-the masked cells. Recurring schedules draw lesion parameters from fixed,
-seeded evaluation sets with a train/test split (holdout for the
+Lesion kinds: disc, multi_disc(n), multi_block(n), edge_disc. Radii r in
+{2, 4, 8, 16} px. A lesion mask is a boolean (H, W) array; applying it zeroes
+all channels of the masked cells. Recurring schedules draw lesion parameters
+from fixed, seeded evaluation sets with a train/test split (holdout for the
 generalization check, PRD §4/§12).
 """
 
@@ -12,7 +12,7 @@ import jax.numpy as jnp
 import numpy as np
 
 RADII = (2, 4, 8, 16)
-KINDS = ("disc", "multi_disc")
+KINDS = ("disc", "multi_disc", "multi_block")
 
 
 def disc_mask(shape: tuple[int, int], radius: int, center: tuple[int, int]) -> jnp.ndarray:
@@ -21,6 +21,20 @@ def disc_mask(shape: tuple[int, int], radius: int, center: tuple[int, int]) -> j
     ys, xs = jnp.mgrid[0:h, 0:w]
     cy, cx = center
     return (ys - cy) ** 2 + (xs - cx) ** 2 <= radius**2
+
+
+def block_mask(shape: tuple[int, int], side: int, top_left: tuple[int, int]) -> jnp.ndarray:
+    """Boolean axis-aligned square of given side with top-left corner at (y, x).
+
+    Contiguous blocks larger than the NCA's perception radius (~1 cell; local
+    update rule fails to diagnose wounds beyond a few cells, E1 §8) create
+    hard-to-heal lesions: the wound interior has no living neighbors to read.
+    Discs fragment around their curvature; blocks stay contiguous and large.
+    """
+    h, w = shape
+    ys, xs = jnp.mgrid[0:h, 0:w]
+    y0, x0 = top_left
+    return (ys >= y0) & (ys < y0 + side) & (xs >= x0) & (xs < x0 + side)
 
 
 def _sample_center(rng: jax.Array, shape: tuple[int, int]) -> jnp.ndarray:
@@ -64,6 +78,12 @@ def sample_lesion(
     if kind == "multi_disc":
         centers = jax.random.randint(rng, (n, 2), 0, jnp.array(shape))
         return jax.vmap(lambda c: disc_mask(shape, radius, c))(centers).any(axis=0)
+    if kind == "multi_block":
+        # n contiguous squares of side `radius` (reusing the radius arg as side
+        # for a uniform sample_lesion signature). Top-left corners kept in-bounds.
+        h, w = shape
+        top_lefts = jax.random.randint(rng, (n, 2), 0, jnp.array([h - radius + 1, w - radius + 1]))
+        return jax.vmap(lambda tl: block_mask(shape, radius, tl))(top_lefts).any(axis=0)
     if kind == "edge_disc":
         return disc_mask(shape, radius, _edge_center(rng, shape))
     raise ValueError(f"unknown lesion kind: {kind}")
@@ -97,6 +117,32 @@ def make_recurring_schedule(
         kind = kinds[int(jax.random.randint(k1, (), 0, len(kinds)))]
         radius = radii[int(jax.random.randint(k2, (), 0, len(radii)))]
         masks.append(sample_lesion(k3, kind, int(radius), shape=shape, n=n_multi))
+    return times, np.asarray(jnp.stack(masks))
+
+
+def make_recurring_schedule_block(
+    seed: int,
+    T: int = 2000,
+    interval: int = 150,
+    shape: tuple[int, int] = (96, 96),
+    block_side: int = 12,
+    n_blocks: int = 3,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Fixed recurring-damage schedule of contiguous multi_block lesions.
+
+    The hard-regime counterpart to make_recurring_schedule: every `interval`
+    steps, n_blocks contiguous squares of side `block_side` are cut. block_side
+    exceeds the perception radius so wounds have cell-free interiors the local
+    update rule cannot regrow from neighbor perception alone (E1 §8 failure
+    regime). One seed fully determines the sequence; train/test seed sets are
+    built from disjoint seed ranges (damage_seed_sets).
+    """
+    times = np.arange(interval, T, interval, dtype=np.int32)
+    rng = jax.random.key(seed)
+    masks = []
+    for _ in times:
+        rng, sub = jax.random.split(rng)
+        masks.append(sample_lesion(sub, "multi_block", block_side, shape=shape, n=n_blocks))
     return times, np.asarray(jnp.stack(masks))
 
 

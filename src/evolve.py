@@ -50,24 +50,62 @@ def build_schedules(seeds: list[int], T: int, interval: int, shape: tuple[int, i
     )
 
 
-def make_fitness(cfg: dict, target_mask: jnp.ndarray):
-    """Vmapped fitness: mean Hamming over the rollout (lower is better).
+def make_fitness(cfg: dict, target_mask: jnp.ndarray, lesion_times: np.ndarray):
+    """Vmapped fitness over the rollout (lower is better).
 
-    Optional alive-fraction floor guards against the controller gaming
-    Hamming by suppressing alpha (PRD §12); 0 disables.
+    Two fitness modes (cfg["evolve"].get("fitness", "event_weighted")):
+      - "mean":            mean Hamming over T (the original; saturates ~target
+                           alive fraction because cell death can't score higher).
+      - "event_weighted":  damage-event-weighted mean Hamming. Weight is high in
+                           the steps right after each scheduled lesion and decays
+                           exponentially (tau_w) toward the next event, so slow
+                           repair is expensive even when endpoint Hamming is
+                           identical. De-saturates the metric AND rewards repair
+                           speed — exactly where closed-loop should win. The
+                           weight is derived from the lesion schedule, not tuned.
+
+    Optional alive-fraction floor guards against the controller gaming Hamming
+    by suppressing alpha (PRD §12); 0 disables. Re-verify per task (death-hack
+    probe) — the hacking landscape changes with damage/metric redesign.
     """
     rc = cfg["rollout"]
-    alive_floor = cfg["evolve"].get("alive_floor", 0.0)
+    ec = cfg["evolve"]
+    alive_floor = ec.get("alive_floor", 0.0)
+    mode = ec.get("fitness", "event_weighted")
     rollout_kwargs = dict(
         T=rc["T"], target_mask=target_mask, K=rc["K"], tau_decision=rc["tau_decision"],
     )
+
+    T = rc["T"]
+    interval = rc["lesion_interval"]
+    if mode == "event_weighted":
+        # Exponential recency kernel: w[t] = exp(-(t - t_last_event) / tau_w).
+        # Resets at each lesion step. tau_w default = interval/3 (calibration
+        # checks this against measured repair half-life; bump if half-life >> tau_w).
+        tau_w = ec.get("tau_w", interval / 3.0)
+        events = np.asarray(lesion_times, dtype=np.float64)
+        t_grid = np.arange(T, dtype=np.float64)
+        # most recent event at or before t (0 before the first event -> weight ~1 at t=0,
+        # which is fine: the seed-grown state is the reference, no damage yet)
+        t_last = np.zeros(T)
+        for te in events:
+            t_last = np.where(t_grid >= te, te, t_last)
+        w = np.exp(-(t_grid - t_last) / tau_w)
+        w = jnp.asarray(w)
+        w_sum = jnp.sum(w)
+    else:
+        w = None  # mean mode
 
     @nnx.jit
     def fitness_batch(cs, states, params_pop, masks_pop, rkeys):
         _, (hamming, alive) = batch_rollout(
             cs, states, params_pop, masks_pop, rkeys, mode="closed_loop", rollout_kwargs=rollout_kwargs
         )
-        fit = hamming.mean(axis=1)
+        if w is None:
+            fit = hamming.mean(axis=1)
+        else:
+            # weighted mean over time; axis=1 is the T axis of (pop, T)
+            fit = (hamming * w[None, :]).sum(axis=1) / w_sum
         if alive_floor > 0:
             fit = fit + 10.0 * jnp.mean(jnp.relu(alive_floor - alive), axis=1)
         return fit
@@ -75,7 +113,7 @@ def make_fitness(cfg: dict, target_mask: jnp.ndarray):
     return fitness_batch
 
 
-def evolve(cs, state0, schedules: jnp.ndarray, cfg: dict, run_dir: Path) -> dict:
+def evolve(cs, state0, schedules: jnp.ndarray, cfg: dict, run_dir: Path, lesion_times: np.ndarray) -> dict:
     """CMA-ES ask/tell loop (PRD §7). Returns {'params': pytree, 'fitness': float}."""
     ec = cfg["evolve"]
     P, S = ec["population_size"], schedules.shape[0]
@@ -89,7 +127,7 @@ def evolve(cs, state0, schedules: jnp.ndarray, cfg: dict, run_dir: Path) -> dict
     key, k_init = jax.random.split(key)
     es_state = es.init(k_init, solution, es_params)
 
-    fitness_batch = make_fitness(cfg, target_alpha_mask(load_target(**cfg["target"])))
+    fitness_batch = make_fitness(cfg, target_alpha_mask(load_target(**cfg["target"])), lesion_times)
     states_tiled = jnp.concatenate([state0[None]] * (P * S))
     masks_tiled = jnp.tile(schedules, (P, 1, 1, 1))  # block k = all S schedules
     rkeys_tiled = jax.random.split(jax.random.key(cfg["seed"]), P * S)
@@ -244,15 +282,34 @@ def main() -> None:
 
     n_train, n_test = cfg["evolve"]["train_seeds"], cfg["evolve"]["test_seeds"]
     train_seeds, test_seeds = damage_seed_sets(n_train, n_test)
-    schedules_train = build_schedules(train_seeds, rc["T"], rc["lesion_interval"], shape)
-    schedules_test = build_schedules(test_seeds, rc["T"], rc["lesion_interval"], shape)
+    # Block (hard-regime) schedules when block params present; else disc schedules (original path).
+    dmg = cfg.get("damage", {})
+    if dmg.get("block_side") is not None:
+        from src.damage import make_recurring_schedule_block
+        bs, nb = dmg["block_side"], dmg.get("n_blocks", 3)
+        schedules_train = jnp.stack([
+            dense_lesion_masks(*make_recurring_schedule_block(
+                s, T=rc["T"], interval=rc["lesion_interval"], shape=shape,
+                block_side=bs, n_blocks=nb), rc["T"], shape)
+            for s in train_seeds
+        ])
+        schedules_test = jnp.stack([
+            dense_lesion_masks(*make_recurring_schedule_block(
+                s, T=rc["T"], interval=rc["lesion_interval"], shape=shape,
+                block_side=bs, n_blocks=nb), rc["T"], shape)
+            for s in test_seeds
+        ])
+        print(f"damage: multi_block side={bs} n_blocks={nb} interval={rc['lesion_interval']}")
+    else:
+        schedules_train = build_schedules(train_seeds, rc["T"], rc["lesion_interval"], shape)
+        schedules_test = build_schedules(test_seeds, rc["T"], rc["lesion_interval"], shape)
     lesion_times = np.arange(rc["lesion_interval"], rc["T"], rc["lesion_interval"])
 
     if args.eval_only:
         with open(args.eval_only, "rb") as f:
             best = {"params": pickle.load(f), "fitness": float("nan")}
     else:
-        best = evolve(cs, state0, schedules_train, cfg, run_dir)
+        best = evolve(cs, state0, schedules_train, cfg, run_dir, lesion_times)
 
     evaluate_conditions(cs, cs_baseline, best["params"], schedules_train, schedules_test,
                         lesion_times, cfg, run_dir, state0)
