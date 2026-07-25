@@ -61,3 +61,55 @@ per-step CSV visualization paid for itself immediately by making the cascade
 forensically legible.
 
 ---
+
+## 2026-07-25 — Sensitivity probe (pre-E2): signal confirmed, alive_floor=0.3 REJECTED by data
+
+**Probe:** `src/e2_probe.py` — constant-tonic grid `[-1,-0.5,0,+0.5,+1]` over the 8
+train damage seeds at T=2000, reusing `evolve.py`'s exact eval path. ~7s on A100.
+
+**Results:**
+| tonic c | mean Hamming | alive |
+|---------|-------------|-------|
+| -1.0 | 0.650 | 0.986 |
+| -0.5 | 0.886 | 0.984 |
+| 0.0 | **0.0026** | 0.057 |
+| +0.5 | 0.909 | 0.986 |
+| +1.0 | 0.928 | 0.986 |
+
+**Signal:** unambiguous. Controller input swings fitness 0.0026 → 0.93. The PRD §5
+concern (channel weights dead because parent trained at m=0) does NOT apply —
+the channels carry strong, exploitable signal. Green light for E2.
+
+**The trap I almost fell into (and the data corrected):** the c=0 row at
+alive=0.057 + Hamming 0.0026 looked like a "death-hack" — a dead grid gaming a
+sparse-target Hamming metric. The runbook suggests `alive_floor: 0.3` for
+exactly this scenario. **Wrong here.** Checking the target sparsity settles it:
+the lizard mask is only **4.6% alive**, so a correctly-grown lizard lives at
+~5–6% alive. c=0's 0.057 *is* the healthy steady state, not death. E1's
+trajectories.csv confirms it — intact AND ablated conditions both hold
+alive ≈ 0.057 across every radius/seed/step (median 0.057, p10 0.057).
+
+The Hamming math confirms the metric is NOT death-hackable:
+- perfect lizard → Hamming 0.0000
+- all-dead grid → Hamming 0.0461 (target cells missing) — **18× worse than healthy**
+- overgrown grid → Hamming 0.9539 — this is what large |c| does (alive → 99%)
+
+So death is already a losing strategy; large tonic levels lose via **overgrowth**,
+not via cheap death.
+
+**Decision: `alive_floor` stays 0.0.** The runbook's 0.3 would penalize every
+healthy candidate (penalty `10×(0.3−0.057)=+2.43` on the correct state) and push
+CMA-ES toward overgrowth — actively backwards. The escape hatch is there for a
+real hacking scenario; the data shows this isn't one. E2 launches with the
+canonical config unchanged. **Lesson: calibrate hyperparameters from the
+experiment's own data, not from runbook defaults — the default existed for a
+failure mode that doesn't occur with this target sparsity.**
+
+**Paper relevance:** worth a sentence in Methods/Discussion — the fitness
+function rewards *size-maintenance under recurring damage*, not mere survival,
+because the Hamming reference is the target alpha mask. A controller that lets
+the lizard overgrow or die both lose; only accurate maintenance wins. Goodhart
+was a concern (alive_floor exists precisely because of it) but did not manifest
+here once the target sparsity was accounted for.
+
+---
