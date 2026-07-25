@@ -166,3 +166,51 @@ exists" green light AND, via the stall, exposed that signal-existence ≠ signal
 usefulness when the task lacks a failure regime.
 
 ---
+
+## 2026-07-25 — E2-hard gate v1 failed: std_init=0.3, not a razor-thin basin
+
+**Setup:** hard regime calibrated (`configs/e2_hard.yaml`, branch
+`e2-hard-regime`): multi_block lesions side=16 n=4 every 150 steps, T=2000 →
+neutral raw H 0.020, alive 0.051 (10× harder than the old disc task). Fitness
+switched to event-weighted (tau_w=interval/3=50; repair half-life 20.1 → ratio
+0.40, kernel stays meaningful — amendment 2 passed). Death-hack re-probe on the
+new fitness+damage: death 0.0461 vs struggling-neutral 0.0205, death loses 2.2×
+→ alive_floor=0.0 holds (amendment 1 passed).
+
+**Gate v1 (std_init=0.3, 20 gens): FAILED.** best_so_far froze at 0.150 from
+gen 2 onward — 7× worse than neutral, identical stall signature to the first
+E2. Mean dropped 0.70→0.30 (sigma shrinking) but no sample ever came near
+neutral.
+
+**Sigma probe (`/workspace/sigma_probe.py`, 25 Gaussian perturbations of the
+neutral controller per sigma, hard-regime eval):**
+
+| sigma | mean_H | min_H | mean_alive | verdict |
+|-------|--------|-------|------------|---------|
+| 0 (neutral) | 0.0201 | — | 0.051 | reference |
+| 0.001 | 0.0184 | 0.0169 | 0.052 | **some BEAT neutral** |
+| 0.01  | 0.0197 | 0.0182 | 0.053 | at/above neutral |
+| 0.05  | 0.2029 | 0.0212 | 0.356 | bimodal |
+| 0.1   | 0.4453 | 0.0215 | 0.703 | bimodal |
+| 0.3   | 0.7318 | 0.1595 | 0.960 | ALL overgrow |
+
+**Corrected diagnosis:** the neutral basin is NOT razor-thin — perturbations at
+sigma ≤ 0.01 stay healthy and some (0.0169) are already better than doing
+nothing. The failure is the *sampling distribution*: at std_init=0.3, 100% of
+the population lands in saturated overgrowth (alive→0.96) where fitness
+differences reflect overgrowth degree, not repair quality. CMA-ES ranks noise
+in the wrong regime, and its mean drifts along the overgrowth gradient instead
+of toward zero. The task redesign was necessary but not sufficient; the search
+had to start inside the informative regime.
+
+**Fix:** std_init 0.3 → 0.01. At sigma=0.01 samples bracket neutral (mean
+0.0197 ≈ neutral 0.0201, min 0.0182 below it), so gen-0 ranking already sees
+repair-quality signal. Gate v2 (20 gens, std_init=0.01) running.
+
+**Lesson:** when every sample in gen 0 sits in a saturated regime, "the search
+can't find the solution" and "the init distribution never samples the
+informative regime" are indistinguishable from the metrics alone. A 30-second
+sigma-sweep probe separates them. This is the second time a cheap probe
+pre-empted a wrong structural conclusion (first: alive_floor).
+
+---
