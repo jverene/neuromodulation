@@ -113,3 +113,56 @@ was a concern (alive_floor exists precisely because of it) but did not manifest
 here once the target sparsity was accounted for.
 
 ---
+
+## 2026-07-25 — E2 stall diagnosis: task too easy, baseline solves it trivially
+
+**E2 launched** (canonical config, alive_floor=0.0 verified by probe). Early gate
+*passed* on paper: best 0.173→0.144 by gen 11, mean 0.71→0.35. But best-so-far
+then **froze at 0.1435 for 23 generations** (gen 11→34) with best_in_gen actually
+*rising* — classic CMA-ES stall. Killed at gen 34. Cost: ~$5, ~1h. Cheap tuition.
+
+**Three diagnostics (`src/e2_diag.py`), all decisive:**
+
+1. **Apples-to-apples (1b):** worried the probe's 0.0026 (mode=constant, m=0
+   pinned) wasn't comparable to E2 fitness (mode=closed_loop, m flows through
+   decision()+step_decay()). Measured both: constant 0.0024 vs closed_loop
+   neutral 0.0023 — **negligible difference, comparison valid.** No bookkeeping
+   error.
+
+2. **Fitness decomposition (2):** alive_floor=0 → penalty 0.0000 for all
+   controllers. The floor isn't taxing activity. Crossed off.
+
+3. **The real finding:** the **evolved best controller is 62× WORSE than doing
+   nothing.** neutral closed_loop = Hamming 0.0023, alive 0.057 (correct lizard).
+   Evolved best (gen 29) = Hamming 0.1431, alive **0.901** — it's overgrowing,
+   filling 90% of the canvas. CMA-ES isn't searching for repair; it's searching
+   for overgrowth, and "do nothing" already beats every overgrown solution.
+
+**Root cause (confirmed independently by E1):** the baseline solves the E2
+recurring-damage schedule (lesion every 250 steps, T=2000) **trivially** — the
+unmodulated lizard shrugs it off and stays at near-perfect Hamming. There is no
+gap for modulation to close, so CMA-ES can only make things worse by perturbing
+the controller away from the optimal zero point. **The task is too easy.**
+
+E1 data corroborates: even the hardest E1 condition (radius-16 multi-disc,
+single-shot) recovers to final Hamming ~0.011 — barely a failure. And
+intact≈ablated at every radius (because with a neutral controller, closed_loop
+== ablated; the channel weights only differ when the controller is non-zero,
+which none exists yet). So the channel architecture has signal (probe showed
+it) but no *useful* role under the current damage distribution.
+
+**The fix is task design, not search tuning.** Rescope the damage schedule into
+a regime where the baseline genuinely struggles (large/multi-site lesions,
+tighter recurrence, possibly larger T) so a controller has a gap to close.
+Candidate: recurring radius-16 multi-disc every 100–150 steps, T=2000 — push
+damage past the radius where E1 showed recovery degradation (radius ≥ 8–16).
+
+**Lesson (paper Methods/Discussion):** the benchmark needed to be adversarial,
+not routine. If the baseline heals everything, there's nothing for modulation to
+prove — E2 was pointing at a task with no gap to close. Caught for $5 and one
+hour via the stall + three 30-second diagnostics. The sensitivity probe fork-
+decision literally paid for itself a second time: it surfaced the "signal
+exists" green light AND, via the stall, exposed that signal-existence ≠ signal-
+usefulness when the task lacks a failure regime.
+
+---
