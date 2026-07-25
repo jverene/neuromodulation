@@ -82,10 +82,10 @@ def main() -> None:
     print(f"{'radius':>6} {'kind':>10} {'interval':>8} {'mean_H':>8} {'max_H':>8} {'mean_alive':>10}  verdict")
     print("-" * 75)
 
-    # grid: radius x kind x interval
+    # grid: radius x kind x interval (damage module uses 'disc'/'multi_disc', not E1's 'single'/'multi')
     grid = []
     for radius in [8, 12, 16, 20]:
-        for kind in ["single", "multi"]:
+        for kind in ["disc", "multi_disc"]:
             for interval in [250, 150, 100]:
                 grid.append((radius, kind, interval))
 
