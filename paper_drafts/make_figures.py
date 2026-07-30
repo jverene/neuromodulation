@@ -1,4 +1,8 @@
-"""Generate paper figures (fig1-fig4) into paper_drafts/figures/ from repo data."""
+"""Generate paper figures (fig1-fig4) into paper_drafts/figures/ from repo data.
+
+Journal-grade plotting: colorblind-safe palette (Wong 2011), 300 DPI for print,
+clean insets with borders, readable fonts, no legend/axis overlap.
+"""
 import csv
 from collections import defaultdict
 from pathlib import Path
@@ -11,7 +15,28 @@ import numpy as np
 
 OUT = Path("paper_drafts/figures")
 OUT.mkdir(parents=True, exist_ok=True)
-plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False})
+
+# Journal-quality global settings.
+plt.rcParams.update({
+    "font.size": 9,
+    "font.family": "serif",
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "axes.linewidth": 0.8,
+    "xtick.major.width": 0.8,
+    "ytick.major.width": 0.8,
+    "figure.dpi": 300,
+    "savefig.dpi": 300,
+    "savefig.bbox": "tight",
+})
+
+# Wong (2011, Nature Methods) colorblind-safe palette.
+C_BLUE   = "#0072B2"
+C_ORANGE = "#E69F00"
+C_GREEN  = "#009E73"
+C_RED    = "#D55E00"
+C_PURPLE = "#CC79A7"
+C_GREY   = "#555555"
 
 # ---------------------------------------------------------------- fig1: E1 sweep
 traj = defaultdict(list)  # (radius, kind, condition) -> [final hamming per seed]
@@ -25,28 +50,36 @@ for (radius, kind, cond, seed), series in finals.items():
     traj[(radius, kind, cond)].append(series[max(series)])
 
 radii = [2, 4, 8, 16]
-fig, ax = plt.subplots(figsize=(6.4, 2.6))
-styles = {("single", "intact"): ("o-", "C0", "single, intact"),
-          ("single", "ablated"): ("o--", "C0", "single, ablated"),
-          ("multi", "intact"): ("s-", "C1", "multi, intact"),
-          ("multi", "ablated"): ("s--", "C1", "multi, ablated")}
+# Single wider/taller figure; inset in upper-right where the curves are low.
+fig, ax = plt.subplots(figsize=(5.6, 3.4))
+styles = {("single", "intact"):  ("o-",  C_BLUE,   "single-site, intact"),
+          ("single", "ablated"): ("o--", C_BLUE,   "single-site, ablated"),
+          ("multi",  "intact"):  ("s-",  C_ORANGE, "multi-site, intact"),
+          ("multi",  "ablated"): ("s--", C_ORANGE, "multi-site, ablated")}
 for (kind, cond), (ls, c, lab) in styles.items():
     means = [np.mean(traj[(r, kind, cond)]) for r in radii]
     sds = [np.std(traj[(r, kind, cond)]) for r in radii]
-    ax.errorbar(radii, means, yerr=sds, fmt=ls, color=c, label=lab, capsize=3, ms=4)
-ax.set_xscale("log", base=2); ax.set_xticks(radii); ax.set_xticklabels(radii)
-ax.set_xlabel("lesion radius (cells)"); ax.set_ylabel("final Hamming")
-ax.legend(frameon=False, ncol=2, fontsize=8)
+    ax.errorbar(radii, means, yerr=sds, fmt=ls, color=c, label=lab,
+                capsize=2.5, ms=4.5, elinewidth=0.9)
+ax.set_xscale("log", base=2)
+ax.set_xticks(radii); ax.set_xticklabels(radii)
+ax.set_xlabel("Lesion radius (cells)")
+ax.set_ylabel("Final Hamming distance to target")
+ax.set_ylim(0, None)
+ax.legend(frameon=False, ncol=1, fontsize=7.5, loc="upper left",
+          handlelength=2.2, columnspacing=1.0)
+ax.grid(True, which="both", axis="y", alpha=0.25, lw=0.5)
 
-# inset: debris/scar frame from E0 recovery (4-sample strip; crop sample 0)
+# Inset: debris/scar frame, upper-right corner (curves are low there). Bordered.
 rec = imageio.mimread("results_local/e0_lr1e3/recovery.gif")
 frame = rec[-1][:, 0:96]  # last frame, first recovery sample
-axin = ax.inset_axes([0.40, 0.45, 0.28, 0.5])
+axin = ax.inset_axes([0.62, 0.50, 0.34, 0.45])
 axin.imshow(frame, interpolation="nearest")
 axin.set_xticks([]); axin.set_yticks([])
-axin.set_title("debris + scar tissue", fontsize=7)
-fig.tight_layout()
-fig.savefig(OUT / "fig1_recovery_vs_radius.png", dpi=200)
+for spine in axin.spines.values():
+    spine.set_visible(True); spine.set_linewidth(0.8); spine.set_color("0.4")
+axin.set_title("post-regrowth debris\n+ scar tissue", fontsize=6.5, pad=2)
+fig.savefig(OUT / "fig1_recovery_vs_radius.png")
 plt.close(fig)
 print("fig1 done")
 
@@ -57,44 +90,63 @@ with open("results_local/e2_hard_20260730/trajectories.csv") as f:
         runs[r["condition"]].setdefault(
             (int(r["condition_seed"]), int(r["damage_seed"])), {})[int(r["step"])] = float(r["hamming"])
 
-order = [("closed_loop", "C0", "closed-loop (evolved)"),
-         ("static", "C1", "static"),
-         ("constant", "C2", "constant tonic"),
-         ("no_modulation", "C3", "no modulation"),
-         ("random", "C4", "random")]
-fig, ax = plt.subplots(figsize=(6.4, 3.0))
-for cond, color, lab in order:
+# Colorblind-safe ordering; solid for modulated, distinct for baselines.
+order = [("closed_loop",  C_BLUE,   "-",  "closed-loop (evolved)"),
+         ("static",       C_ORANGE, "-",  "static"),
+         ("constant",     C_GREEN,  "-",  "constant tonic"),
+         ("no_modulation",C_RED,    "-",  "no modulation"),
+         ("random",       C_PURPLE, "-",  "random")]
+
+fig, ax = plt.subplots(figsize=(5.8, 3.6))
+for cond, color, ls, lab in order:
     steps = sorted(next(iter(runs[cond].values())).keys())
     M = np.array([[series[s] for s in steps] for series in runs[cond].values()])
     m, sd = M.mean(axis=0), M.std(axis=0)
-    ax.plot(steps, m, color=color, lw=1.2, label=lab)
-    ax.fill_between(steps, m - sd, m + sd, color=color, alpha=0.15, lw=0)
+    ax.plot(steps, m, color=color, lw=1.3, ls=ls, label=lab)
+    ax.fill_between(steps, m - sd, m + sd, color=color, alpha=0.14, lw=0)
 for t in range(150, 2000, 150):
-    ax.axvline(t, color="0.85", lw=0.5, zorder=0)
-ax.set_xlabel("NCA step"); ax.set_ylabel("Hamming distance to target")
-ax.legend(frameon=False, fontsize=8, loc="center left")
-axin = ax.inset_axes([0.45, 0.22, 0.5, 0.40])
-for cond, color, lab in order[:4]:
+    ax.axvline(t, color="0.88", lw=0.5, zorder=0)
+ax.set_xlabel("NCA step")
+ax.set_ylabel("Hamming distance to target")
+ax.set_xlim(0, 2000)
+ax.legend(frameon=False, fontsize=7.5, loc="upper right", ncol=1,
+          handlelength=1.8, borderpad=0.3)
+ax.grid(True, axis="y", alpha=0.25, lw=0.5)
+
+# Inset: zoom on the low-Hamming range (the closed/static/constant story lives here).
+# Bordered, own readable labels, own legend-free (shares colors), omit random.
+axin = ax.inset_axes([0.50, 0.22, 0.46, 0.40])
+for cond, color, ls, lab in order[:4]:  # exclude random
     steps = sorted(next(iter(runs[cond].values())).keys())
     M = np.array([[series[s] for s in steps] for series in runs[cond].values()])
-    axin.plot(steps, M.mean(axis=0), color=color, lw=1.0)
-axin.set_ylim(0, 0.1); axin.set_title("zoom (random omitted)", fontsize=7)
-fig.tight_layout()
-fig.savefig(OUT / "fig2_hamming_vs_time.png", dpi=200)
+    m = M.mean(axis=0)
+    axin.plot(steps, m, color=color, lw=1.0, ls=ls)
+for t in range(150, 2000, 150):
+    axin.axvline(t, color="0.88", lw=0.4, zorder=0)
+axin.set_ylim(0, 0.10)
+axin.set_xlabel("step", fontsize=6.5)
+axin.set_ylabel("Hamming", fontsize=6.5)
+axin.tick_params(axis="both", which="major", labelsize=6.5)
+axin.set_title("modulated conditions (zoom)", fontsize=7, pad=2)
+for spine in axin.spines.values():
+    spine.set_visible(True); spine.set_linewidth(1.0); spine.set_color("0.3")
+# ensure inset has an opaque patch (background) so the border reads against the plot
+axin.patch.set_facecolor("white")
+axin.patch.set_alpha(1.0)
+fig.savefig(OUT / "fig2_hamming_vs_time.png")
 plt.close(fig)
 print("fig2 done")
 
 # ---------------------------------------------------------------- fig3: fission panels
 frames = imageio.mimread("results_local/e2_hard_20260730/rollout_closed_loop.gif")
-panels = [(104, "a", "pre-lesion (step 1040)"), (106, "b", "midline lesion (1060)"),
+panels = [(104, "a", "pre-lesion (1040)"), (106, "b", "midline lesion (1060)"),
           (108, "c", "split (1080)"), (110, "d", "two growth fronts (1100)")]
-fig, axes = plt.subplots(1, 4, figsize=(6.4, 1.9))
+fig, axes = plt.subplots(1, 4, figsize=(6.0, 1.9))
 for ax, (fi, lab, title) in zip(axes, panels):
     ax.imshow(frames[fi][16:80, 16:80], interpolation="nearest")
     ax.axis("off")
-    ax.set_title(f"({lab}) {title}", fontsize=7.5)
-fig.tight_layout()
-fig.savefig(OUT / "fig3_fission_sequence.png", dpi=200)
+    ax.set_title(f"({lab}) {title}", fontsize=7.5, pad=2)
+fig.savefig(OUT / "fig3_fission_sequence.png")
 plt.close(fig)
 print("fig3 done")
 
@@ -104,17 +156,18 @@ with open("results_local/e2_hard_20260730/evolve_metrics.csv") as f:
     for r in csv.DictReader(f):
         gen.append(int(r["gen"])); big.append(float(r["best_in_gen"]))
         bsf.append(float(r["best_so_far"])); mean.append(float(r["mean_fitness"]))
-fig, ax = plt.subplots(figsize=(6.4, 2.8))
-ax.plot(gen, mean, color="0.6", lw=0.8, label="population mean")
-ax.plot(gen, big, color="C1", lw=0.8, alpha=0.6, label="best in generation")
-ax.plot(gen, bsf, color="C0", lw=1.6, label="best so far")
-ax.axhline(0.0205, color="C3", ls="--", lw=1.0, label="neutral controller (0.0205)")
-ax.annotate("0.0135", xy=(299, 0.0135), xytext=(235, 0.0128),
-            arrowprops=dict(arrowstyle="->", lw=0.7), fontsize=8)
-ax.set_xlabel("generation"); ax.set_ylabel("event-weighted fitness")
-ax.set_ylim(0.012, 0.021)
-ax.legend(frameon=False, fontsize=8, loc="lower left")
-fig.tight_layout()
-fig.savefig(OUT / "fig4_evolution_trajectory.png", dpi=200)
+fig, ax = plt.subplots(figsize=(5.6, 3.0))
+ax.plot(gen, mean, color=C_GREY, lw=0.8, label="population mean")
+ax.plot(gen, big, color=C_ORANGE, lw=0.8, alpha=0.55, label="best in generation")
+ax.plot(gen, bsf, color=C_BLUE, lw=1.7, label="best so far")
+ax.axhline(0.0205, color=C_RED, ls="--", lw=1.0, label="neutral controller (0.0205)")
+ax.annotate("0.0135", xy=(299, 0.0135), xytext=(228, 0.0140),
+            arrowprops=dict(arrowstyle="->", lw=0.7, color="0.3"), fontsize=8)
+ax.set_xlabel("Generation")
+ax.set_ylabel("Event-weighted fitness (Hamming)")
+ax.set_ylim(0.012, 0.022)
+ax.legend(frameon=False, fontsize=7.5, loc="lower left", handlelength=1.8)
+ax.grid(True, axis="y", alpha=0.25, lw=0.5)
+fig.savefig(OUT / "fig4_evolution_trajectory.png")
 plt.close(fig)
 print("fig4 done")
