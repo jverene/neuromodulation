@@ -2,6 +2,7 @@
 results/
 results_local/
 figures/
+!paper_drafts/figures/
 figures_smoke/
 __pycache__/
 *.pyc
