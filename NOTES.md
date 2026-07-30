@@ -214,3 +214,54 @@ sigma-sweep probe separates them. This is the second time a cheap probe
 pre-empted a wrong structural conclusion (first: alive_floor).
 
 ---
+
+## 2026-07-30 — E2 COMPLETE: modulation helps (2.4× faster repair), closed_loop ≈ static
+
+**Full run:** 300 gens, std_init=0.01, hard regime (multi_block side=16 n=4 every
+150 steps), event-weighted fitness. Evolution finished in ~2.5h; 5-condition eval
++ figures ran after. Gate re-verified on fresh hardware (parents retrained: E0
+1196s MSE 3.33e-3, E0′ 1278s MSE 7.19e-3; both cleared the step-5532 danger zone
+cleanly at LR 1e-3, reproducing the earlier M1 results).
+
+**Evolution:** best fitness 0.0135 vs neutral baseline 0.0205 — **34% better**.
+Converged smoothly, no stall, no overgrowth (the std_init fix held for all 300 gens).
+
+**Table 1 — 5 conditions (mean ± SD over 5 condition seeds × 8 held-out test
+damage seeds), hard-regime recurring damage:**
+
+| condition | survival | repair half-life (steps) | final Hamming | Hamming AUC |
+|-----------|----------|--------------------------|---------------|-------------|
+| **closed_loop** (evolved controller) | 1.00 | **6.6 ± 0.7** | 0.028 ± 0.003 | 0.016 ± 0.002 |
+| static (controller fixed at t=0) | 1.00 | 7.2 ± 0.9 | 0.030 ± 0.003 | 0.017 ± 0.002 |
+| constant (best tonic level) | 1.00 | 6.4 ± 0.5 | 0.030 ± 0.003 | 0.017 ± 0.002 |
+| **no_modulation** (K=0 baseline) | 1.00 | **2.7 ± 0.5** | 0.063 ± 0.003 | 0.064 ± 0.002 |
+| random (noise modulation) | 0.00 | 0.0 ± 0.0 | 0.825 ± 0.016 | 0.819 ± 0.003 |
+
+**Two clean wins for modulation** (the headline):
+- **Repair speed: 6.6 vs 2.7 steps** → modulation makes the lizard recover
+  **2.4× faster**. This is exactly the "speed is where closed-loop should win"
+  thesis from the event-weighted redesign, validated.
+- **Final recovery: 0.028 vs 0.063** → modulation recovers **2.2× more
+  completely** (lower residual damage).
+
+**Honest caveat — writeup-critical:** closed_loop ≈ static ≈ constant on every
+metric (final H 0.028–0.030, half-life 6.4–7.2, all within ±1 SD). So the
+defensible claim is "the chemical/modulator layer helps substantially over no
+modulation," NOT "dynamic closed-loop decision-making beats fixed tonic
+modulation." The dynamic controller's value isn't separated from simpler
+modulation baselines in this task. Options to address before claiming a
+closed-loop-specific win: (a) reframe the contribution as "modulation helps"
+and demote the closed-loop-vs-static comparison; (b) find a task regime where
+*temporal* decisions matter (e.g. damage that changes character over time, so a
+fixed tonic is structurally inadequate); (c) harder/different damage where
+static's t=0 snapshot is wrong. Don't overclaim — reviewers will see the
+closed_loop/static gap is noise.
+
+**Artifacts (results_local/e2_hard_20260730/):** controller_params.pkl (4→32→3
+MLP, verified loadable), evolve_metrics.csv (300 gens), metrics.csv +
+trajectories.csv (per-condition), fig2_hamming_vs_time.png,
+table1_survival_halflife.{csv,md}, 5 rollout GIFs.
+
+**Cost:** ~$3 today (setup + E2 + eval at $0.68/hr). Project total ~$13.
+
+---
