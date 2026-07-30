@@ -40,9 +40,9 @@ closed-loop $\approx$ static $\approx$ constant on every metric. The value
 delivered by evolution is automatic discovery of near-optimal tonic release
 without hand-tuning, and the dominant benefit is the existence of broadcast
 modulation rather than its temporal scheduling. We further report a qualitative
-fission-regeneration event in which a single midline lesion splits the
-morphology into two independently growing lizards, evidence that the tonic
-channel carries morphological identity.
+fission event in which a single midline lesion bisects the morphology and both
+fragments re-initiate growth independently along the original body axis before
+re-merging, evidence that morphological identity is maintained non-locally.
 \end{abstract}
 
 \section{Introduction}
@@ -101,18 +101,18 @@ We address four hypotheses:
         evolution harness that optimizes the release policy directly
         (Section~\ref{sec:methods}).
   \item An adversarial recurring-damage benchmark with an event-weighted
-        fitness function, plus the calibration controls (death-hack probe,
-        alive-fraction floor, $\sigma$-probe of the initial sampling
-        distribution) that make the fitness landscape interpretable
+        fitness function, plus the calibration controls (collapse probe,
+        alive-fraction floor, initial step-size ablation) that make the
+        fitness landscape interpretable
         (Sections~\ref{sec:damage}--\ref{sec:evolution}).
   \item An honest five-condition comparison. The chemical layer helps
-        substantially ($2.2\times$ lower final Hamming, $3.9\times$ lower
-        cumulative damage than no modulation), but closed-loop does not beat a
-        constant tonic level in this stationary regime; evolution's measured
-        contribution is automatic discovery of that level
+        substantially ($2.2\times$ lower final Hamming, approximately $4\times$
+        lower cumulative damage than no modulation), but closed-loop does not
+        beat a constant tonic level in this stationary regime; evolution's
+        measured contribution is automatic discovery of that level
         (Section~\ref{sec:results}).
-  \item A qualitative fission-regeneration observation: one midline lesion
-        splits the morphology into two independently growing lizards,
+  \item A qualitative fission observation: one midline lesion bisects the
+        morphology and both fragments re-initiate growth independently,
         supporting H1 and H4 (Section~\ref{sec:fission}).
 \end{enumerate}
 
@@ -291,16 +291,17 @@ Section~\ref{sec:results} reports unweighted trajectory statistics (final
 Hamming, AUC, repair half-life, survival) on held-out damage seeds.
 
 Two calibration controls make this landscape interpretable. First, a
-\emph{death-hack probe} checks whether a controller can game the metric by
+\emph{collapse probe} checks whether a controller can game the metric by
 suppressing alpha grid-wide. Killing all cells yields Hamming $0.046$, worse
 than the neutral controller's $0.021$, confirming the fitness landscape
-rewards survival over collapse and that the alive-fraction floor
-(\texttt{alive\_floor}) is safe to disable at $0.0$; the target mask is only
+rewards survival over collapse; the alive-fraction floor
+(\texttt{alive\_floor}) is therefore disabled (set to $0.0$), which this
+calibration confirms is safe. The target mask is only
 $4.6\%$ alive, so the floor default suggested by our runbook ($0.3$) would
 have penalized every healthy candidate and pushed evolution toward overgrowth.
-Second, a \emph{$\sigma$-probe} of the initial sampling distribution showed
-that $\sigma_0 = 0.3$ lands the entire generation-$0$ population in saturated
-overgrowth (alive fraction $\rightarrow 0.96$), where CMA-ES ranks
+Second, an \emph{initial step-size ablation} of the sampling distribution
+showed that $\sigma_0 = 0.3$ lands the entire generation-$0$ population in
+saturated overgrowth (alive fraction $\rightarrow 0.96$), where CMA-ES ranks
 overgrowth-degree noise instead of repair quality and the search stalls;
 $\sigma_0 = 0.01$ brackets the neutral point, so generation-$0$ ranking
 already sees repair-quality signal.
@@ -312,9 +313,12 @@ Five conditions share the same protocol, horizon, and damage seeds:
 \begin{itemize}
   \item \textbf{Closed-loop}: the evolved controller, decisions every
         $\tau_d = 10$ steps.
-  \item \textbf{Static}: the controller is evaluated once at $t{=}0$ on the
-        freshly grown grid and its output is held constant for the entire
-        rollout (fixed goal-style conditioning).
+  \item \textbf{Static}: the \emph{evolved} controller is evaluated once at
+        $t{=}0$ on the freshly grown grid and its output is then held constant
+        for the entire rollout (fixed goal-style conditioning). Static
+        therefore uses the evolved policy's own initial snapshot, isolating
+        the value of temporal modulation from the value of the evolved tonic
+        level itself.
   \item \textbf{Constant}: a fixed tonic level, grid-searched over
         $\{-1.0, -0.5, 0.0, 0.5, 1.0\}$ on the train damage seeds; the best
         level is reported.
@@ -348,10 +352,10 @@ exactly the cells cut off from global context.
   \centering
   \includegraphics[width=\linewidth]{figures/fig1_recovery_vs_radius}
   \caption{E1 lesion sweep. Recovery (final Hamming distance to target) as a
-  function of lesion radius and kind, with and without the modulator channels.
-  Inset: a post-regrowth frame showing detached fragments and half-alpha scar
-  tissue --- the failure mode that a global broadcast channel is meant to
-  address. \emph{Placeholder: regenerate from E1 results directory.}}
+  function of lesion radius and kind, with and without the modulator channels
+  (mean $\pm$ SD over 5 damage seeds). Inset: a post-regrowth frame showing
+  detached fragments and half-alpha scar tissue --- the failure mode that a
+  global broadcast channel is meant to address.}
   \label{fig:e1}
 \end{figure}
 
@@ -390,20 +394,25 @@ Hamming-vs-time trajectories.
   \includegraphics[width=\linewidth]{figures/fig2_hamming_vs_time}
   \caption{Hamming distance to target versus time for the five conditions
   under recurring multi-block damage (lesions every 150 steps; shaded bands
-  $\pm$1 SD where available). Modulated conditions return to near-target after
-  every lesion; the unmodulated baseline accumulates residual damage; random
-  modulation destroys the morphology within the first events.
-  \emph{Placeholder: regenerate from \texttt{results\_local/e2\_hard\_20260730}.}}
+  $\pm$1 SD over 5 condition seeds $\times$ 8 held-out damage seeds; inset
+  zooms the low-Hamming range). Modulated conditions return to near-target
+  after every lesion; the unmodulated baseline accumulates residual damage;
+  random modulation destroys the morphology within the first events.}
   \label{fig:hamming}
 \end{figure}
 
 \paragraph{Modulation helps substantially.}
 Relative to no modulation, the modulated conditions recover $2.2\times$ more
 completely (final Hamming $0.028$--$0.030$ vs.\ $0.063$) and sustain
-$\approx4\times$ less cumulative damage over the rollout (AUC
+approximately $4\times$ less cumulative damage over the rollout (AUC
 $0.016$--$0.017$ vs.\ $0.064$). The AUC gap shows the baseline is not merely
 slower: it spends the entire rollout in a degraded state, while modulated
 grids return to near-target after each event.
+
+\paragraph{Survival only flags collapse.}
+The survival threshold ($0.1$) is not discriminative in this regime; even the
+unmodulated baseline survives, and the metric's purpose is only to flag
+catastrophic collapse (random: $0.00$).
 
 \paragraph{The half-life metric requires care.}
 Repair half-life is defined relative to each lesion's post-lesion Hamming
@@ -432,35 +441,45 @@ its temporal scheduling.
 \paragraph{Random modulation is catastrophic.}
 The random control does not merely fail to help: it kills every run (survival
 $0.00$, final Hamming $0.825$). The modulator channels are a real actuation
-pathway with strong gain --- a sensitivity probe confirmed that constant levels
-swing mean Hamming from $0.003$ to $0.93$ --- so the identity of the release
-schedule, not just the presence of the channels, determines whether the
-organism lives.
+pathway with strong gain --- pilot rollouts on the train damage seeds
+confirmed that constant tonic levels alone swing mean Hamming from $0.003$
+to $0.93$ --- so the identity of the release schedule, not just the presence
+of the channels, determines whether the organism lives.
 
 \subsection{Damage-induced fission}
 \label{sec:fission}
 
-During one closed-loop rollout, a single midline lesion bisected the
-morphology, and the two halves did not die or merge: each re-initiated growth
-independently, producing two complete lizards
-(Figure~\ref{fig:fission}). The event is qualitative --- one rollout, one
-lesion --- but it is the strongest single piece of evidence for H1 and H4.
-Damage at one location triggered coherent reorganization across both
-fragments, which is only possible through the shared chemical layer (H1), and
-each fragment regrew the \emph{same} morphology with the correct growth axes,
-meaning the information specifying ``what to be'' survived the loss of the
-body that carried it (H4).
+In one closed-loop rollout, a single midline lesion bisects the morphology at
+step 1050, and the two fragments neither die nor passively re-fuse: each
+re-initiates growth independently, producing two growth fronts that re-express
+the target's head-to-tail organization before re-merging into a single lizard
+over the following $\approx$100 steps (Figure~\ref{fig:fission}). The event is
+qualitative --- one rollout, one lesion --- but it is the most direct single
+piece of evidence for H1 and H4. Damage at one location triggered coherent
+reorganization in both fragments (H1), and each fragment resumed growth along
+the \emph{same} body axis, meaning the information specifying ``what to be''
+survived the loss of half the body that carried it (H4).
+
+The unmodulated baseline resolves the same bisection event differently: under
+no modulation, fragmentation is eventually resolved by one of the two fragments
+dying off entirely and leaving debris, rather than by both fragments
+re-initiating and re-merging. This is the same failure mode that produces the
+baseline's elevated final Hamming ($0.063$, Table~\ref{tab:main}) --- a
+fragment with no access to global context cannot determine what to grow into
+and is eventually lost under subsequent damage, rather than being recovered.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\linewidth]{figures/fig3_fission_sequence}
-  \caption{Damage-induced fission and decentralized re-initialization.
-  (a)~Pre-lesion intact lizard; (b)~midline lesion bisects the morphology;
-  (c)~split moment --- the two fragments decouple; (d)~two independent growth
-  fronts, each re-expressing the target morphology. The sequence supports H1
-  (non-local damage triggers global reorganization) and H4 (tonic identity
-  memory preserves growth axes). \emph{Placeholder: four-panel composite from
-  rollout frames.}}
+  \caption{Damage-induced fission and decentralized re-initialization in the
+  closed-loop rollout (damage seed 10000).
+  (a)~Pre-lesion intact lizard (step 1040); (b)~midline lesion bisects the
+  morphology (step 1060); (c)~split moment --- the two fragments decouple
+  (step 1080); (d)~two independent growth fronts re-expressing the target's
+  body axis (step 1100; the fronts re-merge into a single lizard
+  $\approx$100 steps later). The sequence supports H1 (non-local damage
+  triggers global reorganization) and H4 (tonic identity memory preserves
+  growth axes).}
   \label{fig:fission}
 \end{figure}
 
@@ -474,19 +493,18 @@ into overgrowth at any generation. This outcome was not automatic. A first
 attempt with the library-default initial step size $\sigma_0 = 0.3$ froze at
 fitness $0.150$ from generation 2 onward --- $7\times$ worse than doing
 nothing --- because the entire initial population sampled saturated,
-overgrown grids where no repair-quality signal exists. The $\sigma$-probe
-(Section~\ref{sec:evolution}) identified the sampling distribution, not the
-task or the search budget, as the failure, and $\sigma_0 = 0.01$ fixed it in
-a single change.
+overgrown grids where no repair-quality signal exists. The initial step-size
+ablation (Section~\ref{sec:evolution}) identified the sampling distribution,
+not the task or the search budget, as the failure, and $\sigma_0 = 0.01$
+fixed it in a single change.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\linewidth]{figures/fig4_evolution_trajectory}
-  \caption{CMA-ES fitness over 300 generations (best-in-generation, best-so-far,
-  and population mean), event-weighted Hamming objective on the eight train
-  damage seeds. The dashed line marks the neutral controller ($0.0205$).
-  \emph{Placeholder: plot from
-  \texttt{results\_local/e2\_hard\_20260730/evolve\_metrics.csv}.}}
+  \caption{CMA-ES fitness over 300 generations (best-in-generation,
+  best-so-far, and population mean), event-weighted Hamming objective on the
+  eight train damage seeds. The dashed line marks the neutral controller
+  ($0.0205$).}
   \label{fig:evolution}
 \end{figure}
 
@@ -500,9 +518,12 @@ location triggering coherent reorganization elsewhere. The chemical layer is
 the only non-local pathway, so it must be carrying the damage information.
 A formal transfer-entropy test remains future work.
 \textbf{H2 (partially supported).} Modulation $\gg$ no modulation holds
-decisively ($2.2\times$ final, $\approx4\times$ AUC). Closed-loop $>$ static
-does not: the three modulated conditions cluster within noise. In this
+decisively ($2.2\times$ final, approximately $4\times$ AUC). Closed-loop $>$
+static does not: the three modulated conditions cluster within noise. In this
 stationary damage regime the ordering predicted by H2 collapses at the top.
+This is not a failure of the controller but a measurement of the regime: with
+stationary damage the optimal policy is time-invariant, and evolution
+correctly discovers this.
 \textbf{H3 (supported, with a reframe).} The evolved policy matches the best
 hand-searched constant level and beats it by no margin worth reporting ---
 but it reaches that level automatically, in 2.5 hours, from a neutral start,
@@ -515,6 +536,12 @@ carries the functionally important information. Fission makes the same point
 mechanistically: growth-axis identity survives bisection, so it is stored
 somewhere non-local --- the tonic channel is the only candidate.
 
+\paragraph{Where the improvement lives.}
+That a frozen neural output (static) and a hand-searched scalar (constant)
+converge to the same performance suggests the modulator space, not the
+controller, is the locus of functional improvement: once the right tonic
+level is present, the architecture that produced it matters little.
+
 \paragraph{Why the stationary regime rewards tonic over phasic.}
 The damage process is stationary and memoryless: events are i.i.d.\ in size,
 number, and position, and the interval between them is fixed. Under such a
@@ -525,15 +552,24 @@ have nothing to earn. We read the closed-loop/static tie not as a failure of
 the controller but as a measurement of the regime: where temporal structure
 exists, temporal control can be selected for; here there is none to find.
 
+\paragraph{Locomotion drift during regeneration.}
+Qualitatively, all modulated conditions exhibited locomotion drift during
+regeneration --- the regrown morphology translated in the direction of the
+original facing, consistent with the directional bias of the learned update
+kernels. This drift inflates residual Hamming uniformly across conditions and
+suggests a future controller objective that anchors pattern centroids.
+
 \paragraph{Limitations.}
 We evaluate a single morphology at a single scale, under one stationary damage
 distribution, with one evolution seed. The Hamming metric has a noise floor
-set by permanent debris (severed fragments that neither condition can clean up
+set by permanent debris (severed fragments that no condition can clean up
 inflate final Hamming equally --- comparisons are fair, but absolute values
-are bounded below by debris, not biology). Repair half-life is comparable only
-among conditions that actually return to near-target
-(Section~\ref{sec:e2}). The controller reads four hand-chosen statistics;
-richer readouts may matter in harder regimes.
+are bounded below by debris, not biology), and residual Hamming in all
+conditions is partly attributable to locomotion drift rather than permanent
+damage; the metric conflates spatial translation with morphological error.
+Repair half-life is comparable only among conditions that actually return to
+near-target (Section~\ref{sec:e2}). The controller reads four hand-chosen
+statistics; richer readouts may matter in harder regimes.
 
 \paragraph{Future work.}
 The decisive next experiment is \emph{non-stationary} damage: if the damage
@@ -550,13 +586,13 @@ We closed the loop around the chemical layer of a Growing NCA: a small
 controller reads target-free grid statistics and sets the release level of
 three tonic$+$phasic modulator channels, evolved with CMA-ES against recurring
 damage calibrated to defeat the unmodulated baseline. Broadcast modulation
-repairs $2.2\times$ more completely and sustains $\approx4\times$ less
+repairs $2.2\times$ more completely and sustains approximately $4\times$ less
 cumulative damage than no modulation; random modulation is uniformly lethal;
 and the evolved closed loop, a static snapshot, and a constant tonic level are
 indistinguishable in this stationary regime. The contribution is twofold:
 evolution discovers near-optimal tonic release automatically, and the tonic
 channel functions as identity memory --- vividly, when a bisected lizard
-regrew as two.
+resumed growth from both fragments and re-formed a single body.
 
 % TODO: expand — acknowledgements / funding if required by the workshop style.
 
