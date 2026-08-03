@@ -66,18 +66,20 @@ ax.set_xticks(radii); ax.set_xticklabels(radii)
 ax.set_xlabel("Lesion radius (cells)")
 ax.set_ylabel("Final Hamming distance to target")
 ax.set_ylim(0, None)
-ax.legend(frameon=False, ncol=1, fontsize=7.5, loc="upper left",
-          handlelength=2.2, columnspacing=1.0)
+# Curves rise left-to-right, so lower-right (below the high-radius points) is clear.
+ax.legend(frameon=False, ncol=2, fontsize=7, loc="lower right",
+          handlelength=2.0, columnspacing=1.0, borderpad=0.4)
 ax.grid(True, which="both", axis="y", alpha=0.25, lw=0.5)
 
-# Inset: debris/scar frame, upper-right corner (curves are low there). Bordered.
+# Inset: debris/scar frame, upper-right corner (curves are low there). Small + bordered.
 rec = imageio.mimread("results_local/e0_lr1e3/recovery.gif")
 frame = rec[-1][:, 0:96]  # last frame, first recovery sample
-axin = ax.inset_axes([0.62, 0.50, 0.34, 0.45])
+axin = ax.inset_axes([0.70, 0.62, 0.27, 0.34])
 axin.imshow(frame, interpolation="nearest")
 axin.set_xticks([]); axin.set_yticks([])
 for spine in axin.spines.values():
-    spine.set_visible(True); spine.set_linewidth(0.8); spine.set_color("0.4")
+    spine.set_visible(True); spine.set_linewidth(1.0); spine.set_color("0.3")
+axin.patch.set_facecolor("white"); axin.patch.set_alpha(1.0)
 axin.set_title("post-regrowth debris\n+ scar tissue", fontsize=6.5, pad=2)
 fig.savefig(OUT / "fig1_recovery_vs_radius.png")
 plt.close(fig)
@@ -109,13 +111,14 @@ for t in range(150, 2000, 150):
 ax.set_xlabel("NCA step")
 ax.set_ylabel("Hamming distance to target")
 ax.set_xlim(0, 2000)
-ax.legend(frameon=False, fontsize=7.5, loc="upper right", ncol=1,
+# Modulated curves sit at ~0.03 (lower-left clear); random is up at ~0.8 (upper).
+ax.legend(frameon=False, fontsize=7.5, loc="center right", ncol=1,
           handlelength=1.8, borderpad=0.3)
 ax.grid(True, axis="y", alpha=0.25, lw=0.5)
 
-# Inset: zoom on the low-Hamming range (the closed/static/constant story lives here).
-# Bordered, own readable labels, own legend-free (shares colors), omit random.
-axin = ax.inset_axes([0.50, 0.22, 0.46, 0.40])
+# Inset: zoom on the low-Hamming range, lower-right (random's variance band is
+# narrower there than mid-canvas). Bordered, opaque, own readable labels.
+axin = ax.inset_axes([0.55, 0.08, 0.42, 0.38])
 for cond, color, ls, lab in order[:4]:  # exclude random
     steps = sorted(next(iter(runs[cond].values())).keys())
     M = np.array([[series[s] for s in steps] for series in runs[cond].values()])
@@ -139,8 +142,8 @@ print("fig2 done")
 
 # ---------------------------------------------------------------- fig3: fission panels
 frames = imageio.mimread("results_local/e2_hard_20260730/rollout_closed_loop.gif")
-panels = [(104, "a", "pre-lesion (1040)"), (106, "b", "midline lesion (1060)"),
-          (108, "c", "split (1080)"), (110, "d", "two growth fronts (1100)")]
+panels = [(104, "a", "Pre-lesion (1040)"), (106, "b", "Midline lesion (1060)"),
+          (108, "c", "Split (1080)"), (110, "d", "Two growth fronts (1100)")]
 fig, axes = plt.subplots(1, 4, figsize=(6.0, 1.9))
 for ax, (fi, lab, title) in zip(axes, panels):
     ax.imshow(frames[fi][16:80, 16:80], interpolation="nearest")
@@ -161,12 +164,14 @@ ax.plot(gen, mean, color=C_GREY, lw=0.8, label="population mean")
 ax.plot(gen, big, color=C_ORANGE, lw=0.8, alpha=0.55, label="best in generation")
 ax.plot(gen, bsf, color=C_BLUE, lw=1.7, label="best so far")
 ax.axhline(0.0205, color=C_RED, ls="--", lw=1.0, label="neutral controller (0.0205)")
-ax.annotate("0.0135", xy=(299, 0.0135), xytext=(228, 0.0140),
+# Annotation pulled up-left, away from the dense gen 250-300 region.
+ax.annotate("best = 0.0135", xy=(299, 0.0135), xytext=(180, 0.0162),
             arrowprops=dict(arrowstyle="->", lw=0.7, color="0.3"), fontsize=8)
 ax.set_xlabel("Generation")
 ax.set_ylabel("Event-weighted fitness (Hamming)")
-ax.set_ylim(0.012, 0.022)
-ax.legend(frameon=False, fontsize=7.5, loc="lower left", handlelength=1.8)
+ax.set_ylim(0.012, 0.023)
+# Curves descend left-to-right; upper-right is empty after gen ~50.
+ax.legend(frameon=False, fontsize=7.5, loc="upper right", handlelength=1.8)
 ax.grid(True, axis="y", alpha=0.25, lw=0.5)
 fig.savefig(OUT / "fig4_evolution_trajectory.png")
 plt.close(fig)
