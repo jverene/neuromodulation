@@ -66,15 +66,16 @@ ax.set_xticks(radii); ax.set_xticklabels(radii)
 ax.set_xlabel("Lesion radius (cells)")
 ax.set_ylabel("Final Hamming distance to target")
 ax.set_ylim(0, None)
-# Curves rise left-to-right, so lower-right (below the high-radius points) is clear.
-ax.legend(frameon=False, ncol=2, fontsize=7, loc="lower right",
+# Top-left: low-radius points sit near zero here, curves rise to the right.
+ax.legend(frameon=False, ncol=2, fontsize=7, loc="upper left",
           handlelength=2.0, columnspacing=1.0, borderpad=0.4)
 ax.grid(True, which="both", axis="y", alpha=0.25, lw=0.5)
 
-# Inset: debris/scar frame, upper-right corner (curves are low there). Small + bordered.
+# Inset: debris/scar frame. Moved left + slightly up (legend now occupies upper-left,
+# so the inset sits in the mid-left band where small-radius curves are low/near zero).
 rec = imageio.mimread("results_local/e0_lr1e3/recovery.gif")
 frame = rec[-1][:, 0:96]  # last frame, first recovery sample
-axin = ax.inset_axes([0.70, 0.62, 0.27, 0.34])
+axin = ax.inset_axes([0.03, 0.20, 0.30, 0.36])
 axin.imshow(frame, interpolation="nearest")
 axin.set_xticks([]); axin.set_yticks([])
 for spine in axin.spines.values():
@@ -111,14 +112,14 @@ for t in range(150, 2000, 150):
 ax.set_xlabel("NCA step")
 ax.set_ylabel("Hamming distance to target")
 ax.set_xlim(0, 2000)
-# Modulated curves sit at ~0.03 (lower-left clear); random is up at ~0.8 (upper).
-ax.legend(frameon=False, fontsize=7.5, loc="center right", ncol=1,
-          handlelength=1.8, borderpad=0.3)
+# Legend pushed down ~1.2 of its own heights from upper-left, toward graph center.
+# bbox_to_anchor in axes-fraction: x=0.0 (left edge), y=0.62 (~1.2 legend-heights down).
+ax.legend(frameon=False, fontsize=7.5, loc="upper left", ncol=1,
+          handlelength=1.8, borderpad=0.3, bbox_to_anchor=(0.05, 0.50))
 ax.grid(True, axis="y", alpha=0.25, lw=0.5)
 
-# Inset: zoom on the low-Hamming range, lower-right (random's variance band is
-# narrower there than mid-canvas). Bordered, opaque, own readable labels.
-axin = ax.inset_axes([0.55, 0.08, 0.42, 0.38])
+# Inset: zoom on the low-Hamming range, right side. Moved up ~0.3 of its own height.
+axin = ax.inset_axes([0.55, 0.20, 0.42, 0.38])
 for cond, color, ls, lab in order[:4]:  # exclude random
     steps = sorted(next(iter(runs[cond].values())).keys())
     M = np.array([[series[s] for s in steps] for series in runs[cond].values()])
@@ -164,14 +165,18 @@ ax.plot(gen, mean, color=C_GREY, lw=0.8, label="population mean")
 ax.plot(gen, big, color=C_ORANGE, lw=0.8, alpha=0.55, label="best in generation")
 ax.plot(gen, bsf, color=C_BLUE, lw=1.7, label="best so far")
 ax.axhline(0.0205, color=C_RED, ls="--", lw=1.0, label="neutral controller (0.0205)")
-# Annotation pulled up-left, away from the dense gen 250-300 region.
-ax.annotate("best = 0.0135", xy=(299, 0.0135), xytext=(180, 0.0162),
+# Point the arrow at the ACTUAL lowest point (true min of best-so-far), not the endpoint.
+min_idx = int(np.argmin(bsf))
+min_gen, min_val = gen[min_idx], bsf[min_idx]
+ax.annotate(f"best = {min_val:.4f}", xy=(min_gen, min_val),
+            xytext=(min_gen - 130, min_val - 0.0008),
             arrowprops=dict(arrowstyle="->", lw=0.7, color="0.3"), fontsize=8)
 ax.set_xlabel("Generation")
 ax.set_ylabel("Event-weighted fitness (Hamming)")
 ax.set_ylim(0.012, 0.023)
-# Curves descend left-to-right; upper-right is empty after gen ~50.
-ax.legend(frameon=False, fontsize=7.5, loc="upper right", handlelength=1.8)
+# Small legend, tucked tight into the top-right corner (curves descend, so empty there).
+ax.legend(frameon=False, fontsize=6.5, loc="upper right", handlelength=1.5,
+          borderpad=0.2, labelspacing=0.3)
 ax.grid(True, axis="y", alpha=0.25, lw=0.5)
 fig.savefig(OUT / "fig4_evolution_trajectory.png")
 plt.close(fig)
