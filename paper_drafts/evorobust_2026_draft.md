@@ -66,9 +66,10 @@ circuits without changing their wiring~\cite{schultz1997dopamine,niv2007tonic}.
 Recent NCA work has begun to import pieces of this idea. Signal channels let
 cells deposit and read global chemicals~\cite{stovold2023signal}; goal
 conditioning supplies a fixed task embedding to every
-cell~\cite{goalnca2023,stampca2023}; and emergent broadcast of damage
-information has been observed in trained
-automata~\cite{masumori2026broadcast}. All of this work stops at
+cell~\cite{sudhakaran2022goal}; and damage triggers global
+information-theoretic signatures of coordination, including outward perturbation
+propagation, in trained automata~\cite{masumori2026fluctuations}. All of this
+work stops at
 \emph{signal response}: the chemical layer is either fixed at construction,
 conditioned once, or left to emerge. None of it treats the release policy
 itself as an object of selection.
@@ -132,21 +133,24 @@ failure regime our benchmark exploits.
 Stovold~\cite{stovold2023signal} adds signal channels through which cells
 release and sense chemicals, demonstrating environment-wide coordination in
 cellular automata; the release behavior is trained end-to-end as part of the
-local rule, not governed by an explicit policy. GoalNCA~\cite{goalnca2023}
-conditions every cell's update on a fixed goal embedding, and
-StampCA~\cite{stampca2023} communicates pattern information through localized
-stamps. Masumori, Sato, and Ikegami~\cite{masumori2026broadcast} document
-emergent global broadcast of damage signals in trained automata. These systems
-establish that global chemical information is useful; they differ from our
-work in that the signal is a fixed input (conditioning) or an emergent
-byproduct, never a controlled output optimized against a long-horizon damage
-objective. Our controller closes the sensorimotor loop around the chemical
-layer itself.
+local rule, not governed by an explicit policy. Sudhakaran
+et al.~\cite{sudhakaran2022goal} condition every cell's update on a fixed goal
+embedding that steers growth toward a target morphology. Masumori, Sato, and
+Ikegami~\cite{masumori2026fluctuations} document that damage triggers global
+information-theoretic signatures of coordination, including outward perturbation
+propagation, in trained automata. These systems establish that global chemical
+information is useful; they differ from our work in that the signal is a fixed
+input (conditioning) or an emergent byproduct, never a controlled output
+optimized against a long-horizon damage objective. Our controller closes the
+sensorimotor loop around the chemical layer itself.
 
 \paragraph{Developmental scaffolds and collective intelligence.}
 Morphogenetic engineering~\cite{doursat2013morphogenetic} and developmental
-scaffolding approaches~\cite{scaffold2020developmental} treat the grown
-structure as a substrate for later function. Our fission observation
+scaffolding approaches~\cite{montero2026scaffold} treat the grown structure as
+a substrate for later function. Montero et al. jointly optimize NCA dynamics
+and SIREN pre-patterns that scaffold self-organisation; our work differs by
+maintaining global information dynamically through evolved broadcast rather
+than offloading to initial conditions. Our fission observation
 (Section~\ref{sec:fission}) connects to this line: the modulator channel acts
 as a scaffold-level memory that re-initializes growth axes after catastrophic
 bisection.
@@ -596,98 +600,99 @@ resumed growth from both fragments and re-formed a single body.
 
 % TODO: expand — acknowledgements / funding if required by the workshop style.
 
-\begin{thebibliography}{18}
-
-% TODO: replace all placeholder entries with full citations (.bib) before submission.
+\begin{thebibliography}{16}
 
 \bibitem{mordvintsev2020gnca}
 A.~Mordvintsev, E.~Randazzo, E.~Niklasson, and M.~Levin.
 \emph{Growing Neural Cellular Automata}.
-Distill, 2020. [Placeholder: complete citation.]
+Distill 5(2):e23, 2020. \url{https://doi.org/10.23915/distill.00023}
 
 \bibitem{randazzo2020selfclass}
 E.~Randazzo, A.~Mordvintsev, E.~Niklasson, M.~Levin, and S.~Greydanus.
 \emph{Self-classifying MNIST Digits}.
-Distill, 2020. [Placeholder: complete citation.]
+Distill, 2020. \url{https://distill.pub/2020/selforg/mnist}
 
 \bibitem{mordvintsev2021texture}
 E.~Niklasson, A.~Mordvintsev, E.~Randazzo, and M.~Levin.
 \emph{Self-Organising Textures}.
-Distill, 2021. [Placeholder: complete citation.]
+Distill 6(2), 2021. \url{https://doi.org/10.23915/distill.00027.003}
 
 \bibitem{stovold2023signal}
 J.~Stovold.
-\emph{Signal channels in cellular automata / Neural Cellular Automata}.
-2023. [Placeholder: complete citation.]
+\emph{Neural Cellular Automata Can Respond to Signals}.
+In ALIFE 2023, 2023. arXiv:2305.12971.
 
-\bibitem{goalnca2023}
-\emph{Goal-conditioned Neural Cellular Automata (GoalNCA)}.
-2023. [Placeholder: complete citation.]
+\bibitem{sudhakaran2022goal}
+S.~Sudhakaran, E.~Najarro, and S.~Risi.
+\emph{Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems}.
+arXiv:2205.06806, 2022.
 
-\bibitem{stampca2023}
-\emph{StampCA: communication in cellular automata via stamps}.
-2023. [Placeholder: complete citation.]
-
-\bibitem{masumori2026broadcast}
-H.~Masumori, M.~Sato, and T.~Ikegami.
-\emph{Emergent global broadcast of damage signals in neural cellular automata}.
-arXiv:2607.12403, 2026. [Placeholder: verify title and complete citation.]
+\bibitem{masumori2026fluctuations}
+A.~Masumori, M.~Sato, and T.~Ikegami.
+\emph{Structured Fluctuations and the Information Dynamics of Self-Maintenance in Growing Neural Cellular Automata}.
+arXiv:2607.12403, 2026.
 
 \bibitem{doursat2013morphogenetic}
-R.~Doursat, H.~Sayama, and O.~Michel (eds.).
+R.~Doursat, H.~Sayama, and O.~Michel, editors.
 \emph{Morphogenetic Engineering: Toward Programmable Complex Systems}.
-Springer, 2013. [Placeholder: complete citation.]
+Springer, 2013.
 
-\bibitem{scaffold2020developmental}
-\emph{Developmental scaffolding for collective computation in morphogenetic systems}.
-2020. [Placeholder: identify and complete citation.]
+\bibitem{montero2026scaffold}
+M.~L.~Montero, E.~Najarro, J.~H.~Schauser, and S.~Risi.
+\emph{Learning Developmental Scaffoldings to Guide Self-Organisation}.
+arXiv:2605.14998, 2026.
 
 \bibitem{hansen2006cma}
 N.~Hansen.
 \emph{The CMA Evolution Strategy: A Comparing Review}.
-In Towards a New Evolutionary Computation, Springer, 2006.
-[Placeholder: complete citation.]
+In J.~A.~Lozano, P.~Larra{\~n}aga, I.~Inza, and E.~Bengoetxea, editors,
+\emph{Towards a New Evolutionary Computation}, Studies in Fuzziness and Soft
+Computing, vol.~192, pages 75--102. Springer, 2006.
+\url{https://doi.org/10.1007/3-540-32494-1_4}
 
 \bibitem{salimans2017es}
 T.~Salimans, J.~Ho, X.~Chen, S.~Sidor, and I.~Sutskever.
 \emph{Evolution Strategies as a Scalable Alternative to Reinforcement Learning}.
-arXiv:1703.03864, 2017. [Placeholder: complete citation.]
+arXiv:1703.03864, 2017.
 
 \bibitem{lange2022evosax}
 R.~T.~Lange.
-\emph{Evosax: JAX-based Evolution Strategies}.
-arXiv / software, 2022. [Placeholder: complete citation.]
+\emph{evosax: JAX-Based Evolution Strategies}.
+arXiv:2212.04180, 2022. Companion: GECCO 2023.
 
 \bibitem{faldor2024cax}
 M.~Faldor et al.
 \emph{CAX: Cellular Automata Accelerated in JAX}.
-2024. [Placeholder: complete citation.]
+arXiv:2410.02651, 2024.
 
 \bibitem{stanley2007cpns}
 K.~O.~Stanley.
 \emph{Compositional Pattern Producing Networks: A Novel Abstraction of Development}.
-Genetic Programming and Evolvable Machines, 2007. [Placeholder: complete citation.]
+Genetic Programming and Evolvable Machines, 8(2):131--162, 2007.
+\url{https://doi.org/10.1007/s10710-007-9028-8}
 
 \bibitem{turing1952morphogenesis}
 A.~M.~Turing.
 \emph{The Chemical Basis of Morphogenesis}.
-Philosophical Transactions of the Royal Society B, 1952.
-[Placeholder: complete citation.]
+Philosophical Transactions of the Royal Society of London B, 237(641):37--72,
+1952. \url{https://doi.org/10.1098/rstb.1952.0012}
 
 \bibitem{gilpin2019cellular}
 W.~Gilpin.
-\emph{Cellular automata as convolutional neural networks}.
-Physical Review E, 2019. [Placeholder: complete citation.]
+\emph{Cellular Automata as Convolutional Neural Networks}.
+Physical Review E, 100(3):032402, 2019. arXiv:1809.02942.
 
 \bibitem{schultz1997dopamine}
 W.~Schultz, P.~Dayan, and P.~R.~Montague.
 \emph{A Neural Substrate of Prediction and Reward}.
-Science, 1997. [Placeholder: complete citation.]
+Science, 275(5306):1593--1599, 1997.
+\url{https://doi.org/10.1126/science.275.5306.1593}
 
 \bibitem{niv2007tonic}
 Y.~Niv, N.~D.~Daw, D.~Joel, and P.~Dayan.
 \emph{Tonic Dopamine: Opportunity Costs and the Control of Response Vigor}.
-Psychopharmacology, 2007. [Placeholder: complete citation.]
+Psychopharmacology, 191(3):507--520, 2007.
+\url{https://doi.org/10.1007/s00213-006-0502-4}
 
 \end{thebibliography}
 
