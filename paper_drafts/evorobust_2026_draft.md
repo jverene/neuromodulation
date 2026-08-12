@@ -40,9 +40,10 @@ closed-loop $\approx$ static $\approx$ constant on every metric. The value
 delivered by evolution is automatic discovery of near-optimal tonic release
 without hand-tuning, and the dominant benefit is the existence of broadcast
 modulation rather than its temporal scheduling. We further report a qualitative
-fission event in which a single midline lesion bisects the morphology and both
-fragments re-initiate growth independently along the original body axis before
-re-merging, evidence that morphological identity is maintained non-locally.
+bisection event in which a recurring-damage lesion splits the morphology into
+two substantial fragments that both sustain independent growth for
+$\approx$60 steps before asymmetric recovery, evidence that damage at one
+location produces globally coordinated fragment responses.
 \end{abstract}
 
 \section{Introduction}
@@ -112,9 +113,10 @@ We address four hypotheses:
         beat a constant tonic level in this stationary regime; evolution's
         measured contribution is automatic discovery of that level
         (Section~\ref{sec:results}).
-  \item A qualitative fission observation: one midline lesion bisects the
-        morphology and both fragments re-initiate growth independently,
-        supporting H1 and H4 (Section~\ref{sec:fission}).
+  \item A qualitative bisection observation: one recurring-damage event
+        splits the morphology into two fragments that both sustain
+        independent growth before asymmetric recovery, supporting H1
+        (Section~\ref{sec:fission}).
 \end{enumerate}
 
 \section{Related Work}
@@ -150,10 +152,11 @@ scaffolding approaches~\cite{montero2026scaffold} treat the grown structure as
 a substrate for later function. Montero et al. jointly optimize NCA dynamics
 and SIREN pre-patterns that scaffold self-organisation; our work differs by
 maintaining global information dynamically through evolved broadcast rather
-than offloading to initial conditions. Our fission observation
-(Section~\ref{sec:fission}) connects to this line: the modulator channel acts
-as a scaffold-level memory that re-initializes growth axes after catastrophic
-bisection.
+than offloading to initial conditions. Our bisection observation
+(Section~\ref{sec:fission}) connects to this line: after a damage event splits
+the morphology, both fragments sustain independent growth, suggesting the
+modulator channel carries enough global context for each fragment to maintain
+pattern identity in the absence of local continuity.
 
 \paragraph{Evolution strategies and tooling.}
 We evolve the controller with CMA-ES~\cite{hansen2006cma}, a standard choice
@@ -450,40 +453,46 @@ confirmed that constant tonic levels alone swing mean Hamming from $0.003$
 to $0.93$ --- so the identity of the release schedule, not just the presence
 of the channels, determines whether the organism lives.
 
-\subsection{Damage-induced fission}
+\subsection{Damage-induced bisection and asymmetric recovery}
 \label{sec:fission}
 
-In one closed-loop rollout, a single midline lesion bisects the morphology at
-step 1050, and the two fragments neither die nor passively re-fuse: each
-re-initiates growth independently, producing two growth fronts that re-express
-the target's head-to-tail organization before re-merging into a single lizard
-over the following $\approx$100 steps (Figure~\ref{fig:fission}). The event is
-qualitative --- one rollout, one lesion --- but it is the most direct single
-piece of evidence for H1 and H4. Damage at one location triggered coherent
-reorganization in both fragments (H1), and each fragment resumed growth along
-the \emph{same} body axis, meaning the information specifying ``what to be''
-survived the loss of half the body that carried it (H4).
+In one closed-loop rollout, a recurring-damage event at step 1050 bisects the
+already-stressed morphology into two substantial fragments (101 and 58 cells),
+each large enough to survive the local alive-masking that kills isolated
+single cells (Figure~\ref{fig:fission}). Both fragments persist and grow for
+$\approx$60 steps, narrowing the gap between them from 32 to 25 pixels. Over
+the subsequent $\approx$50 steps, however, recovery becomes asymmetric: the
+larger fragment monopolizes regrowth (reaching $\approx$240 cells) while the
+smaller fragment is gradually absorbed below the survival threshold. The
+fragments do not re-merge as two independent growth fronts --- the smaller one
+is reclaimed rather than reintegrated.
 
-The unmodulated baseline resolves the same bisection event differently: under
-no modulation, fragmentation is eventually resolved by one of the two fragments
-dying off entirely and leaving debris, rather than by both fragments
-re-initiating and re-merging. This is the same failure mode that produces the
-baseline's elevated final Hamming ($0.063$, Table~\ref{tab:main}) --- a
-fragment with no access to global context cannot determine what to grow into
-and is eventually lost under subsequent damage, rather than being recovered.
+This event is qualitative --- one rollout, one lesion --- but it is the most
+direct single piece of evidence for H1. Damage at one location produced two
+viable fragments that each sustained independent growth, and the chemical
+layer is the only non-local pathway through which either fragment could detect
+that it is part of a larger whole. A formal information-theoretic test of
+coordination between fragments remains future work.
+
+The unmodulated baseline resolves the same kind of bisection event differently:
+under no modulation, fragmentation is eventually resolved by one of the two
+fragments dying off entirely and leaving debris, rather than by both fragments
+sustaining growth. This is the same failure mode that produces the baseline's
+elevated final Hamming ($0.063$, Table~\ref{tab:main}) --- a fragment with no
+access to global context cannot sustain growth and is eventually lost under
+subsequent damage, rather than being recovered.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\linewidth]{figures/fig3_fission_sequence}
-  \caption{Damage-induced fission and decentralized re-initialization in the
-  closed-loop rollout (damage seed 10000).
-  (a)~Pre-lesion intact lizard (step 1040); (b)~midline lesion bisects the
-  morphology (step 1060); (c)~split moment --- the two fragments decouple
-  (step 1080); (d)~two independent growth fronts re-expressing the target's
-  body axis (step 1100; the fronts re-merge into a single lizard
-  $\approx$100 steps later). The sequence supports H1 (non-local damage
-  triggers global reorganization) and H4 (tonic identity memory preserves
-  growth axes).}
+  \caption{Damage-induced bisection and asymmetric recovery in the closed-loop
+  rollout (damage seed 10000).
+  (a)~Lesion at step 1050 bisects the morphology into two substantial fragments
+  (101 and 58 cells); (b)~both fragments persist and grow independently for
+  $\approx$60 steps (step 1080); (c)~asymmetric recovery --- the larger fragment
+  monopolizes regrowth while the smaller is gradually absorbed (step 1150).
+  Both fragments sustained independent growth, supporting H1 (non-local damage
+  produces globally coordinated fragment responses).}
   \label{fig:fission}
 \end{figure}
 
@@ -534,11 +543,15 @@ but it reaches that level automatically, in 2.5 hours, from a neutral start,
 with no hand search. Against random scheduling the comparison is not close:
 random actuation is lethal. The schedule matters, and evolution finds a good
 one without supervision.
-\textbf{H4 (supported).} That a \emph{constant} tonic level captures nearly
-the entire benefit is direct evidence that the persistent chemical state
-carries the functionally important information. Fission makes the same point
-mechanistically: growth-axis identity survives bisection, so it is stored
-somewhere non-local --- the tonic channel is the only candidate.
+\textbf{H4 (partially supported).} That a \emph{constant} tonic level captures
+nearly the entire benefit is direct evidence that the persistent chemical state
+carries the functionally important information. The bisection observation
+(Section~\ref{sec:fission}) is consistent with this: both fragments sustained
+growth, suggesting the tonic channel carries enough identity information for
+pattern maintenance even after loss of local continuity. However, we cannot
+confirm the stronger claim that fragments re-express the same body-axis
+organization, since recovery was asymmetric and the smaller fragment was
+absorbed rather than re-integrated.
 
 \paragraph{Where the improvement lives.}
 That a frozen neural output (static) and a hand-searched scalar (constant)
@@ -595,8 +608,8 @@ cumulative damage than no modulation; random modulation is uniformly lethal;
 and the evolved closed loop, a static snapshot, and a constant tonic level are
 indistinguishable in this stationary regime. The contribution is twofold:
 evolution discovers near-optimal tonic release automatically, and the tonic
-channel functions as identity memory --- vividly, when a bisected lizard
-resumed growth from both fragments and re-formed a single body.
+channel enables sustained fragment survival after bisection --- vividly, when
+both halves of a split morphology maintained independent growth.
 
 % TODO: expand — acknowledgements / funding if required by the workshop style.
 

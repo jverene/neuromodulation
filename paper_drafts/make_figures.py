@@ -141,11 +141,15 @@ fig.savefig(OUT / "fig2_hamming_vs_time.png")
 plt.close(fig)
 print("fig2 done")
 
-# ---------------------------------------------------------------- fig3: fission panels
+# ---------------------------------------------------------------- fig3: bisection + asymmetric recovery (3 panels)
+# Step-1050 lesion genuinely bisects the morphology into two substantial fragments.
+# They survive ~60 steps, then the larger monopolizes regrowth and the smaller is
+# absorbed (they do NOT re-merge — verified by connected-component tracking).
 frames = imageio.mimread("results_local/e2_hard_20260730/rollout_closed_loop.gif")
-panels = [(104, "a", "Pre-lesion (1040)"), (106, "b", "Midline lesion (1060)"),
-          (108, "c", "Split (1080)"), (110, "d", "Two growth fronts (1100)")]
-fig, axes = plt.subplots(1, 4, figsize=(6.0, 1.9))
+panels = [(105, "a", "Bisection (1050)"),       # lesion frame: two fragments first appear
+          (108, "b", "Both persist (1080)"),     # 30 steps later: both still substantial
+          (115, "c", "Asymmetric recovery (1150)")]  # 100 steps later: larger dominates, smaller absorbed
+fig, axes = plt.subplots(1, 3, figsize=(5.0, 1.9))
 for ax, (fi, lab, title) in zip(axes, panels):
     ax.imshow(frames[fi][16:80, 16:80], interpolation="nearest")
     ax.axis("off")
