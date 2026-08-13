@@ -146,14 +146,15 @@ print("fig2 done")
 # They survive ~60 steps, then the larger monopolizes regrowth and the smaller is
 # absorbed (they do NOT re-merge — verified by connected-component tracking).
 frames = imageio.mimread("results_local/e2_hard_20260730/rollout_closed_loop.gif")
-panels = [(105, "a", "Bisection (1050)"),       # lesion frame: two fragments first appear
-          (108, "b", "Both persist (1080)"),     # 30 steps later: both still substantial
-          (115, "c", "Asymmetric recovery (1150)")]  # 100 steps later: larger dominates, smaller absorbed
-fig, axes = plt.subplots(1, 3, figsize=(5.0, 1.9))
-for ax, (fi, lab, title) in zip(axes, panels):
+panels = [(105, "a", "Bisection", 1050),        # lesion frame: two fragments first appear
+          (108, "b", "Both persist", 1080),      # 30 steps later: both still substantial
+          (115, "c", "Asym. recovery", 1150)]    # 100 steps later: larger dominates, smaller absorbed
+fig, axes = plt.subplots(1, 3, figsize=(5.4, 2.0))
+for ax, (fi, lab, title, step) in zip(axes, panels):
     ax.imshow(frames[fi][16:80, 16:80], interpolation="nearest")
     ax.axis("off")
-    ax.set_title(f"({lab}) {title}", fontsize=7.5, pad=2)
+    # Two-line title: label+name on line 1, step on line 2 — prevents horizontal overflow/collision.
+    ax.set_title(f"({lab}) {title}\nstep {step}", fontsize=7.5, pad=3)
 fig.savefig(OUT / "fig3_fission_sequence.png")
 plt.close(fig)
 print("fig3 done")
