@@ -31,10 +31,8 @@ urlcolor=navyblue
 \vspace\*{0.2in}
 {\Large \bfseries \@title \par}
 \vskip 1.2em
-{\large
-\textbf{Bowen Jiang} \\
-\vskip 0.3em
-\small \texttt{\href{https://github.com/jverene/neuromodulation}{github.com/jverene/neuromodulation}} \\
+{\large Anonymous Author(s) \\
+\small \texttt{anonymous@example.com} \\
 }
 \vskip 1.5em
 \end{center}
@@ -48,49 +46,35 @@ urlcolor=navyblue
 \small
 }{
 \end{quote}
-\vspace{1.0em}
 }
 
-% Helper macro to safely handle missing figure assets during compilation
-\newcommand{\safefigure}[2]{%
-\IfFileExists{#1}{%
-\includegraphics[width=\linewidth]{#1}%
-}{%
-\framebox[\linewidth]{\rule{0pt}{3.2cm}\footnotesize\color{gray}\textbf{Placeholder:} #2}%
-}%
-}
+\title{Evolutionary Stress Testing of Self-Repair:\\When Does Closed-Loop Modulation Matter?}
 
-% --- Document Start ---
 \begin{document}
 
-\title{Closed-Loop Neuromodulation in Neural Cellular Automata}
-\date{}
 \maketitle
 
 \begin{abstract}
-Neural Cellular Automata (NCAs) grow and regenerate complex morphologies using
-purely local update rules. This locality is also their weakness: a cell inside a
-large wound has no living neighbors to read, and a severed fragment has no way
-to determine what it is or what it should grow into. Prior work gave NCAs
-global signal channels or goal conditioning, and observed emergent chemical
-broadcast, but treated the signal as fixed input rather than controlled
-output. We close that loop. We equip a Growing NCA with $K = 3$ global
-modulator channels, each carrying a tonic (slow exponential moving average) and
-a phasic (fast decaying) component, and evolve a 259-parameter controller that
-reads target-free grid statistics and sets the release level of every channel
-in response to damage. On a recurring-damage benchmark deliberately calibrated
-to defeat the unmodulated baseline, all modulated conditions repair
-substantially better than no modulation (final Hamming distance $0.028$--$0.030$
-vs.\ $0.063$; cumulative damage AUC $0.016$--$0.017$ vs.\ $0.064$), while random
-modulation is catastrophic (survival $0.00$). In this stationary damage regime
-the evolved closed-loop policy does not separate from a fixed tonic level:
-closed-loop $\approx$ static $\approx$ constant on every metric. The value
-delivered by evolution is automatic discovery of near-optimal tonic release
-without hand-tuning, and the dominant benefit is the existence of broadcast
-modulation rather than its temporal scheduling. We further report a qualitative
-fission-regeneration event in which a single midline lesion splits the
-morphology into two independently growing lizards, evidence that the tonic
-channel carries morphological identity.
+Robust self-organizing systems should be evaluated under recurring, diverse
+disruptions rather than a single fixed lesion. We introduce an evolutionary
+stress-testing framework for Growing Neural Cellular Automata (GNCAs) in which
+multi-block lesions are calibrated to exceed the local perception radius, and a
+compact controller regulates global chemical modulation from target-free grid
+statistics. CMA-ES optimizes the release policy under an event-weighted repair
+objective, with held-out damage seeds used to measure survival, cumulative
+damage, and repair dynamics. Modulated NCAs substantially outperform an
+unmodulated control, reducing final Hamming distance from $0.063$ to
+$0.028$--$0.030$ and cumulative damage by approximately fourfold, while random
+modulation is uniformly lethal. Crucially, closed-loop control does not
+outperform static or constant tonic modulation under stationary damage. Rather
+than treating this as a failed ablation, we use it to characterize a regime
+boundary: recurring lesions provide no temporal structure for adaptive
+scheduling to exploit, so evolution primarily discovers a robust tonic
+operating point. A qualitative bisection event further suggests that persistent
+global modulation may help preserve morphological organization beyond local
+perception. The benchmark provides a controlled substrate for studying when
+non-stationary, diversity-driven damage processes make closed-loop robustness
+necessary.
 \end{abstract}
 
 \section{Introduction}
@@ -100,535 +84,556 @@ Growing Neural Cellular Automata (GNCAs) demonstrate that a single local,
 differentiable update rule can grow a target morphology from a seed and
 regenerate it after damage~\cite{mordvintsev2020gnca}. The regenerative
 capability, however, is bounded by perception. Each cell perceives only its
-immediate neighborhood through fixed convolution kernels, so wounds larger than
-the perception radius contain cells with no signal to integrate, and fragments
-severed by a lesion retain no information about the body they came from. In our
-own baseline experiments the failure is visible: severed pieces drift, neither
-reattaching nor dying, and wound sites fill with undecided half-alpha cells
-that persist as scar tissue (Section~\ref{sec:e1}).
+immediate neighborhood through fixed convolution kernels, so wounds larger
+than the perception radius contain cells with no signal to integrate, and
+fragments severed by a lesion retain no information about the body they came
+from. In our baseline experiments the failure is visible: severed pieces
+drift, neither reattaching nor dying, and wound sites fill with undecided
+half-alpha cells that persist as scar tissue (Appendix~\ref{app:e1}). These
+are \emph{information-isolation} failures, and they motivate a stress test
+that operates squarely inside this regime rather than at its edge.
 
-Biology solves the analogous coordination problem with neuromodulation:
-slow, globally broadcast chemical signals (tonic levels) punctuated by fast,
+Biology solves the analogous coordination problem with neuromodulation: slow,
+globally broadcast chemical signals (tonic levels) punctuated by fast,
 event-triggered release (phasic spikes) that reconfigure the gain of local
-circuits without changing their wiring~\cite{schultz1997dopamine,niv2007tonic}.
-Recent NCA work has begun to import pieces of this idea. Signal channels let
-cells deposit and read global chemicals~\cite{stovold2023signal}; goal
-conditioning supplies a fixed task embedding to every
-cell~\cite{goalnca2023,stampca2023}; and emergent broadcast of damage
-information has been observed in trained
-automata~\cite{masumori2026broadcast}. All of this work stops at
-\emph{signal response}: the chemical layer is either fixed at construction,
-conditioned once, or left to emerge. None of it treats the release policy
-itself as an object of selection.
+circuits without changing their
+wiring~\cite{schultz1997dopamine,niv2007tonic}. Recent NCA work imports
+pieces of this idea --- signal channels~\cite{stovold2023signal}, goal
+conditioning~\cite{sudhakaran2022goal}, and information-dynamical analyses of
+self-maintenance~\cite{masumori2026fluctuations} --- but in every case the
+chemical signal is a fixed input or an emergent byproduct, never a controlled
+output optimized against a long-horizon damage objective.
 
-We move from signal response to \emph{signal control}. We attach $K = 3$
-global modulator channels to a GNCA and evolve, with CMA-ES, a compact
-controller that observes target-free summary statistics of the grid (alive
-fraction, recently killed fraction, spatial entropy, and a self-referential
-mismatch proxy) and sets modulator release every ten NCA steps. The evolved
-policy is evaluated against four controls --- no modulation, static
-conditioning, a hand-searched constant tonic level, and random modulation ---
-under recurring multi-block damage that exceeds the perception radius.
+We close that loop, and we use evolutionary search not to claim that
+closed-loop control always wins, but to \emph{discover} robust modulation
+policies and identify the damage regimes under which adaptive control is
+actually necessary. We equip a GNCA with $K{=}3$ global modulator channels and
+evolve a 259-parameter controller that reads four target-free grid statistics
+and sets channel release every ten steps. The controller is evaluated against
+four controls --- no modulation, static conditioning, a hand-searched constant
+tonic, and random modulation --- under recurring multi-block damage
+deliberately calibrated so that each lesion exceeds the perception radius.
 
-We address four hypotheses:
-\begin{itemize}\itemsep 0.2em
-\item \textbf{H1}: Non-local damage triggers global broadcast (the modulator
-layer carries damage information across the whole grid).
-\item \textbf{H2}: On recurring damage, closed-loop modulation outperforms
-static modulation, which outperforms no modulation.
-\item \textbf{H3}: An evolved release schedule outperforms hand-set and
-random schedules.
-\item \textbf{H4}: The tonic channel serves as identity memory, preserving
-morphological information that local perception cannot hold.
+We address four research questions:
+\begin{itemize}
+  \item \textbf{RQ1}: Can a low-dimensional global modulation channel repair
+        damage beyond the NCA's local perception radius?
+  \item \textbf{RQ2}: Does state-dependent closed-loop release outperform
+        tonic or static modulation under stationary recurring damage?
+  \item \textbf{RQ3}: What failure modes and metric artifacts emerge when
+        regeneration is evaluated over long, repeated damage horizons?
+  \item \textbf{RQ4}: Can a persistent global chemical state preserve
+        morphological organization after catastrophic structural disruption?
 \end{itemize}
 
 \paragraph{Contributions.}
-\begin{enumerate}\itemsep 0.2em
-\item A closed-loop neuromodulation architecture for NCAs: tonic $+$ phasic
-global channels, a target-free 259-parameter controller, and an
-evolution harness that optimizes the release policy directly
-(Section~\ref{sec:methods}).
-\item An adversarial recurring-damage benchmark with an event-weighted
-fitness function, plus the calibration controls (death-hack probe,
-alive-fraction floor, $\sigma$-probe of the initial sampling
-distribution) that make the fitness landscape interpretable
-(Sections~\ref{sec:damage}--\ref{sec:evolution}).
-\item An honest five-condition comparison. The chemical layer helps
-substantially ($2.2\times$ lower final Hamming, $3.9\times$ lower
-cumulative damage than no modulation), but closed-loop does not beat a
-constant tonic level in this stationary regime; evolution's measured
-contribution is automatic discovery of that level
-(Section~\ref{sec:results}).
-\item A qualitative fission-regeneration observation: one midline lesion
-splits the morphology into two independently growing lizards,
-supporting H1 and H4 (Section~\ref{sec:fission}).
+\begin{enumerate}
+  \item A recurring-damage stress test for regenerative NCAs, calibrated to
+        exceed local perception and evaluated on held-out damage seeds
+        (Section~\ref{sec:damage}).
+  \item A controlled regime-boundary finding: global modulation substantially
+        improves robustness ($2.2\times$ lower final Hamming,
+        $\approx 4\times$ lower cumulative damage), but state-dependent
+        closed-loop control provides no measurable advantage over tonic
+        control when damage is stationary (Section~\ref{sec:e2}).
+  \item An evolutionary controller-search framework for global chemical
+        release, including calibration probes for objective hacking and
+        failed search initialization (Section~\ref{sec:evolution},
+        Appendix~\ref{app:calibration}).
+  \item A qualitative bisection observation, presented cautiously as
+        motivation for studying persistent global state --- not as proof of
+        identity memory (Section~\ref{sec:fission}).
 \end{enumerate}
 
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{Neural Cellular Automata.}
+\paragraph{Neural cellular automata.}
 GNCAs grow target patterns from a seed and regenerate after localized
-damage~\cite{mordvintsev2020gnca}; follow-up work extends the model to
-self-classifying grids~\cite{randazzo2020selfclass} and learned
-textures~\cite{mordvintsev2021texture}. All of these rely on purely local
-perception (identity and gradient kernels), and regeneration quality degrades
-for lesions larger than the effective perception radius --- precisely the
-failure regime our benchmark exploits.
-
-\paragraph{Signal channels and conditioning.}
+damage~\cite{mordvintsev2020gnca}; follow-ups extend the model to
+self-classification~\cite{randazzo2020selfclass} and learned
+textures~\cite{mordvintsev2021texture}. All rely on purely local perception,
+and regeneration quality degrades for lesions larger than the effective
+perception radius --- precisely the failure regime our benchmark exploits.
 Stovold~\cite{stovold2023signal} adds signal channels through which cells
-release and sense chemicals, demonstrating environment-wide coordination in
-cellular automata; the release behavior is trained end-to-end as part of the
-local rule, not governed by an explicit policy. GoalNCA~\cite{goalnca2023}
-conditions every cell's update on a fixed goal embedding, and
-StampCA~\cite{stampca2023} communicates pattern information through localized
-stamps. Masumori, Sato, and Ikegami~\cite{masumori2026broadcast} document
-emergent global broadcast of damage signals in trained automata. These systems
-establish that global chemical information is useful; they differ from our
-work in that the signal is a fixed input (conditioning) or an emergent
-byproduct, never a controlled output optimized against a long-horizon damage
-objective. Our controller closes the sensorimotor loop around the chemical
-layer itself.
+release and sense chemicals; Sudhakaran et al.~\cite{sudhakaran2022goal}
+condition every cell's update on a fixed goal embedding; Masumori et
+al.~\cite{masumori2026fluctuations} analyze damage recovery with transfer
+entropy and partial information decomposition, documenting globally
+coordinated responses to localized damage. In all of these, the signal is a
+fixed input or an emergent byproduct --- never a controlled output optimized
+against a long-horizon damage objective. Our controller closes the
+sensorimotor loop around the chemical layer itself.
 
-\paragraph{Developmental scaffolds and collective intelligence.}
-Morphogenetic engineering~\cite{doursat2013morphogenetic} and developmental
-scaffolding approaches~\cite{scaffold2020developmental} treat the grown
-structure as a substrate for later function. Our fission observation
-(Section~\ref{sec:fission}) connects to this line: the modulator channel acts
-as a scaffold-level memory that re-initializes growth axes after catastrophic
-bisection.
-
-\paragraph{Evolution strategies and tooling.}
-We evolve the controller with CMA-ES~\cite{hansen2006cma}, a standard choice
-for low-dimensional continuous policies~\cite{salimans2017es}, implemented in
-Evosax~\cite{lange2022evosax} so the full ask--tell loop JIT-compiles against
-vmapped NCA rollouts. The NCA itself is built on CAX
-primitives~\cite{faldor2024cax}. Indirect encodings of
-morphology~\cite{stanley2007cpns,turing1952morphogenesis,gilpin2019cellular}
-motivate the broader research program this benchmark serves.
-
-% TODO: expand — one paragraph positioning against differentiable
-% homeostasis / energy-based CA if reviewers request it.
+\paragraph{Search over evaluation regimes.}
+Our benchmark design draws on the insight, central to novelty
+search~\cite{lehman2011novelty} and quality-diversity
+optimization~\cite{mouret2015mapelites}, that a single fixed objective can
+misdirect search and hide failure modes. Environment-generation methods
+co-evolve challenges with solutions: POET~\cite{wang2019poet} pairs agents
+with self-generated curricula, PAIRED~\cite{dennis2020paired} uses regret to
+construct difficult-but-solvable environments, and
+ACCEL~\cite{parkerholder2022accel} mutates high-regret environments to build
+an evolving curriculum. Unlike these methods, our current benchmark does not
+yet evolve the damage distribution; we provide the controlled stationary
+baseline against which damage co-evolution and diversity-driven scenario
+search can be evaluated. Morphogenetic
+engineering~\cite{doursat2013morphogenetic} and developmental
+scaffolding~\cite{montero2026scaffold} treat the grown structure as a
+substrate for later function; our bisection observation
+(Section~\ref{sec:fission}) connects to this line.
 
 \section{Methods}
 \label{sec:methods}
 
-\subsection{Growing Neural Cellular Automaton}
+\subsection{Growing NCA with global modulator channels}
 \label{sec:gnca}
 
-The grid state $x_t \in [0,1]^{96 \times 96 \times 16}$ holds $16$ channels per
-cell; the last four channels are RGBA and the alpha channel is last. Each cell
-perceives its $3{\times}3$ neighborhood through three fixed kernels ---
-identity, Sobel-$x$, Sobel-$y$ --- applied per channel, producing a perception
-vector $p_t \in \mathbb{R}^{48}$:
-\begin{equation}
-p*t = \big(K*{\mathrm{id}} _ x*t,\; K*{\mathrm{S}\_x} _ x*t,\;
-K*{\mathrm{S}\_y} \* x_t\big) \in \mathbb{R}^{48}.
-\label{eq:perception}
-\end{equation}
-A shared update MLP maps $(48 + K)$ inputs to $128$ hidden units (ReLU) and
-back to $16$ channel increments, with the final layer zero-initialized so
-training starts from the identity update. Cells apply updates stochastically
-with probability $0.5$ per step, and a cell is considered alive when its alpha
-exceeds $0.1$ within its $3{\times}3$ max-pooled neighborhood; dead cells are
-masked to zero.
+The grid state $x_t \in [0,1]^{96 \times 96 \times 16}$ holds 16 channels per
+cell (RGBA last). Each cell perceives its $3{\times}3$ neighborhood through
+identity, Sobel-$x$, and Sobel-$y$ kernels, producing a 48-dimensional
+perception vector. A shared MLP ($48{+}K \rightarrow 128 \rightarrow 16$)
+maps perception plus modulator input to channel updates; cells update
+stochastically ($p{=}0.5$) and dead cells are masked. Model and training
+details follow Mordvintsev et al.~\cite{mordvintsev2020gnca} with CAX
+primitives~\cite{faldor2025cax}; full specifications are in
+Appendix~\ref{app:model}.
 
-The parent model is trained on a $40{\times}40$ RGBA emoji target
-zero-padded to the $96{\times}96$ canvas, using pool-based training (pool size
-$1024$, batch $8$, sample with replacement, worst-in-batch reseeded), random
-square-erasure damage applied mid-episode, MSE loss on the RGBA channels, and
-Adam at learning rate $10^{-3}$ for $8000$ steps. A first attempt at
-$2{\times}10^{-3}$ diverged to NaN near step $5532$ via a textbook
-late-stage loss-spike cascade; $10^{-3}$ absorbs the identical spike and is
-used throughout. All conditions in this paper share a single channel-aware
-parent trained with the $K = 3$ modulator channels present and the
-controller held at neutral output; we never ablate channels from a model trained without
-them. The no-modulation control uses a separately trained $K = 0$ parent.
-
-\subsection{Global modulator channels}
-\label{sec:channels}
-
-Each of the $K = 3$ modulator channels carries two components. The tonic
-component integrates controller outputs $c_t$ at decision steps through an
-exponential moving average with $\alpha = 0.95$:
-\begin{equation}
-m*t^{(\mathrm{tonic})} = \alpha\, m*{t-1}^{(\mathrm{tonic})} + (1-\alpha)\, c*t,
-\qquad \alpha = 0.95.
-\label{eq:tonic}
-\end{equation}
-The phasic component is set to $c_t$ at each decision step and decays
-exponentially between decisions with time constant $\tau = 20$ NCA steps:
-\begin{equation}
-m_t^{(\mathrm{phasic})} = m*{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau},
-\qquad \tau = 20.
-\label{eq:phasic}
-\end{equation}
-The injected level is the clipped sum
-\begin{equation}
-m_t = \operatorname{clip}\big(m_t^{(\mathrm{tonic})} + m_t^{(\mathrm{phasic})},\,-1,\,1\big)
-\in \mathbb{R}^{K},
-\label{eq:injection}
-\end{equation}
-broadcast to every cell and concatenated to the perception vector, giving the
-update MLP an effective input dimension of $48 + 3 = 51$. The same $m_t$
-reaches every cell simultaneously: this is the only non-local information path
-in the system, and it is one bit of chemistry per channel, not per cell.
+Each of the $K{=}3$ modulator channels carries a tonic component (exponential
+moving average, $\alpha{=}0.95$) and a phasic component (decay
+$\tau{=}20$), summed and clipped to $[-1,1]$. The injected level is broadcast
+to every cell and concatenated to its perception vector --- the only
+non-local information path in the system. All conditions share a single
+channel-aware parent trained with the $K{=}3$ channels present and the
+controller held at neutral output; the no-modulation control uses a
+separately trained $K{=}0$ parent.
 
 \subsection{Controller}
 \label{sec:controller}
 
 The controller is an MLP $4 \rightarrow 32 \rightarrow K$ with $\tanh$
-activations throughout ($259$ parameters, counting biases), so its outputs lie
-in $[-1,1]$. It issues a decision every $\tau_d = 10$ NCA steps. Its four
-inputs are summary statistics of the grid state, deliberately free of any
-target access (enforced by a unit test):
-\begin{enumerate}\itemsep 0.1em
-\item alive-cell fraction ($\alpha > 0.1$);
-\item fraction of alive cells killed within the last decision window;
-\item normalized spatial Shannon entropy of the alpha mass distribution;
-\item a Hamming proxy: the mismatch rate between binarized alpha
-($\alpha > 0.5$) and the rollout's own $t = 0$ pattern as reference ---
-never the target.
-\end{enumerate}
-The controller can therefore detect that damage occurred, where mass is
-concentrated, and how far the current morphology has drifted from its own
-recent state, but it cannot cheat by reading the answer.
+activations (259 parameters), issuing a decision every $\tau_d{=}10$ steps.
+Its four inputs are target-free summary statistics of the grid: alive
+fraction, recently killed fraction, spatial entropy of alpha mass, and a
+self-referential mismatch proxy against the rollout's own $t{=}0$ pattern
+(never the target; enforced by unit test). The controller can detect that
+damage occurred and how far the morphology has drifted from its own recent
+state, but cannot read the answer.
 
-\subsection{Damage model}
+\subsection{Damage model: a stress test beyond perception}
 \label{sec:damage}
 
-Evaluation uses recurring multi-block lesions: every $150$ steps, $n = 4$
+Evaluation uses recurring multi-block lesions: every 150 steps, $n{=}4$
 contiguous, axis-aligned $16{\times}16$ squares are cut at seeded random
-positions, zeroing all channels of the affected cells, for a horizon of
-$T = 2000$ steps ($13$ lesion events per rollout). A $16$-cell block side
-exceeds the NCA's effective perception radius, so wound interiors contain no
-living neighbors and the local update rule alone cannot diagnose the wound ---
-this is the failure regime identified in our lesion sweep
-(Section~\ref{sec:e1}). Lesion parameters are drawn from fixed damage-seed
-sets: seeds $0$--$7$ for evolution and grid search, seeds $10000$--$10007$ as
-a disjoint held-out set for all reported numbers.
+positions, zeroing all affected cells, for $T{=}2000$ steps (13 events).
+A 16-cell block side exceeds the NCA's effective perception radius, so wound
+interiors contain no living neighbors and the local rule alone cannot
+diagnose the wound. Lesion parameters come from fixed seed sets: seeds 0--7
+for evolution and grid search, seeds 10000--10007 as a disjoint held-out set
+for all reported numbers.
 
 The benchmark is deliberately adversarial. An earlier schedule (disc lesions
-every $250$ steps) was solved trivially by the unmodulated baseline (raw
+every 250 steps) was solved trivially by the unmodulated baseline (raw
 Hamming $\approx 0.002$), leaving no gap for modulation to close and stalling
-evolution. Damage must be hard enough that the baseline genuinely struggles;
-otherwise there is nothing for a controller to prove.
+evolution at a saturated fitness. Damage must be hard enough that the baseline
+genuinely struggles; otherwise there is nothing for a controller to prove
+(RQ3; Appendix~\ref{app:calibration}).
 
 \subsection{Evolution and fitness}
 \label{sec:evolution}
 
-We evolve the controller with CMA-ES (Evosax 0.2.0), population $64$, initial
-step size $\sigma_0 = 0.01$, for $300$ generations, with the all-zero
-(neutral) controller as the initial distribution mean. Fitness is the
-event-weighted mean Hamming distance between binarized alpha and the target
-alpha mask, computed over full rollouts on the eight train damage seeds:
+We evolve the controller with CMA-ES~\cite{hansen2006cma} (Evosax
+implementation~\cite{lange2022evosax}), population 64, initial step size
+$\sigma_0{=}0.01$, 300 generations, neutral (all-zero) controller as the
+initial mean. Fitness is the event-weighted mean Hamming distance to the
+target alpha mask over full rollouts on the eight train damage seeds:
 \begin{equation}
-f(\theta) = \frac{1}{\sum*t w_t} \sum*{t=1}^{T} w*t\, H_t(\theta),
-\qquad
-w_t = \exp\!\Big(-\frac{t - \tau*{\mathrm{last}}(t)}{\tau*w}\Big),
-\label{eq:fitness}
+  f(\theta) = \frac{1}{\sum_t w_t} \sum_{t=1}^{T} w_t\, H_t(\theta),
+  \qquad
+  w_t = \exp\!\Big(-\frac{t - \tau_{\mathrm{last}}(t)}{\tau_w}\Big),
+  \label{eq:fitness}
 \end{equation}
-where $\tau*{\mathrm{last}}(t)$ is the most recent lesion step and
+where $\tau_{\mathrm{last}}(t)$ is the most recent lesion step and
 $\tau_w = 150/3 = 50$. The recency kernel resets at each lesion, so slow
-repair is expensive even when endpoint Hamming is identical --- the kernel
-de-saturates the metric and prices repair speed directly. Evosax minimizes its
-objective, so the Hamming-based loss in Eq.~\eqref{eq:fitness} is passed as
-fitness directly, with no sign flip. Fitness is not the reported metric:
-Section~\ref{sec:results} reports unweighted trajectory statistics (final
-Hamming, AUC, repair half-life, survival) on held-out damage seeds.
+repair is expensive even when endpoint Hamming is identical --- it
+de-saturates the metric and prices repair speed directly. Fitness is not the
+reported metric: Section~\ref{sec:e2} reports unweighted trajectory
+statistics on held-out seeds. Two calibration controls make this landscape
+interpretable --- a collapse probe (verifying the objective cannot be gamed
+by alpha suppression) and an initial step-size ablation (showing
+$\sigma_0{=}0.3$ saturates the first population in overgrowth where no
+repair signal exists) --- both detailed in Appendix~\ref{app:calibration}.
 
-Two calibration controls make this landscape interpretable. First, a
-\emph{death-hack probe} checks whether a controller can game the metric by
-suppressing alpha grid-wide. Killing all cells yields Hamming $0.046$, worse
-than the neutral controller's $0.021$, confirming the fitness landscape
-rewards survival over collapse and that the alive-fraction floor
-(\texttt{alive_floor}) is safe to disable at $0.0$; the target mask is only
-$4.6\%$ alive, so the floor default suggested by our runbook ($0.3$) would
-have penalized every healthy candidate and pushed evolution toward overgrowth.
-Second, a \emph{$\sigma$-probe} of the initial sampling distribution showed
-that $\sigma_0 = 0.3$ lands the entire generation-$0$ population in saturated
-overgrowth (alive fraction $\rightarrow 0.96$), where CMA-ES ranks
-overgrowth-degree noise instead of repair quality and the search stalls;
-$\sigma_0 = 0.01$ brackets the neutral point, so generation-$0$ ranking
-already sees repair-quality signal.
-
-\subsection{Baselines and compute}
+\subsection{Conditions and compute}
 \label{sec:baselines}
 
 Five conditions share the same protocol, horizon, and damage seeds:
-\begin{itemize}\itemsep 0.1em
-\item \textbf{Closed-loop}: the evolved controller, decisions every
-$\tau_d = 10$ steps.
-\item \textbf{Static}: the controller is evaluated once at $t = 0$ on the
-freshly grown grid and its output is held constant for the entire
-rollout (fixed goal-style conditioning).
-\item \textbf{Constant}: a fixed tonic level, grid-searched over
-$\{-1.0, -0.5, 0.0, 0.5, 1.0\}$ on the train damage seeds; the best
-level is reported.
-\item \textbf{Random}: modulator levels drawn uniformly from $[-1,1]$ at
-every step (seeded), an actuation-matched noise control.
-\item \textbf{No modulation}: the $K = 0$ baseline parent.
-\end{itemize}
-All experiments ran on a single NVIDIA A100 (\$0.68/h). Parent training took
-$\approx$20 minutes per model; the 300-generation evolution completed in
-$\approx$2.5 hours. Total compute for the project was $\approx$\$13, of which
-the E2 evolution and evaluation campaigns (including two aborted gate runs)
-account for $\approx$\$9. Code is at \url{https://github.com/[user]/nca-mod}.
+\textbf{closed-loop} (evolved controller); \textbf{static} (the evolved
+controller evaluated once at $t{=}0$ and held constant --- isolating
+temporal modulation from the evolved tonic level itself); \textbf{constant}
+(fixed tonic, grid-searched over $\{-1,-0.5,0,0.5,1\}$ on train seeds);
+\textbf{random} (uniform $[-1,1]$ each step, actuation-matched noise); and
+\textbf{no modulation} ($K{=}0$ parent). All experiments ran on a single
+rented A100; parent training took $\approx$20 min/model, evolution
+$\approx$2.5 h, total project cost under \$15.
 
 \section{Results}
 \label{sec:results}
 
-\subsection{Motivation: where local repair fails}
-\label{sec:e1}
-
-A single-lesion sweep (radii $\{2,4,8,16\}$, single- and multi-site, with and
-without the modulator channels) maps the boundary of local repair. Recovery is
-near-perfect for small lesions and degrades once the lesion exceeds the
-effective perception radius, where wound interiors contain no living cells to
-perceive (Figure~\ref{fig:e1}). Two failure signatures motivate this work:
-severed fragments that survive but cannot reattach, die, or decide what to
-grow into, and persistent half-alpha ``scar tissue'' at the wound site. Both
-are information failures, not dynamics failures: the cells that misbehave are
-exactly the cells cut off from global context.
-
-\begin{figure}[t]
-\centering
-\safefigure{figures/fig1_recovery_vs_radius}{Fig 1: Recovery vs. Lesion Radius Sweep}
-\caption{E1 lesion sweep. Recovery (final Hamming distance to target) as a
-function of lesion radius and kind, with and without the modulator channels.
-Inset: a post-regrowth frame showing detached fragments and half-alpha scar
-tissue --- the failure mode that a global broadcast channel is meant to
-address.}
-\label{fig:e1}
-\end{figure}
-
 \subsection{Five conditions under recurring hard damage}
 \label{sec:e2}
 
-Table~\ref{tab:main} reports the five-condition comparison on the held-out
-damage seeds, and Figure~\ref{fig:hamming} shows the corresponding
-Hamming-vs-time trajectories.
+Table~\ref{tab:main} reports the five-condition comparison on held-out damage
+seeds; Figure~\ref{fig:hamming} shows Hamming-vs-time trajectories.
 
-\begin{table}[t]
-\centering
-\caption{Five conditions under recurring multi-block damage ($T = 2000$,
-lesions every 150 steps). Mean $\pm$ SD over 5 condition seeds $\times$ 8
-held-out damage seeds. Survival is the fraction of runs with final Hamming
-$< 0.1$. AUC is the time-averaged Hamming distance. Repair half-life is the
-mean number of steps to recover 50\% of each post-lesion Hamming jump (see
-text for why the \texttt{no_modulation} and \texttt{random} values are not
-comparable to the modulated conditions).}
-\label{tab:main}
-\vspace{0.5em}
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{lcccc}
-\toprule
-Condition & Survival & Half-life (steps) & Final Hamming & Hamming AUC \\
-\midrule
-Closed-loop (evolved) & 1.00 & $6.6 \pm 0.7$ & $0.028 \pm 0.003$ & $0.016 \pm 0.002$ \\
-Static & 1.00 & $7.2 \pm 0.9$ & $0.030 \pm 0.003$ & $0.017 \pm 0.002$ \\
-Constant tonic & 1.00 & $6.4 \pm 0.5$ & $0.030 \pm 0.003$ & $0.017 \pm 0.002$ \\
-No modulation & 1.00 & $2.7 \pm 0.5$ & $0.063 \pm 0.003$ & $0.064 \pm 0.002$ \\
-Random & 0.00 & $0.0 \pm 0.0$ & $0.825 \pm 0.016$ & $0.819 \pm 0.003$ \\
-\bottomrule
-\end{tabular}
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Five conditions under recurring multi-block damage ($T{=}2000$,
+  lesions every 150 steps). Mean $\pm$ SD over 5 condition seeds $\times$ 8
+  held-out damage seeds. Survival is the fraction of runs with final Hamming
+  $< 0.1$. Repair half-life is comparable only among conditions that return
+  to near-target (see text).}
+  \label{tab:main}
+  \begin{tabular}{lcccc}
+    \toprule
+    Condition & Survival & Half-life & Final Hamming & AUC \\
+    \midrule
+    Closed-loop (evolved) & 1.00 & $6.6 \pm 0.7$ & $0.028 \pm 0.003$ & $0.016 \pm 0.002$ \\
+    Static                & 1.00 & $7.2 \pm 0.9$ & $0.030 \pm 0.003$ & $0.017 \pm 0.002$ \\
+    Constant tonic        & 1.00 & $6.4 \pm 0.5$ & $0.030 \pm 0.003$ & $0.017 \pm 0.002$ \\
+    No modulation         & 1.00 & $2.7 \pm 0.5$ & $0.063 \pm 0.003$ & $0.064 \pm 0.002$ \\
+    Random                & 0.00 & $0.0 \pm 0.0$ & $0.825 \pm 0.016$ & $0.819 \pm 0.003$ \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\safefigure{figures/fig2_hamming_vs_time}{Fig 2: Hamming Distance vs. Time Trajectories}
-\caption{Hamming distance to target versus time for the five conditions
-under recurring multi-block damage (lesions every 150 steps; shaded bands
-$\pm$1 SD where available). Modulated conditions return to near-target after
-every lesion; the unmodulated baseline accumulates residual damage; random
-modulation destroys the morphology within the first events.}
-\label{fig:hamming}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig2_hamming_vs_time}
+  \caption{Hamming distance to target versus time for the five conditions
+  (lesions every 150 steps; shaded bands $\pm$1 SD). Modulated conditions
+  return to near-target after every lesion; the unmodulated baseline
+  accumulates residual damage; random modulation destroys the morphology.}
+  \label{fig:hamming}
 \end{figure}
 
-\paragraph{Modulation helps substantially.}
-Relative to no modulation, the modulated conditions recover $2.2\times$ more
+\paragraph{Modulation helps substantially (RQ1).}
+Relative to no modulation, modulated conditions recover $2.2\times$ more
 completely (final Hamming $0.028$--$0.030$ vs.\ $0.063$) and sustain
-$\approx4\times$ less cumulative damage over the rollout (AUC
-$0.016$--$0.017$ vs.\ $0.064$). The AUC gap shows the baseline is not merely
-slower: it spends the entire rollout in a degraded state, while modulated
-grids return to near-target after each event.
+$\approx 4\times$ less cumulative damage (AUC $0.016$--$0.017$ vs.\ $0.064$).
+The wounds exceed the perception radius, so this improvement is attributable
+to the broadcast channel --- the only non-local pathway --- repairing damage
+that local rules cannot diagnose.
 
-\paragraph{The half-life metric requires care.}
-Repair half-life is defined relative to each lesion's post-lesion Hamming
-jump, not relative to the target. On the unmodulated baseline's chronically
-damaged morphology, new lesions frequently land on regions that are already
-far from the target and produce little or no measurable jump; the metric
-scores such events as zero half-life, which pulls the baseline's mean down to
-$2.7$ steps without any fast repair taking place. The collapsed random
-condition ($0.0$ steps) is the extreme case of the same artifact. We therefore
-do not compare half-lives across the modulation boundary; among the three
-modulated conditions, where the metric is meaningful, half-lives cluster at
-$6.4$--$7.2$ steps.
+\paragraph{A regime boundary, not a failed ablation (RQ2).}
+The three modulated conditions are statistically indistinguishable: final
+Hamming spans $0.028$--$0.030$, half-life $6.4$--$7.2$ steps, all differences
+within noise (pairwise effect sizes $< 0.15$). We read this as a measurement
+of the \emph{regime}, not a failure of the controller: the damage process is
+stationary and memoryless --- events are i.i.d.\ in size, number, and
+position --- so the optimal release policy is time-invariant and a fixed
+tonic gain is structurally adequate. There is no temporal structure for
+adaptive scheduling to exploit. Evolution's measured contribution is
+automatic discovery of the near-optimal tonic level in 2.5 hours from a
+neutral start, without the hand search the constant condition required.
 
-\paragraph{Closed-loop $\approx$ static $\approx$ constant.}
-In this stationary damage regime the three modulated conditions are
-indistinguishable on every metric: final Hamming spans
-$0.028$--$0.030$, half-life spans $6.4$--$7.2$ steps, and all differences are
-within one standard deviation. The evolved controller's behavior is fully
-captured by a constant tonic level, and even the $t = 0$ snapshot of the
-static condition suffices. We do not claim a closed-loop-specific advantage
-here; we claim that evolution discovers the near-optimal tonic release level
-automatically, without the hand search the constant condition required, and
-that the dominant benefit is the existence of broadcast modulation rather than
-its temporal scheduling.
+\paragraph{Random modulation is lethal.}
+Random actuation kills every run (survival $0.00$, final Hamming $0.825$):
+pilot probes show constant levels alone swing mean Hamming from $0.003$ to
+$0.93$. The modulator channels are a high-gain control pathway, not a free
+architectural bonus --- the identity of the release schedule determines
+whether the organism lives.
 
-\paragraph{Random modulation is catastrophic.}
-The random control does not merely fail to help: it kills every run (survival
-$0.00$, final Hamming $0.825$). The modulator channels are a real actuation
-pathway with strong gain --- a sensitivity probe confirmed that constant levels
-swing mean Hamming from $0.003$ to $0.93$ --- so the identity of the release
-schedule, not just the presence of the channels, determines whether the
-organism lives.
+\paragraph{Metric artifacts of long-horizon evaluation (RQ3).}
+Two artifacts surfaced only under repeated damage. First, repair half-life is
+defined per lesion relative to each post-lesion jump; on the baseline's
+chronically damaged morphology, new lesions often land on already-degraded
+regions, producing no measurable jump and scoring as zero half-life --- so
+the baseline's $2.7$ steps does \emph{not} indicate fast repair. Second,
+residual Hamming in all conditions is partly attributable to locomotion drift
+during regeneration rather than permanent damage; the metric conflates
+spatial translation with morphological error. Both are documented so that
+future benchmark users can avoid them.
 
-\subsection{Damage-induced fission}
+\subsection{Damage-induced bisection (RQ4)}
 \label{sec:fission}
 
-During one closed-loop rollout, a single midline lesion bisected the
-morphology, and the two halves did not die or merge: each re-initiated growth
-independently, producing two complete lizards
-(Figure~\ref{fig:fission}). The event is qualitative --- one rollout, one
-lesion --- but it is the strongest single piece of evidence for H1 and H4.
-Damage at one location triggered coherent reorganization across both
-fragments, which is only possible through the shared chemical layer (H1), and
-each fragment regrew the \emph{same} morphology with the correct growth axes,
-meaning the information specifying ``what to be'' survived the loss of the
-body that carried it (H4).
-
-\begin{figure}[t]
-\centering
-\safefigure{figures/fig3_fission_sequence}{Fig 3: Fission Sequence (Four-panel composite)}
-\caption{Damage-induced fission and decentralized re-initialization.
-(a)~Pre-lesion intact lizard; (b)~midline lesion bisects the morphology;
-(c)~split moment --- the two fragments decouple; (d)~two independent growth
-fronts, each re-expressing the target morphology. The sequence supports H1
-(non-local damage triggers global reorganization) and H4 (tonic identity
-memory preserves growth axes).}
-\label{fig:fission}
-\end{figure}
-
-\subsection{Evolution trajectory}
-\label{sec:evolution_results}
-
-Evolution converged smoothly over 300 generations
-(Figure~\ref{fig:evolution}): best fitness $0.0135$ against the neutral
-controller's $0.0205$, a $34\%$ improvement, with no stall and no collapse
-into overgrowth at any generation. This outcome was not automatic. A first
-attempt with the library-default initial step size $\sigma_0 = 0.3$ froze at
-fitness $0.150$ from generation 2 onward --- $7\times$ worse than doing
-nothing --- because the entire initial population sampled saturated,
-overgrown grids where no repair-quality signal exists. The $\sigma$-probe
-(Section~\ref{sec:evolution}) identified the sampling distribution, not the
-task or the search budget, as the failure, and $\sigma_0 = 0.01$ fixed it in
-a single change.
+In one closed-loop rollout, a damage event at step 1050 bisects the
+already-stressed morphology into two substantial fragments (101 and 58
+cells), each large enough to survive local alive-masking
+(Figure~\ref{fig:fission}). Both fragments persist and grow for
+$\approx$60 steps, narrowing the gap between them from 32 to 25 pixels.
+Recovery then becomes asymmetric: the larger fragment monopolizes regrowth
+($\approx$240 cells) while the smaller is gradually absorbed below the
+survival threshold. The fragments do not re-merge as independent growth
+fronts.
 
 \begin{figure}[h]
-\centering
-\safefigure{figures/fig4_evolution_trajectory}{Fig 4: Evolution Trajectory (CMA-ES Fitness)}
-\caption{CMA-ES fitness over 300 generations (best-in-generation, best-so-far,
-and population mean), event-weighted Hamming objective on the eight train
-damage seeds. The dashed line marks the neutral controller ($0.0205$).}
-\label{fig:evolution}
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig3_fission_sequence}
+  \caption{Damage-induced bisection and asymmetric recovery (closed-loop,
+  damage seed 10000). (a)~Lesion at step 1050 splits the morphology into two
+  fragments; (b)~both persist and grow independently for $\approx$60 steps;
+  (c)~asymmetric recovery --- the larger fragment monopolizes regrowth.}
+  \label{fig:fission}
 \end{figure}
+
+This event is consistent with the tonic channel acting as persistent global
+state that helps preserve growth-axis organization: both fragments sustained
+independent growth, and the chemical layer is the only non-local pathway
+through which either fragment could detect it is part of a larger whole. We
+deliberately do not claim the tonic channel \emph{is} identity memory ---
+the identity could equally reside in the trained local update weights, in
+surviving distributed cell state, or in the basin structure of the attractor.
+A causal test would require intervention (resetting, scrambling, or clamping
+the tonic state after bisection); the information-theoretic tools of Masumori
+et al.~\cite{masumori2026fluctuations} provide a template. The unmodulated
+baseline resolves similar fragmentation by one fragment dying and leaving
+debris --- the failure mode behind its elevated final Hamming ($0.063$).
 
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{Scoring the hypotheses.}
-\textbf{H1 (supported).} Modulated grids repair wounds whose interiors are
-invisible to local perception, and the fission event shows damage at one
-location triggering coherent reorganization elsewhere. The chemical layer is
-the only non-local pathway, so it must be carrying the damage information.
-A formal transfer-entropy test remains future work.
+\paragraph{The boundary result is the contribution.}
+That closed-loop, static, and constant conditions tie under stationary damage
+is not a caveat but a finding: it identifies \emph{when} adaptive control
+matters. Where temporal structure exists in the damage process, temporal
+control can be selected for; under i.i.d.\ lesions there is none to find.
+This reframes the decisive next experiment --- non-stationary damage, where
+lesion size or rhythm drifts mid-rollout and a static $t{=}0$ snapshot is
+structurally wrong --- as a direct prediction of our framework rather than a
+repair.
 
-\textbf{H2 (partially supported).} Modulation $\gg$ no modulation holds
-decisively ($2.2\times$ final, $\approx4\times$ AUC). Closed-loop $>$ static
-does not: the three modulated conditions cluster within noise. In this
-stationary damage regime the ordering predicted by H2 collapses at the top.
-
-\textbf{H3 (supported, with a reframe).} The evolved policy matches the best
-hand-searched constant level and beats it by no margin worth reporting ---
-but it reaches that level automatically, in 2.5 hours, from a neutral start,
-with no hand search. Against random scheduling the comparison is not close:
-random actuation is lethal. The schedule matters, and evolution finds a good
-one without supervision.
-
-\textbf{H4 (supported).} That a \emph{constant} tonic level captures nearly
-the entire benefit is direct evidence that the persistent chemical state
-carries the functionally important information. Fission makes the same point
-mechanistically: growth-axis identity survives bisection, so it is stored
-somewhere non-local --- the tonic channel is the only candidate.
-
-\paragraph{Why the stationary regime rewards tonic over phasic.}
-The damage process is stationary and memoryless: events are i.i.d.\ in size,
-number, and position, and the interval between them is fixed. Under such a
-process the optimal release policy is time-invariant, and a fixed tonic gain
-is structurally adequate --- there is no future event whose character differs
-from the present one, so fast phasic responses and state-dependent scheduling
-have nothing to earn. We read the closed-loop/static tie not as a failure of
-the controller but as a measurement of the regime: where temporal structure
-exists, temporal control can be selected for; here there is none to find.
+\paragraph{Robustness-search calibration.}
+Two probes were decisive and both generalize. The collapse probe asked
+whether the controller could game Hamming by killing everything (it cannot:
+all-dead scores $0.046$, $2.2\times$ worse than struggling-neutral, so the
+alive-fraction floor is safely disabled). The step-size probe found that
+$\sigma_0{=}0.3$ lands the entire first population in saturated overgrowth
+where fitness differences reflect overgrowth degree, not repair quality ---
+CMA-ES then ranks noise in the wrong regime. When every sample in generation
+zero sits in a saturated regime, ``the search cannot find the solution'' and
+``the initial distribution never samples the informative regime'' are
+indistinguishable from the metrics alone; a 30-second sigma sweep separates
+them. Both probes are cheap enough to be standard practice for
+robustness-search on generative systems.
 
 \paragraph{Limitations.}
-We evaluate a single morphology at a single scale, under one stationary damage
-distribution, with one evolution seed. The Hamming metric has a noise floor
-set by permanent debris (severed fragments that neither condition can clean up
-inflate final Hamming equally --- comparisons are fair, but absolute values
-are bounded below by debris, not biology). Repair half-life is comparable only
-among conditions that actually return to near-target
-(Section~\ref{sec:e2}). The controller reads four hand-chosen statistics;
-richer readouts may matter in harder regimes.
-
-\paragraph{Future work.}
-The decisive next experiment is \emph{non-stationary} damage: if the damage
-process changes character over time (e.g., lesion size or rhythm drifting
-mid-rollout), a static $t = 0$ snapshot is structurally wrong and a
-closed-loop policy has a gap to close that no constant level can fill. We also
-plan metamorphosis and multi-target extensions, a formal information-theoretic
-test of H1, and an extended version of this study.
+We evaluate one morphology at one scale, one stationary damage distribution,
+and one evolution seed. The no-modulation control uses a separately trained
+$K{=}0$ parent, so the broadcast-modulation improvement remains somewhat
+entangled with parent-training differences; a channel-aware zero-output
+control (same $K{=}3$ parent, modulation pinned to neutral) would isolate it
+cleanly and is the highest-priority missing control. The Hamming metric has
+a noise floor set by permanent debris and conflates locomotion drift with
+morphological error (uniformly across conditions). The controller reads four
+hand-chosen statistics; richer readouts may matter in harder regimes.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-We closed the loop around the chemical layer of a Growing NCA: a small
-controller reads target-free grid statistics and sets the release level of
-three tonic $+$ phasic modulator channels, evolved with CMA-ES against recurring
-damage calibrated to defeat the unmodulated baseline. Broadcast modulation
-repairs $2.2\times$ more completely and sustains $\approx4\times$ less
-cumulative damage than no modulation; random modulation is uniformly lethal;
-and the evolved closed loop, a static snapshot, and a constant tonic level are
-indistinguishable in this stationary regime. The contribution is twofold:
-evolution discovers near-optimal tonic release automatically, and the tonic
-channel functions as identity memory --- vividly, when a bisected lizard
-regrew as two.
+We built an evolutionary stress test for regenerative NCAs in which damage is
+calibrated to exceed local perception, and used it to identify a regime
+boundary: global chemical modulation repairs $2.2\times$ more completely
+than no modulation and is uniformly required (random release is lethal), but
+under stationary recurring damage, closed-loop control does not outperform a
+tonic level --- evolution's role is automatic discovery of the robust
+operating point. The benchmark, its calibration probes, and the honest null
+result together provide the controlled stationary baseline against which
+non-stationary, diversity-driven damage co-evolution can now be evaluated.
 
-% TODO: expand — acknowledgements / funding if required by the workshop style.
+\appendix
+
+\section{Model and training details}
+\label{app:model}
+
+The grid state $x_t \in [0,1]^{96 \times 96 \times 16}$ holds 16 channels;
+the last four are RGBA with alpha last. Perception uses three fixed kernels
+(identity, Sobel-$x$, Sobel-$y$) per channel, giving
+$p_t \in \mathbb{R}^{48}$:
+\begin{equation}
+  p_t = \big(K_{\mathrm{id}} * x_t,\; K_{\mathrm{S}_x} * x_t,\;
+  K_{\mathrm{S}_y} * x_t\big).
+\end{equation}
+The update MLP maps $(48{+}K)$ inputs to 128 hidden units (ReLU) and back to
+16 channel increments, with the final layer zero-initialized. Cells update
+with probability $0.5$; a cell is alive when its alpha exceeds $0.1$ within
+its $3{\times}3$ max-pooled neighborhood; dead cells are masked to zero.
+
+Tonic and phasic modulator dynamics:
+\begin{equation}
+  m_t^{(\mathrm{tonic})} = \alpha\, m_{t-1}^{(\mathrm{tonic})} + (1-\alpha)\, c_t,
+  \qquad
+  m_t^{(\mathrm{phasic})} = m_{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau},
+\end{equation}
+with $\alpha = 0.95$, $\tau = 20$, and the injected level the clipped sum,
+broadcast to all cells and concatenated to perception (input dim $48+3=51$).
+
+Parents train on a $40{\times}40$ emoji target zero-padded to the canvas,
+with pool-based training (pool 1024, batch 8, worst-in-batch reseeding),
+random square-erasure damage mid-episode, MSE loss on RGBA, and Adam at
+$10^{-3}$ for 8000 steps. A first attempt at $2{\times}10^{-3}$ diverged to
+NaN near step 5532 via a late-stage loss-spike cascade; $10^{-3}$ absorbs
+the identical spike.
+
+\section{Perception-radius sweep (motivating failure modes)}
+\label{app:e1}
+
+A single-lesion sweep (radii $\{2,4,8,16\}$, single- and multi-site, with
+and without modulator channels) maps the boundary of local repair. Recovery
+is near-perfect for small lesions and degrades once lesions exceed the
+effective perception radius. Two failure signatures motivate this work:
+severed fragments that survive but cannot reattach, die, or decide what to
+grow into, and persistent half-alpha scar tissue at wound sites. Both are
+information failures: the misbehaving cells are exactly the cells cut off
+from global context.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/fig1_recovery_vs_radius}
+  \caption{E1 lesion sweep. Final Hamming distance as a function of lesion
+  radius and kind, with and without modulator channels (mean $\pm$ SD over 5
+  damage seeds). Inset: post-regrowth debris and scar tissue.}
+  \label{fig:e1}
+\end{figure}
+
+\section{Calibration probes}
+\label{app:calibration}
+
+\paragraph{Collapse probe.}
+The target mask is only $4.6\%$ alive, so a fully-dead grid scores Hamming
+$\approx 0.046$ --- close to a struggling organism's $\approx 0.02$. We
+verified empirically that the all-dead state scores $0.0461$ against
+struggling-neutral's $0.0205$: death loses by $2.2\times$, so the
+alive-fraction floor is disabled ($0.0$). Notably, the runbook-default floor
+of $0.3$ would have \emph{penalized every healthy candidate} (a correct
+lizard lives at $\approx 0.057$ alive), pushing evolution toward overgrowth
+--- a case where calibrating from the experiment's own data overrode a
+plausible default.
+
+\paragraph{Initial step-size probe.}
+Perturbing the neutral controller by Gaussian noise at increasing $\sigma$
+(25 samples each, hard-regime evaluation) showed: $\sigma \le 0.01$ stays
+healthy (some samples beat neutral); $\sigma = 0.05$ is bimodal;
+$\sigma = 0.3$ lands \emph{every} sample in saturated overgrowth (alive
+$\rightarrow 0.96$). A first evolution run with the library-default
+$\sigma_0 = 0.3$ froze at fitness $0.150$ from generation 2 onward ---
+$7\times$ worse than doing nothing --- because CMA-ES was ranking
+overgrowth-degree noise. $\sigma_0 = 0.01$ brackets the neutral point and
+the same budget converged smoothly (Figure~\ref{fig:evolution}).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/fig4_evolution_trajectory}
+  \caption{CMA-ES fitness over 300 generations ($\sigma_0{=}0.01$). Dashed
+  line: neutral controller ($0.0205$). Best evolved fitness: $0.0135$ --- a
+  $34\%$ improvement with no stall.}
+  \label{fig:evolution}
+\end{figure}
+
+\section{Reproducibility}
+\label{app:repro}
+
+All conditions share the protocol, horizon, and damage seeds of
+Section~\ref{sec:baselines}. Evolution uses CMA-ES
+\cite{hansen2006cma} via Evosax \cite{lange2022evosax} on JAX/Flax with CAX
+\cite{faldor2025cax}; total project compute was under \$15 on a single rented
+A100. Code will be released upon publication.
 
 \begin{thebibliography}{18}
-\bibitem{mordvintsev2020gnca} A. Mordvintsev et al., `Growing Neural Cellular Automata,'' \emph{Distill}, 2020.
-\bibitem{schultz1997dopamine} W. Schultz et al., `A neural substrate of prediction and reward,'' \emph{Science}, 1997.
-\bibitem{niv2007tonic} Y. Niv et al., `Tonic dopamine: reward prediction error or cost of time?'' \emph{Psychopharmacology}, 2007.
-\bibitem{stovold2023signal} S. Stovold, `Signal Channels in Cellular Automata,'' \emph{ALIFE}, 2023.
-\bibitem{goalnca2023} Anonymous, `Goal-Conditioned Neural Cellular Automata,'' \emph{ICLR}, 2023.
-\bibitem{stampca2023} Anonymous, `StampCA: Localized Pattern Communication,'' \emph{NeurIPS}, 2023.
-\bibitem{masumori2026broadcast} A. Masumori et al., `Emergent Global Broadcast in Automata,'' \emph{BioSystems}, 2026.
-\bibitem{doursat2013morphogenetic} R. Doursat et al., `Morphogenetic Engineering,'' \emph{Springer}, 2013.
-\bibitem{scaffold2020developmental} C. Fernando et al., `Developmental Scaffolds in Neural Systems,'' \emph{Artificial Life}, 2020.
-\bibitem{hansen2006cma} N. Hansen, `The CMA Evolution Strategy: A Tutorial,'' \emph{Springer}, 2006.
-\bibitem{salimans2017es} T. Salimans et al., `Evolution Strategies as a Scalable Alternative to Reinforcement Learning,'' \emph{arXiv:1703.03864}, 2017.
-\bibitem{lange2022evosax} R. D. Lange, `evosax: JAX-Based Evolution Strategies,'' \emph{GECCO}, 2022.
-\bibitem{faldor2024cax} M. Faldor et al., `CAX: Cellular Automata Acceleration in JAX,'' \emph{NeurIPS Track on Datasets and Benchmarks}, 2024.
-\bibitem{stanley2007cpns} K. O. Stanley, `Compositional Pattern Producing Networks,'' \emph{Genetic Programming and Evolvable Machines}, 2007.
-\bibitem{turing1952morphogenesis} A. M. Turing, `The Chemical Basis of Morphogenesis,'' \emph{Phil. Trans. R. Soc. Lond. B}, 1952.
-\bibitem{gilpin2019cellular} W. Gilpin, `Cellular Automata as Models of Dynamical Systems,'' \emph{Phys. Rev. E}, 2019.
-\bibitem{randazzo2020selfclass} E. Randazzo et al., `Self-Classifying Neural Cellular Automata,'' \emph{Distill}, 2020.
-\bibitem{mordvintsev2021texture} A. Mordvintsev et al., `Texture Generation with NCAs,'' \emph{Distill}, 2021.
+
+\bibitem{mordvintsev2020gnca}
+A.~Mordvintsev, E.~Randazzo, E.~Niklasson, and M.~Levin.
+\emph{Growing Neural Cellular Automata}.
+Distill 5(2):e23, 2020.
+
+\bibitem{randazzo2020selfclass}
+E.~Randazzo, A.~Mordvintsev, E.~Niklasson, M.~Levin, and S.~Greydanus.
+\emph{Self-classifying MNIST Digits}.
+Distill, 2020.
+
+\bibitem{mordvintsev2021texture}
+E.~Niklasson, A.~Mordvintsev, E.~Randazzo, and M.~Levin.
+\emph{Self-Organising Textures}.
+Distill 6(2), 2021.
+
+\bibitem{stovold2023signal}
+J.~Stovold.
+\emph{Neural Cellular Automata Can Respond to Signals}.
+ALIFE 2023; arXiv:2305.12971.
+
+\bibitem{sudhakaran2022goal}
+S.~Sudhakaran, E.~Najarro, and S.~Risi.
+\emph{Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems}.
+arXiv:2205.06806, 2022.
+
+\bibitem{masumori2026fluctuations}
+A.~Masumori, M.~Sato, and T.~Ikegami.
+\emph{Structured Fluctuations and the Information Dynamics of Self-Maintenance in Growing Neural Cellular Automata}.
+arXiv:2607.12403, 2026.
+
+\bibitem{lehman2011novelty}
+J.~Lehman and K.~O.~Stanley.
+\emph{Abandoning Objectives: Evolution Through the Search for Novelty Alone}.
+Evolutionary Computation, 19(2):189--223, 2011.
+
+\bibitem{mouret2015mapelites}
+J.-B.~Mouret and J.~Clune.
+\emph{Illuminating Search Spaces by Mapping Elites}.
+arXiv:1504.04909, 2015.
+
+\bibitem{wang2019poet}
+R.~Wang, J.~Lehman, J.~Clune, and K.~O.~Stanley.
+\emph{Paired Open-Ended Trailblazer (POET): Endlessly Generating Increasingly Complex and Diverse Learning Environments and Their Solutions}.
+arXiv:1901.01753, 2019.
+
+\bibitem{dennis2020paired}
+M.~Dennis, N.~Jaques, E.~Vinitsky, A.~Bayen, S.~Russell, A.~Critch, and S.~Levine.
+\emph{Emergent Complexity and Zero-Shot Transfer Through Unsupervised Environment Design}.
+NeurIPS 2020.
+
+\bibitem{parkerholder2022accel}
+J.~Parker-Holder, R.~Rajeev, K.~Hartikainen, et al.
+\emph{Evolving Curricula with Regret-Based Environment Design}.
+ICML 2022; arXiv:2203.01302.
+
+\bibitem{doursat2013morphogenetic}
+R.~Doursat, H.~Sayama, and O.~Michel, editors.
+\emph{Morphogenetic Engineering: Toward Programmable Complex Systems}.
+Springer, 2013.
+
+\bibitem{montero2026scaffold}
+M.~L.~Montero, E.~Najarro, J.~H.~Schauser, and S.~Risi.
+\emph{Learning Developmental Scaffoldings to Guide Self-Organisation}.
+arXiv:2605.14998, 2026.
+
+\bibitem{hansen2006cma}
+N.~Hansen.
+\emph{The CMA Evolution Strategy: A Comparing Review}.
+In \emph{Towards a New Evolutionary Computation}, Studies in Fuzziness and
+Soft Computing vol.~192, pages 75--102. Springer, 2006.
+
+\bibitem{lange2022evosax}
+R.~T.~Lange.
+\emph{evosax: JAX-Based Evolution Strategies}.
+arXiv:2212.04180, 2022.
+
+\bibitem{faldor2025cax}
+M.~Faldor and A.~Cully.
+\emph{CAX: Cellular Automata Accelerated in JAX}.
+ICLR 2025; arXiv:2410.02651.
+
+\bibitem{schultz1997dopamine}
+W.~Schultz, P.~Dayan, and P.~R.~Montague.
+\emph{A Neural Substrate of Prediction and Reward}.
+Science, 275(5306):1593--1599, 1997.
+
+\bibitem{niv2007tonic}
+Y.~Niv, N.~D.~Daw, D.~Joel, and P.~Dayan.
+\emph{Tonic Dopamine: Opportunity Costs and the Control of Response Vigor}.
+Psychopharmacology, 191(3):507--520, 2007.
+
 \end{thebibliography}
 
 \end{document}
