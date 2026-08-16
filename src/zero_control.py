@@ -82,6 +82,11 @@ def main() -> None:
         ("closed_loop",   cs_k3, 3, "closed_loop", evolved),
         ("no_modulation", cs_k0, 0, "ablated",    None),
     ]
+    # Protocol note: evolve.py's evaluate_conditions uses ONE shared state0,
+    # grown from the K=3 parent, for ALL conditions (no_modulation included —
+    # it begins as a K=3-grown lizard living under K=0 dynamics). Match it
+    # exactly so this control is apples-to-apples with the paper's table.
+    state0 = state0_k3
 
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -89,7 +94,6 @@ def main() -> None:
     print("-" * 78)
     for name, cs_c, K_c, mode, params in conditions:
         eval_fn = make_eval_fn(cfg, target_mask, mode, K_c)
-        state0 = state0_k3 if K_c > 0 else state0_k0
         finals, aucs, hls = [], [], []
         for cond_seed in range(n_cond):
             states = jnp.concatenate([state0[None]] * S)
