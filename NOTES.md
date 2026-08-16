@@ -373,3 +373,58 @@ every sample looks broken, check whether the measuring stick — or the prior �
 is what's broken.
 
 ---
+
+## 2026-08-17 — Seed study verdict: channels-help-parent-training is robust; the evolved controller is parent-locked
+
+**The 3-seed study completed autonomously overnight.** Both automation layers
+worked: the remote self-stop watchdog fired at study completion
+(`{"success": true}`), data survived the stop/restart cycle on /workspace,
+and the local watcher's final pull raced the shutdown — recovery was a
+2-minute restart-and-pull. Total study cost: ~$2.20 (instance stopped itself
+~1.5h in, ahead of the 3.5h deadline).
+
+**Results (final H, per parent seed):**
+
+| seed | zero_output (K=3, m=0) | closed_loop (evolved) | no_modulation (K=0) |
+|------|------------------------|----------------------|---------------------|
+| 0    | 0.029                  | 0.036                | 0.034               |
+| 1    | 0.034                  | **0.249 (surv 0.00)** | 0.177 (surv 0.03)  |
+| 2    | 0.020                  | **0.434 (surv 0.00)** | 0.028               |
+
+**Three findings:**
+
+1. **The robust effect is training-with-channels (3/3 seeds).** The K=3
+   parent with modulation pinned to neutral beats the K=0 parent in every
+   seed. Whatever the channels do, they do it during parent training — the
+   run-time modulation is not needed. "Train with channels, modulate nothing"
+   is the most robust configuration anywhere in this project (survival 1.00
+   in all seeds).
+
+2. **The evolved controller is PARENT-LOCKED.** Transferred to K=3 parents
+   trained identically but from different seeds, the one evolved controller
+   is lethally miscalibrated (survival 0.00 on 2/3). It found an operating
+   point calibrated to its own parent's channel weights — not a policy. This
+   is the most interesting negative result of the project: evolution
+   *appears* to learn modulation, but what it actually learns is a
+   parent-specific constant.
+
+3. **The paper's 2.2x gap was partly parent-luck.** The K=0 baseline itself
+   swings 0.028–0.177 across parent seeds. The gap is real on average
+   (fragile K=0 parents drive it) but the magnitude is parent-seed-dependent
+   and the original single-parent table overstated its reliability.
+
+**Paper implications (pending user decision):** add the zero_output row +
+seed study to Table 1; reframe the contribution from "broadcast modulation
+repairs damage" to (a) channel-aware training yields robust parents, (b)
+evolved policies are parent-locked and transfer lethally, (c) per-parent
+comparisons only. This *strengthens* the stress-test framing — the benchmark
+caught a generalization failure the single-parent eval hid entirely.
+
+**Ops notes for the record:** remote self-stop (instance API key, validated
+with a no-op PUT first) is now the standard pattern for unattended runs —
+Mac-independent, session-independent, bounded worst-case billing. The
+stop-preserved-disk claim is empirically confirmed twice now (Jul 25→30 and
+today's stop/restart cycle). Artifacts: results_local/seed_study_20260816/ +
+experiment_results/20260816_seed_study/ (git).
+
+---
