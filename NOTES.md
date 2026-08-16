@@ -265,3 +265,111 @@ table1_survival_halflife.{csv,md}, 5 rollout GIFs.
 **Cost:** ~$3 today (setup + E2 + eval at $0.68/hr). Project total ~$13.
 
 ---
+
+## 2026-08-16 — Late-session sweep: undocumented findings, framings, and one false conviction
+
+Collected at the end of the writing phase. Things noticed during the runs that
+never made it into an entry at the time.
+
+### 1. The step-5532 spike is a fixed feature of the seed, not an event
+
+The LR 2e-3 run died at step 5532. Checking the LR 1e-3 run's per-step CSV:
+**the same perturbation appears at steps 5531–5532 there too** — it's absorbed
+in a single step instead of cascading. Same seed → same pool/damage sampling →
+the unlucky batch draw is *deterministic*. So the divergence was never "a bad
+thing happened"; the bad thing happens in every run at the same step. The
+divergence was the learning rate amplifying a survivable perturbation. The
+enemy isn't noise — it's noise amplified. (Framing not in the original entry.)
+
+### 2. The Hamming metric is asymmetric ~20:1 against overgrowth — and that's target-dependent
+
+Beyond the ~0.046 saturation cap: on a sparse target, **death can cost at most
+4.6% error, overgrowth up to 95%**. The metric punishes overgrowth roughly 20×
+harder than death. This is why random modulation scores 0.82 and why the
+death-hack never materialized — the guard was never needed *for this target*.
+
+⚠ **Warning for anyone porting the benchmark:** on a dense target (e.g. a
+pattern filling 60% of canvas), the asymmetry collapses toward symmetry and
+the death-hack becomes genuinely viable. The `alive_floor` question we
+resolved empirically (0.0 for a 4.6%-alive target) is only resolved *for this
+target*. Denser morphology ⇒ re-probe before evolving.
+
+### 3. The static condition is quietly doing set-point discovery
+
+We report static ≈ closed-loop as "temporal control buys nothing." But look at
+what static *computes*: the evolved controller reads the freshly grown,
+undamaged grid at t=0 and outputs the tonic level that is then frozen. The
+system **derives its operating point from its own healthy self-model**. That's
+homeostatic set-point discovery — read "what healthy looks like," set the gain
+accordingly. We frame it as a null result; a biology audience might read it as
+the most interesting result in the paper. (Consider for the extended version.)
+
+### 4. Fragment-level selection in the unmodulated run
+
+Observed in the no_modulation GIF (user's eyeball find): the second duplicated
+lizard eventually dies and leaves debris. Framing: under no modulation the
+system resolves "what am I supposed to be?" by **letting one candidate die —
+consensus by execution, the cheapest possible quorum mechanism**, selection
+operating at fragment level rather than cell level. With modulation, both
+fragments survive longer. Too cute for the paper; exactly right for notes.
+
+### 5. Vast.ai CLI: stale-session trap and the `--api-key` bypass (OPERATIONAL)
+
+The CLI silently uses a stale session file — *every* command fails with
+"Session expired," including `tfa send-email` and even after
+`vastai set api-key` with a fresh key. Chicken-and-egg: 2FA needs a session,
+the session needs 2FA. **Fix: pass `--api-key <key>` explicitly on the
+command** — that path bypasses the stale session cache and lets
+`tfa send-email` fire. Cost us ~20 min and nearly blocked an overnight run.
+(Mirrored in VAST.md troubleshooting.)
+
+### 6. Two independent agents, identical diagnosis
+
+The sigma probe (σ=0.3 catastrophic, σ=0.01 brackets neutral) was derived
+independently twice — once by the session agent, once by a second agent after
+a context loss — converging on the same numbers and fix from the same data.
+The probe is robust to *who* runs it. Cheap, decisive, and reproducible-by-
+construction: the profile of a diagnostic worth keeping.
+
+### 7. The cost center was deliberation, not compute
+
+Sigma probe: ~30 s of GPU. Damage calibration: ~85 s. The single largest line
+item in the whole project was the instance **idling at $0.61/hr while we
+discussed options**. Compute was never the bottleneck; deliberation was.
+Budget accordingly: it's cheaper to run three probes than to argue about one.
+
+### 8. The murder that wasn't (full story of the false death-hack conviction)
+
+The afternoon of the sensitivity probe, the constant-tonic grid showed:
+tonic 0.0 → Hamming 0.0026, alive **0.057**; tonic ±0.5 → 0.9. Pattern-match:
+"great score + low alive" = classic RL fitness-hacking signature (agent
+discovers an empty board scores well against a sparse target). The PRD even
+ships a defense (`alive_floor`). Diagnosis announced with real confidence:
+*neutral wins by killing the lizard; enable the floor.*
+
+User pushed back: calibrate the floor from the healthy-state distribution,
+not a runbook menu. Pulled E1 trajectories: the healthy lizard's alive
+fraction, across every radius/seed/step, in **both** conditions, is 0.057.
+
+**The corpse was the healthiest lizard we had.**
+
+The arithmetic that flipped it: target mask is 4.6% alive → a correct lizard
+occupies ~5% of canvas (exactly what the "dead" grid showed) → an actually-
+dead grid scores 0.046, 18× *worse* than 0.0026. Death was never cheap; it was
+expensive. Neutral wasn't cheating — it was the only contestant maintaining
+target size.
+
+**The stakes:** had the floor gone to the runbook's 0.3 that afternoon, every
+healthy candidate would have been fined +2.43 fitness per generation for the
+crime of being the right size, shoving CMA-ES toward overgrowth. Third dead
+E2 run, poisoned by its own guardrail — a defense attacking the organism it
+protects. We'd have spent an evening debugging a self-inflicted sabotage.
+
+**Lesson (twice-earned, see also the sigma probe):** the prior "low alive =
+dead" was imported from dense-target intuition, and the import was wrong.
+Thirty seconds of arithmetic — *what fraction of this canvas should be
+alive?* — is the entire cost of not shipping a self-inflicted failure. When
+every sample looks broken, check whether the measuring stick — or the prior —
+is what's broken.
+
+---

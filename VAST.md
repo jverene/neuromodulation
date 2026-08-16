@@ -78,6 +78,18 @@ vastai --help                       # sanity check
 vastai set api-key PASTE_YOUR_KEY   # from https://cloud.vast.ai/account/cli/
 ```
 
+> **If EVERY command fails with "Session expired" (even with a fresh key):**
+> the CLI is reading a stale cached session file, and this creates a
+> chicken-and-egg — `tfa send-email` needs a live session to send the 2FA
+> code that would create one. **Fix: pass the key explicitly on the command** —
+> `vastai --api-key "$(cat ~/.config/vastai/vast_api_key)" tfa send-email` —
+> the explicit flag bypasses the stale cache and the email fires normally.
+> Then complete login the same way:
+> `vastai --api-key "$(cat ~/.config/vastai/vast_api_key)" tfa login --method-type email --secret <SECRET> -c <CODE>`.
+> (Learned the hard way; cost ~20 min and nearly blocked an overnight run.)
+> Also: 2FA sessions expire between sessions — expect to redo this after a
+> day or two away.
+
 ### Step 2 — find an A100 offer
 
 ```bash
