@@ -46,6 +46,16 @@ urlcolor=navyblue
 \small
 }{
 \end{quote}
+\vspace{1.0em}
+}
+
+% Helper macro to safely handle missing figure assets during compilation
+\newcommand{\safefigure}[2]{%
+\IfFileExists{#1}{%
+\includegraphics[width=\linewidth]{#1}%
+}{%
+\framebox[\linewidth]{\rule{0pt}{3.2cm}\footnotesize\color{gray}\textbf{Placeholder:} #2}%
+}%
 }
 
 \title{Evolutionary Stress Testing of Self-Repair:\\When Does Closed-Loop Modulation Matter?}
@@ -310,7 +320,7 @@ seeds; Figure~\ref{fig:hamming} shows Hamming-vs-time trajectories.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\linewidth]{figures/fig2_hamming_vs_time}
+  \safefigure{figures/fig2_hamming_vs_time}{Fig 2: Hamming Distance vs. Time Trajectories}
   \caption{Hamming distance to target versus time for the five conditions
   (lesions every 150 steps; shaded bands $\pm$1 SD). Modulated conditions
   return to near-target after every lesion; the unmodulated baseline
@@ -371,7 +381,7 @@ fronts.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\linewidth]{figures/fig3_fission_sequence}
+  \safefigure{figures/fig3_fission_sequence}{Fig 3: Bisection and Asymmetric Recovery}
   \caption{Damage-induced bisection and asymmetric recovery (closed-loop,
   damage seed 10000). (a)~Lesion at step 1050 splits the morphology into two
   fragments; (b)~both persist and grow independently for $\approx$60 steps;
@@ -491,7 +501,7 @@ from global context.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\linewidth]{figures/fig1_recovery_vs_radius}
+  \safefigure{figures/fig1_recovery_vs_radius}{Fig 1: Recovery vs. Lesion Radius Sweep}
   \caption{E1 lesion sweep. Final Hamming distance as a function of lesion
   radius and kind, with and without modulator channels (mean $\pm$ SD over 5
   damage seeds). Inset: post-regrowth debris and scar tissue.}
@@ -525,7 +535,7 @@ the same budget converged smoothly (Figure~\ref{fig:evolution}).
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\linewidth]{figures/fig4_evolution_trajectory}
+  \safefigure{figures/fig4_evolution_trajectory}{Fig 4: Evolution Trajectory (CMA-ES Fitness)}
   \caption{CMA-ES fitness over 300 generations ($\sigma_0{=}0.01$). Dashed
   line: neutral controller ($0.0205$). Best evolved fitness: $0.0135$ --- a
   $34\%$ improvement with no stall.}
