@@ -72,28 +72,24 @@ urlcolor=navyblue
 \begin{abstract}
 % TODO(numbers): every [X] filled from analyze_per_parent.py once data lands.
 Regenerative Neural Cellular Automata (NCAs) are usually evaluated on a
-single trained model, leaving robustness claims unable to distinguish what
+single trained model, so robustness claims cannot separate what
 \emph{training} provides from what run-time \emph{control} provides. We
-introduce a robustness-attribution study for regenerative NCAs under
-recurring multi-block damage calibrated to exceed the local perception
-radius, crossing five independently trained parent seeds with four
-conditions: a $K{=}0$ parent; the channel-aware $K{=}3$ parent with
-modulation pinned to neutral; that parent with a controller evolved
-\emph{for it}; and a cross-parent transfer probe carrying a controller
-evolved for a different parent. The comparison is preregistered: the
-primary statistic $\Delta_s = H(\text{zero-output}, s) - H(\text{own
-controller}, s)$ is evaluated per parent seed under fixed outcome criteria.
-Across five parent seeds, channel-aware training [X: E\_train summary],
-evolved controllers [X: E\_ctrl summary], and the transfer probe [X:
-E\_transfer summary]. Controller-output diagnostics show [X: tonic
-calibration / event-locked release policy]. We attribute regeneration
-robustness to [X: component(s)] and show that single-parent evaluation can
-overattribute robustness to closed-loop control that is in fact [X:
-parent-locked / unnecessary / parent-dependent]. The stress-test
-methodology --- adversarial damage calibration, objective-hacking and
-search-initialization probes, parent-seed-resolved attribution --- transfers
-to other self-organizing systems where evaluation robustness must be
-separated from control robustness.
+cross five independently trained parent seeds with four conditions under
+recurring multi-block damage that exceeds the perception radius: a $K{=}0$
+parent; the channel-aware $K{=}3$ parent with modulation pinned to neutral;
+that parent with a controller evolved \emph{for it}; and a cross-parent
+transfer probe. The comparison is preregistered: the primary statistic
+$\Delta_s = H(\text{zero-output}, s) - H(\text{own controller}, s)$ is
+evaluated per seed under fixed criteria. Across five parent seeds,
+channel-aware training [X: E\_train summary], evolved controllers [X:
+E\_ctrl summary], and the transfer probe [X: E\_transfer summary].
+Controller-output diagnostics show [X: tonic calibration / event-locked
+policy]. Single-parent evaluation can therefore overattribute robustness
+to closed-loop control that is in fact [X: parent-locked / unnecessary /
+parent-dependent]. The attribution protocol --- adversarial damage
+calibration, objective-hacking and search-initialization probes, and
+parent-seed-resolved decomposition --- transfers to other self-organizing
+systems.
 \end{abstract}
 
 \section{Introduction}
@@ -101,132 +97,107 @@ separated from control robustness.
 
 Growing Neural Cellular Automata (GNCAs) demonstrate that a single local,
 differentiable update rule can grow a target morphology from a seed and
-regenerate it after damage~\cite{mordvintsev2020gnca}. The regenerative
-capability, however, is bounded by perception: wounds larger than the
-perception radius contain cells with no signal to integrate, and severed
-fragments retain no information about the body they came
-from~\cite{mordvintsev2020gnca}. Prior work, including our own
+regenerate it after damage~\cite{mordvintsev2020gnca}. The capability is
+bounded by perception: wounds larger than the perception radius contain
+cells with no signal to integrate, and severed fragments retain no
+information about the body they came from. Prior work, including our own
 single-parent study (Appendix~\ref{app:singleparent}), adds global
 modulator channels and evolves release policies for them --- and reports
 the result on \emph{one} trained model.
 
-We argue single-model evaluation is structurally unable to answer the
-question it appears to answer. When a modulated NCA outperforms an
-unmodulated one, at least three effects are confounded: (i) the effect of
-\emph{training with channels present} on parent robustness, (ii) the effect
-of \emph{run-time modulation} by a controller evolved for that parent, and
-(iii) how any of it transfers across independently trained parents. Our
-earlier five-condition table (Appendix~\ref{app:singleparent}) found
-closed-loop, static, and constant modulation indistinguishable --- but
-could not tell whether the measured benefit over the unmodulated baseline
-came from the controller or from the parent that happened to be trained
-with channels. A three-parent pilot (Section~\ref{sec:pilot}) then found
-the evolved controller \emph{transfers lethally} to sibling parents while
-zero-output channel parents beat the $K{=}0$ baseline in every seed ---
-evidence that the single-parent table had mis-attributed a parent-training
-effect to closed-loop control.
+Single-model evaluation cannot answer the question it appears to answer.
+When a modulated NCA outperforms an unmodulated one, three effects are
+confounded: (i) \emph{training with channels present}, (ii) \emph{run-time
+modulation} by a controller evolved for that parent, and (iii) transfer
+across independently trained parents. Our earlier five-condition study
+found closed-loop, static, and constant modulation indistinguishable, but
+could not tell whether its benefit over the unmodulated baseline came from
+the controller or from the parent happening to be trained with channels. A
+three-parent pilot (Appendix~\ref{app:pilot}) then found the evolved
+controller \emph{transfers lethally} to sibling parents while zero-output
+channel parents beat the $K{=}0$ baseline in every seed --- the single-
+parent table had mis-attributed a parent-training effect to closed-loop
+control.
 
 This paper resolves the attribution with a preregistered five-parent-seed
-study. For each parent seed $s \in \{0,\dots,4\}$ we train $K{=}0$ and
+study. For each seed $s \in \{0,\dots,4\}$ we train $K{=}0$ and
 channel-aware $K{=}3$ parents from scratch, evolve a controller \emph{on
 that parent}, and evaluate four conditions on held-out damage seeds:
-\begin{center}
-\begin{tabular}{ll}
-\textbf{Condition} & \textbf{Isolates} \\
-$H(K{=}0, s)$ & the plain parent \\
-$H(K{=}3, m{=}0, s)$ & channel-aware training, no run-time modulation \\
-$H(K{=}3, \text{own ctrl}, s)$ & $+$ evolution on this parent \\
-$H(K{=}3, \text{July ctrl}, s)$ & cross-parent transfer probe \\
-\end{tabular}
-\end{center}
-The primary statistic, interpretation thresholds, and all three paper
-outcomes were fixed before data collection (Section~\ref{sec:design}); the
-preregistration and the analysis script are in the repository history,
-timestamped before the runs.
+$H(K{=}0,s)$, $H(K{=}3,m{=}0,s)$, $H(K{=}3,\text{own ctrl},s)$, and a
+cross-parent transfer probe $H(K{=}3,\text{July ctrl},s)$. The primary
+statistic, thresholds, and all three paper outcomes were fixed before data
+collection (Section~\ref{sec:design}); the preregistration and analysis
+script are in the repository history, timestamped before the runs.
 
 \paragraph{Contributions.}
 \begin{enumerate}
-  \item A robustness-attribution protocol for regenerative NCAs: adversarial
-        recurring damage calibrated to exceed perception, crossed with
-        parent-seed variation, under a preregistered effect decomposition
-        ($E_{\mathrm{train}}$, $E_{\mathrm{ctrl}}$, $E_{\mathrm{transfer}}$).
-  \item The attribution result: [X: outcome A/B/C one-liner].
-  \item A cross-parent transfer probe showing evolved controllers are [X:
-        parent-locked and lethal under transfer / --- ], plus
-        controller-output diagnostics distinguishing [X: tonic calibration
-        from event-locked policy].
-  \item Reusable stress-test calibration probes (objective-hacking and
-        search-initialization) that make the evolution landscape
+  \item A preregistered robustness-attribution protocol for regenerative
+        NCAs: adversarial damage calibrated to exceed perception, crossed
+        with parent-seed variation, decomposed into
+        $E_{\mathrm{train}}$, $E_{\mathrm{ctrl}}$, $E_{\mathrm{transfer}}$,
+        with calibration probes that make the evolution landscape
         interpretable (Appendix~\ref{app:calibration}).
+  \item The attribution result: [X: outcome A/B/C one-liner], with
+        controller-output diagnostics showing [X: tonic calibration /
+        event-locked policy] and a transfer probe showing evolved
+        controllers are [X: parent-locked / ---].
 \end{enumerate}
 
 \section{Related Work}
 \label{sec:related}
 
 \paragraph{Neural cellular automata.}
-GNCAs grow target patterns from a seed and regenerate after localized
-damage~\cite{mordvintsev2020gnca}; follow-ups extend the model to
-self-classification~\cite{randazzo2020selfclass} and learned
-textures~\cite{mordvintsev2021texture}. All rely on purely local
-perception, and regeneration degrades for lesions beyond the perception
-radius --- the regime our benchmark exploits.
-Stovold~\cite{stovold2023signal} adds signal channels through which cells
-release and sense chemicals; Sudhakaran et
-al.~\cite{sudhakaran2022goal} condition updates on a fixed goal embedding;
-Masumori et al.~\cite{masumori2026fluctuations} analyze damage recovery
-with transfer entropy and partial information decomposition. In all of
-these the signal is a fixed input or emergent byproduct, never a
-controlled output optimized against damage. Our study asks the prior
-question: when such a channel \emph{appears} to help, what is actually
-helping?
+GNCAs grow patterns from a seed and regenerate after
+damage~\cite{mordvintsev2020gnca}, with extensions to
+self-classification~\cite{randazzo2020selfclass} and
+textures~\cite{mordvintsev2021texture}. All rely on local perception, and
+regeneration degrades beyond the perception radius --- the regime our
+benchmark exploits. Signal channels~\cite{stovold2023signal}, goal
+conditioning~\cite{sudhakaran2022goal}, and information-dynamical analyses
+of self-maintenance~\cite{masumori2026fluctuations} all treat the signal
+as fixed input or emergent byproduct, never a controlled output. We ask
+the prior question: when such a channel \emph{appears} to help, what is
+actually helping?
 
 \paragraph{Search over evaluation regimes.}
 Our design follows the insight, central to novelty
 search~\cite{lehman2011novelty} and quality-diversity
-optimization~\cite{mouret2015mapelites}, that a single fixed objective can
+optimization~\cite{mouret2015mapelites}, that a fixed objective can
 misdirect search and hide failure modes. Environment-generation methods
 co-evolve challenges with solutions:
 POET~\cite{wang2019poet}, PAIRED~\cite{dennis2020paired},
 ACCEL~\cite{parkerholder2022accel}. Our benchmark does not yet evolve the
-damage distribution; it is the controlled stationary baseline against which
-such co-evolution can be judged. Morphogenetic
-engineering~\cite{doursat2013morphogenetic} and developmental
-scaffolding~\cite{montero2026scaffold} treat the grown structure as
-substrate; our attribution question --- training versus control --- is the
-scaffold-versus-dynamics credit assignment problem in miniature.
+damage distribution; it is the controlled stationary baseline against
+which such co-evolution can be judged.
 
 \section{Experimental design}
 \label{sec:design}
 
 \paragraph{Damage regime.}
 Recurring multi-block lesions: every 150 steps, $n{=}4$ contiguous
-axis-aligned $16{\times}16$ blocks are cut at seeded positions, for
-$T{=}2000$ steps (13 events). A 16-cell side exceeds the perception
-radius, so wound interiors contain no living neighbors --- the
-information-isolation regime mapped by our lesion sweep
-(Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution; held-out seeds
-10000--10007 drive every reported number. The schedule is deliberately
-adversarial: a milder disc schedule was solved trivially by the
-unmodulated baseline, stalling evolution
-(Appendix~\ref{app:calibration}).
+$16{\times}16$ blocks are cut at seeded positions, for $T{=}2000$ steps.
+A 16-cell side exceeds the perception radius, so wound interiors contain
+no living neighbors --- the information-isolation regime mapped by our
+lesion sweep (Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution;
+held-out seeds 10000--10007 drive every reported number. The schedule is
+deliberately adversarial: a milder disc schedule was solved trivially by
+the unmodulated baseline (Appendix~\ref{app:calibration}).
 
 \paragraph{Parents and controllers.}
-Per parent seed $s$: a $K{=}0$ parent and a channel-aware $K{=}3$ parent,
-trained from scratch (8000 steps, LR $10^{-3}$; the $2{\times}10^{-3}$
-variant diverges at a deterministic late-stage spike,
-Appendix~\ref{app:model}). The $K{=}3$ parent carries three global
-modulator channels (tonic EMA $\alpha{=}0.95$, phasic decay $\tau{=}20$)
---- the only non-local pathway. A 259-parameter controller
-($4{\to}32{\to}3$, $\tanh$) reads four target-free grid statistics and sets
-channel release every 10 steps. For each parent we evolve its own
-controller with CMA-ES~\cite{hansen2006cma} via
+Per seed $s$: a $K{=}0$ and a channel-aware $K{=}3$ parent, trained from
+scratch (8000 steps, LR $10^{-3}$; Appendix~\ref{app:model}). The $K{=}3$
+parent carries three global modulator channels --- the only non-local
+pathway. A 259-parameter controller ($4{\to}32{\to}3$, $\tanh$) reads four
+target-free grid statistics and sets release every 10 steps. For each
+parent we evolve its own controller with CMA-ES~\cite{hansen2006cma} via
 Evosax~\cite{lange2022evosax} (population 64, $\sigma_0{=}0.01$, 300
-generations, event-weighted Hamming objective; Appendix~\ref{app:evolution}).
+generations, event-weighted Hamming objective;
+Appendix~\ref{app:evolution}).
 
 \paragraph{Preregistered comparison.}
-All four conditions run on the same held-out damage seeds (5 condition
-seeds $\times$ 8 damage seeds) from a shared $t{=}0$ state grown by the
-$K{=}3$ parent. The primary statistic is
+All conditions run on the same held-out damage seeds (5 condition seeds
+$\times$ 8 damage seeds) from a shared $t{=}0$ state grown by the $K{=}3$
+parent. The primary statistic is
 \begin{equation}
   \Delta_s \;=\; H(K{=}3, m{=}0, s) \;-\; H(K{=}3, \text{own controller}, s),
   \label{eq:delta}
@@ -237,10 +208,9 @@ before data collection: \emph{controller effect supported} if $\Delta_s >
 \emph{channel-training effect supported} if $H(K0,s) - H(m0,s) > 0$ in
 $\geq 4/5$; \emph{transfer failure supported} if the July controller
 underperforms the own-controller substantially in $\geq 4/5$. Effects are
-reported per seed with median and range; with five parent seeds we make no
-significance claims. Controller-output ($m_t$) series are recorded for
-every evolved controller to distinguish tonic calibration from
-event-locked policy (Section~\ref{sec:mt}).
+reported per seed with median and range; we make no significance claims
+at five seeds. Controller-output ($m_t$) series distinguish tonic
+calibration from event-locked policy (Section~\ref{sec:mt}).
 
 \section{Results}
 \label{sec:results}
@@ -251,9 +221,8 @@ event-locked policy (Section~\ref{sec:mt}).
 \begin{table}[h]
   \centering
   \small
-  \caption{Final Hamming distance (mean $\pm$ SD over 5 condition seeds
-  $\times$ 8 held-out damage seeds) for four conditions across five parent
-  seeds, hard recurring multi-block damage, $T{=}2000$.}
+  \caption{Final Hamming (mean $\pm$ SD, 5 condition seeds $\times$ 8
+  held-out damage seeds) across five parent seeds.}
   \label{tab:attribution}
   \begin{tabular}{lcccc}
     \toprule
@@ -276,11 +245,10 @@ event-locked policy (Section~\ref{sec:mt}).
 \begin{table}[h]
   \centering
   \small
-  \caption{Per-seed effect decomposition. $E_{\mathrm{train},s} =
-  H(K0,s) - H(m0,s)$ (channel-aware training); $\Delta_s =
-  E_{\mathrm{ctrl},s} = H(m0,s) - H(\text{own},s)$ (preregistered
-  primary); $E_{\mathrm{transfer},s} = H(\text{July},s) - H(\text{own},s)$
-  (transfer-probe penalty). Positive favors the named component.}
+  \caption{Per-seed effects. $E_{\mathrm{train}}{=}H(K0)-H(m0)$;
+  $\Delta_s{=}H(m0)-H(\text{own})$ (preregistered primary);
+  $E_{\mathrm{transfer}}{=}H(\text{July})-H(\text{own})$. Positive favors
+  the named component.}
   \label{tab:effects}
   \begin{tabular}{lccc}
     \toprule
@@ -310,18 +278,6 @@ drift --- with the pre-committed wording: \emph{parent-specific tonic
 calibration} / \emph{event-locked release policy} / \emph{state-dependent
 policy, scheduling unnecessary in this regime}.]
 
-\subsection{Pilot: single-parent evaluation hides parent-locking}
-\label{sec:pilot}
-
-A three-parent pilot (2026-08-16) first exposed the confound. The
-single-parent controller from our original five-condition study
-transferred lethally to two of three sibling parents (survival $0.00$,
-final Hamming $0.249$ and $0.434$), while zero-output channel parents beat
-the $K{=}0$ baseline in $3/3$ seeds (final Hamming $0.029/0.034/0.020$ vs
-$0.034/0.177/0.028$). The original table's headline gap was therefore part
-parent-training effect and part parent-seed luck --- motivating the full
-attribution study.
-
 \section{Discussion}
 \label{sec:discussion}
 
@@ -337,36 +293,43 @@ dynamics, but neither the learned policy nor its benefit reliably
 transfers.]
 
 \paragraph{Why cross-parent transfer fails.}
-The transfer probe is a probe, not a full transfer study: one donor
-controller, five recipients. A full study would evolve controllers for all
-five parents and test every donor--recipient pair. Even so, the observed
-[X: lethal transfer] is structural: each controller's output is calibrated
-against its own parent's channel weights, so the same release level drives
-different dynamics in a sibling. Evolution found [X: an operating point /
-a policy] for one organism, not a modulation law.
+The transfer probe uses one donor controller, five recipients --- a probe,
+not a full transfer study (which would test every donor--recipient pair).
+Even so, the observed [X: lethal transfer] is structural: each
+controller's output is calibrated against its own parent's channel
+weights, so the same release level drives different dynamics in a sibling.
+Evolution found [X: an operating point / a policy] for one organism, not a
+modulation law.
 
-\paragraph{Limitations.}
-Five parent seeds; one controller evolution per parent; one morphology at
-one scale; one stationary damage family; transfer probed with a single
-donor. Repair half-life is comparable only among conditions that return to
-near-target; Hamming conflates locomotion drift with morphological error,
-uniformly across conditions.
-
-\paragraph{Future work.}
-Multi-parent (population-based) evolution; full donor--recipient transfer
-matrices; non-stationary and diversity-driven damage co-evolution, for
-which this benchmark is the controlled stationary baseline.
+\paragraph{Limitations and future work.}
+Five parent seeds; one controller evolution per parent; one morphology;
+one stationary damage family; transfer probed with a single donor. Repair
+half-life is comparable only among conditions that return to near-target;
+Hamming conflates locomotion drift with morphological error uniformly.
+Next: multi-parent (population-based) evolution; full transfer matrices;
+non-stationary, diversity-driven damage co-evolution, for which this
+benchmark is the controlled baseline.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-[X: three to four sentences matching the outcome.] The broader
-contribution is methodological: robustness claims about self-organizing
-systems should be attributed across model seeds, not only damage seeds ---
-single-parent evaluation can assign to closed-loop control what is
-actually a property of training.
+[X: two to three sentences matching the outcome.] The broader contribution
+is methodological: robustness claims about self-organizing systems should
+be attributed across model seeds, not only damage seeds.
 
 \appendix
+
+\section{Pilot: single-parent evaluation hides parent-locking}
+\label{app:pilot}
+
+A three-parent pilot (2026-08-16) first exposed the confound. The
+single-parent controller from our original five-condition study
+transferred lethally to two of three sibling parents (survival $0.00$,
+final Hamming $0.249$ and $0.434$), while zero-output channel parents beat
+the $K{=}0$ baseline in $3/3$ seeds (final Hamming $0.029/0.034/0.020$ vs
+$0.034/0.177/0.028$). The original table's headline gap was therefore part
+parent-training effect and part parent-seed luck --- motivating the full
+attribution study.
 
 \section{Model and training details}
 \label{app:model}
