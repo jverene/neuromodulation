@@ -173,23 +173,19 @@ which such co-evolution can be judged.
 \section{Experimental design}
 \label{sec:design}
 
-\paragraph{Damage regime.}
-Recurring multi-block lesions: every 150 steps, $n{=}4$ contiguous
-$16{\times}16$ blocks are cut at seeded positions, for $T{=}2000$ steps.
-A 16-cell side exceeds the perception radius, so wound interiors contain
-no living neighbors --- the information-isolation regime mapped by our
-lesion sweep (Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution;
-held-out seeds 10000--10007 drive every reported number. The schedule is
-deliberately adversarial: a milder disc schedule was solved trivially by
-the unmodulated baseline (Appendix~\ref{app:calibration}).
-
-\paragraph{Parents and controllers.}
-Per seed $s$: a $K{=}0$ and a channel-aware $K{=}3$ parent, trained from
-scratch (8000 steps, LR $10^{-3}$; Appendix~\ref{app:model}). The $K{=}3$
-parent carries three global modulator channels --- the only non-local
-pathway. A 259-parameter controller ($4{\to}32{\to}3$, $\tanh$) reads four
-target-free grid statistics and sets release every 10 steps. For each
-parent we evolve its own controller with CMA-ES~\cite{hansen2006cma} via
+\paragraph{Damage regime and parents.}
+Recurring multi-block lesions --- every 150 steps, $n{=}4$ contiguous
+$16{\times}16$ blocks at seeded positions, $T{=}2000$ --- exceed the
+perception radius, so wound interiors have no living neighbors (the
+information-isolation regime mapped in Appendix~\ref{app:e1}). Damage
+seeds 0--7 drive evolution; held-out seeds 10000--10007 drive all
+reported numbers; the schedule is deliberately adversarial
+(Appendix~\ref{app:calibration}). Per seed $s$ we train a $K{=}0$ and a
+channel-aware $K{=}3$ parent from scratch (Appendix~\ref{app:model}); the
+$K{=}3$ parent's three global modulator channels are the only non-local
+pathway. A 259-parameter controller ($4{\to}32{\to}3$, $\tanh$) reads
+four target-free grid statistics and sets release every 10 steps; each
+parent gets its own controller via CMA-ES~\cite{hansen2006cma} in
 Evosax~\cite{lange2022evosax} (population 64, $\sigma_0{=}0.01$, 300
 generations, event-weighted Hamming objective;
 Appendix~\ref{app:evolution}).
@@ -210,37 +206,14 @@ $\geq 4/5$; \emph{transfer failure supported} if the July controller
 underperforms the own-controller substantially in $\geq 4/5$. Effects are
 reported per seed with median and range; we make no significance claims
 at five seeds. Controller-output ($m_t$) series distinguish tonic
-calibration from event-locked policy (Section~\ref{sec:mt}).
+calibration from event-locked policy (Appendix~\ref{app:mt}).
 
 \section{Results}
 \label{sec:results}
 
-\subsection{Four conditions across five parent seeds}
-\label{sec:main}
-
-\begin{table}[h]
-  \centering
-  \small
-  \caption{Final Hamming (mean $\pm$ SD, 5 condition seeds $\times$ 8
-  held-out damage seeds) across five parent seeds.}
-  \label{tab:attribution}
-  \begin{tabular}{lcccc}
-    \toprule
-    Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & $K{=}3$, own ctrl & $K{=}3$, July ctrl \\
-    \midrule
-    0 & [X] & [X] & [X] & [X] \\
-    1 & [X] & [X] & [X] & [X] \\
-    2 & [X] & [X] & [X] & [X] \\
-    3 & [X] & [X] & [X] & [X] \\
-    4 & [X] & [X] & [X] & [X] \\
-    \midrule
-    median & [X] & [X] & [X] & [X] \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsection{Effect decomposition}
-\label{sec:effects}
+Table~\ref{tab:effects} reports the preregistered decomposition; the full
+per-seed, per-condition numbers behind it are in
+Appendix~\ref{app:rawtables}.
 
 \begin{table}[h]
   \centering
@@ -269,14 +242,11 @@ calibration from event-locked policy (Section~\ref{sec:mt}).
 [X: apply the preregistered rule mechanically; state outcome A/B/C using
 the pre-committed wording verbatim.]
 
-\subsection{What the controller actually emits}
-\label{sec:mt}
-
-[X: $m_t$ diagnostics per controller --- within-rollout std, correlation
-with a post-lesion indicator, $|\Delta m|$ at lesion steps vs baseline
-drift --- with the pre-committed wording: \emph{parent-specific tonic
-calibration} / \emph{event-locked release policy} / \emph{state-dependent
-policy, scheduling unnecessary in this regime}.]
+\paragraph{What the controller actually emits.}
+[X: $m_t$ diagnostics --- near-constant release $\Rightarrow$
+\emph{parent-specific tonic calibration}; event-locked changes $\Rightarrow$
+\emph{release policy} (with one-sentence per-controller summary;
+full series and diagnostics in Appendix~\ref{app:mt}).]
 
 \section{Discussion}
 \label{sec:discussion}
@@ -318,6 +288,41 @@ is methodological: robustness claims about self-organizing systems should
 be attributed across model seeds, not only damage seeds.
 
 \appendix
+
+\section{Full per-seed, per-condition results}
+\label{app:rawtables}
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Final Hamming (mean $\pm$ SD, 5 condition seeds $\times$ 8
+  held-out damage seeds) for four conditions across five parent seeds,
+  hard recurring multi-block damage, $T{=}2000$.}
+  \label{tab:attribution}
+  \begin{tabular}{lcccc}
+    \toprule
+    Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & $K{=}3$, own ctrl & $K{=}3$, July ctrl \\
+    \midrule
+    0 & [X] & [X] & [X] & [X] \\
+    1 & [X] & [X] & [X] & [X] \\
+    2 & [X] & [X] & [X] & [X] \\
+    3 & [X] & [X] & [X] & [X] \\
+    4 & [X] & [X] & [X] & [X] \\
+    \midrule
+    median & [X] & [X] & [X] & [X] \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+[X: AUC columns and survival per condition from analyze\_per\_parent.py;
+condition-trajectories CSVs referenced.]
+
+\section{Controller-output ($m_t$) diagnostics}
+\label{app:mt}
+
+[X: per-controller table --- within-rollout std of $m_t$, correlation with
+post-lesion indicator, $|\Delta m|$ at lesion steps vs baseline drift ---
+plus the one-line tonic/policy verdict per seed.]
 
 \section{Pilot: single-parent evaluation hides parent-locking}
 \label{app:pilot}
