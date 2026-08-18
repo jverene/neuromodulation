@@ -18,3 +18,12 @@ s2/own_controller.pkl captured 12:29
 s0/own_controller.pkl captured 12:36
 s1/own_controller.pkl captured 12:37
 s2/own_controller.pkl captured 12:37
+s0/own_controller.pkl captured 12:44
+s1/own_controller.pkl captured 12:45
+s2/own_controller.pkl captured 12:45
+s3/own_zero_control.csv captured 12:46
+s3/transfer_zero_control.csv captured 12:46
+s3/m_series.csv captured 12:46
+s3/own_controller.pkl captured 12:46
+s3/evolve_metrics.csv captured 12:46
+s3/condition_metrics.csv captured 12:46
