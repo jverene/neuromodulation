@@ -475,8 +475,8 @@ where $\tau_{\mathrm{last}}(t)$ is the most recent lesion step and
 $\tau_w = 150/3 = 50$. The recency kernel resets at each lesion, so slow
 repair is expensive even when endpoint Hamming is identical --- it
 de-saturates the metric and prices repair speed directly. Fitness is not the
-reported metric: Section~\ref{sec:e2} reports unweighted trajectory
-statistics on held-out seeds. Two calibration controls make this landscape
+reported metric: all results report unweighted trajectory statistics
+on held-out seeds. Two calibration controls make this landscape
 interpretable --- a collapse probe (verifying the objective cannot be gamed
 by alpha suppression) and an initial step-size ablation (showing
 $\sigma_0{=}0.3$ saturates the first population in overgrowth where no
