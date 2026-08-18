@@ -428,3 +428,38 @@ today's stop/restart cycle). Artifacts: results_local/seed_study_20260816/ +
 experiment_results/20260816_seed_study/ (git).
 
 ---
+
+## 2026-08-18 — Per-parent study verdict (preregistered, 5/5 seeds)
+
+**Outcome C, mechanically applied.** Full data + official analysis output in
+`experiment_results/20260817_per_parent/` (README + ANALYSIS_OFFICIAL.txt).
+
+- **E_train: 5/5 positive — channel-training effect SUPPORTED.** Zero-output
+  channel parents beat K=0 siblings in every seed; largest where the K=0
+  parent is fragile (s1: 0.179→0.039). Channels matter as a developmental
+  scaffold, not a control surface.
+- **Δ_s: OUTCOME C** — 3/5 positive, median +0.0013, every |Δ_s| an order
+  of magnitude below per-run SD. Honest reading: no noise-exceeding
+  controller benefit in ANY seed. The strong hypothesis is dead.
+- **E_transfer: 5/5 penalty — transfer failure SUPPORTED.** Mild on s0/s4,
+  severe on s3 (survival 0.45), lethal on s1/s2 (survival 0.00). One donor,
+  five recipients = a probe, not a transfer study.
+- **m_t: 5/5 TONIC CALIBRATION.** Flat output (std 0.002–0.004), no
+  lesion-locked response, jump=drift. Evolution learns parent-specific
+  constants, not policies.
+
+**What this means:** the paper's original claim inverts — robustness comes
+from channel-aware training; evolved control adds nothing measurable and
+transfers lethally. The single-parent study was structurally blind to all
+three facts. Paper filled with outcome C (`01c224e`); zero placeholders.
+
+**Ops postscript:** host ran 2.2× slower than July's (66 vs 30 s/gen —
+cheapest-offer lesson: check dlperf, not just price); one ~6-min network
+outage survived cleanly; final self-stop fired at 10:29 UTC; queued-restart
+recovery pulled the last two files and re-stopped in seconds. Total ~$20.
+The old local watcher's stop-on-unreachable was a real hazard (only the
+expired 2FA session prevented it stopping a healthy mid-study instance);
+v4 fixed it — remote self-stop owns billing, local never stops on
+unreachable.
+
+---
