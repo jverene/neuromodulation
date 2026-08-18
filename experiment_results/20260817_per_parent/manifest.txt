@@ -27,3 +27,7 @@ s3/m_series.csv captured 12:46
 s3/own_controller.pkl captured 12:46
 s3/evolve_metrics.csv captured 12:46
 s3/condition_metrics.csv captured 12:46
+s0/own_controller.pkl captured 12:52
+s1/own_controller.pkl captured 12:53
+s2/own_controller.pkl captured 12:53
+s3/own_controller.pkl captured 12:54
