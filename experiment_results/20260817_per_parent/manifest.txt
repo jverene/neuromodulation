@@ -9,3 +9,6 @@ s2/own_controller.pkl captured 12:05
 s0/own_controller.pkl captured 12:11
 s1/own_controller.pkl captured 12:12
 s2/own_controller.pkl captured 12:13
+s0/own_controller.pkl captured 12:19
+s1/own_controller.pkl captured 12:20
+s2/own_controller.pkl captured 12:21
