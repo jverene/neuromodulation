@@ -1,0 +1,39 @@
+============================================================================================
+PER-PARENT EFFECT DECOMPOSITION (preregistered analysis — script committed before results)
+============================================================================================
+
+seed 0:
+  H: K0=0.0343  m=0=0.0291  own=0.0277  july=0.0361
+  E_train=+0.0053 (channels help)   E_ctrl(Delta_s)=+0.0013 (controller helps)   E_transfer=+0.0083 (transfer penalty)
+
+seed 1:
+  H: K0=0.1790  m=0=0.0390  own=0.0306  july=0.2495
+  E_train=+0.1400 (channels help)   E_ctrl(Delta_s)=+0.0084 (controller helps)   E_transfer=+0.2189 (transfer penalty)
+
+seed 2:
+  H: K0=0.0288  m=0=0.0210  own=0.0211  july=0.4340
+  E_train=+0.0077 (channels help)   E_ctrl(Delta_s)=-0.0001 (controller does not help)   E_transfer=+0.4129 (transfer penalty)
+
+seed 3:
+  H: K0=0.0467  m=0=0.0328  own=0.0339  july=0.1004
+  E_train=+0.0139 (channels help)   E_ctrl(Delta_s)=-0.0011 (controller does not help)   E_transfer=+0.0665 (transfer penalty)
+
+seed 4:
+  H: K0=0.0439  m=0=0.0365  own=0.0323  july=0.0411
+  E_train=+0.0074 (channels help)   E_ctrl(Delta_s)=+0.0042 (controller helps)   E_transfer=+0.0088 (transfer penalty)
+
+--------------------------------------------------------------------------------------------
+sign consistency: E_ctrl>0 in 3/5   E_train>0 in 5/5   E_transfer>0 in 5/5
+  E_train: median +0.0077  mean +0.0349  range [+0.0053, +0.1400]
+  E_ctrl: median +0.0013  mean +0.0025  range [-0.0011, +0.0084]
+  E_transfer: median +0.0665  mean +0.1431  range [+0.0083, +0.4129]
+
+PREREGISTERED OUTCOME:
+  OUTCOME C: mixed parent effects (3/5) — controller efficacy is parent-dependent
+
+M_t WORDING DIAGNOSTICS (per own-controller):
+  seed 0: std(m)=0.0020  corr(m,post-lesion)=-0.17  |Δm|@lesions=0.0006 vs drift=0.0006  -> parent-specific TONIC CALIBRATION
+  seed 1: std(m)=0.0031  corr(m,post-lesion)=+0.03  |Δm|@lesions=0.0010 vs drift=0.0010  -> parent-specific TONIC CALIBRATION
+  seed 2: std(m)=0.0035  corr(m,post-lesion)=-0.14  |Δm|@lesions=0.0012 vs drift=0.0011  -> parent-specific TONIC CALIBRATION
+  seed 3: std(m)=0.0026  corr(m,post-lesion)=-0.13  |Δm|@lesions=0.0008 vs drift=0.0008  -> parent-specific TONIC CALIBRATION
+  seed 4: std(m)=0.0029  corr(m,post-lesion)=+0.05  |Δm|@lesions=0.0010 vs drift=0.0009  -> parent-specific TONIC CALIBRATION
