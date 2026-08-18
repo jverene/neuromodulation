@@ -187,3 +187,11 @@ s0/own_controller.pkl captured 18:13
 s1/own_controller.pkl captured 18:14
 s2/own_controller.pkl captured 18:15
 s3/own_controller.pkl captured 18:15
+s0/own_controller.pkl captured 18:22
+s1/own_controller.pkl captured 18:22
+s2/own_controller.pkl captured 18:23
+s3/own_controller.pkl captured 18:23
+s4/own_zero_control.csv captured 18:24
+s4/own_controller.pkl captured 18:24
+s4/evolve_metrics.csv captured 18:24
+s4/condition_metrics.csv captured 18:24
