@@ -58,12 +58,11 @@ urlcolor=navyblue
 }%
 }
 
-\title{Robustness Attribution in Regenerative Neural Cellular\\Automata: Training, Modulation, and Cross-Parent Transfer}
-% NOTE(outcome-dependent alternates, choose after results):
-% A: Evolutionary Modulation Improves Parent-Specific Robustness but Fails
-%    to Transfer Across Neural Cellular Automata
-% B: Channel-Aware Training, Not Closed-Loop Control, Drives Robust
-%    Regeneration in Neural Cellular Automata
+\title{Channel-Aware Training Improves Regenerative Neural Cellular\\Automata, but Evolved Modulation Is Parent-Locked}
+% Title policy (reviewer-agreed): keep the safer title above unless the
+% evolution-seed defense study confirms the pattern; then switch to the
+% stronger "Channel-Aware Training, Not Closed-Loop Control, Drives
+% Robust Regeneration in Neural Cellular Automata".
 
 \begin{document}
 
@@ -245,35 +244,42 @@ Appendix~\ref{app:rawtables}.
 
 \paragraph{Outcome.}
 Applying the preregistered rule: the \emph{channel-training effect is
-supported} ($E_{\mathrm{train}}>0$ in 5/5 seeds; bar was $\geq$4/5). The
-\emph{controller effect is not} ($\Delta_s>0$ in only 3/5; bar was
-$\geq$4/5) --- mixed signs with every magnitude an order of magnitude
-below per-run noise: no seed shows a noise-exceeding benefit from evolving
-a controller on its own parent. The \emph{transfer failure is supported}
-(penalty in 5/5; lethal in 2). We emphasize the honest reading: controller
-efficacy is parent-dependent at noise level, which for practical purposes
-means absent.
+supported} ($E_{\mathrm{train}}>0$ in 5/5 seeds; bar was $\geq$4/5); the
+\emph{transfer failure is supported} (penalty in 5/5; lethal in 2). Under
+the preregistered decision rule the controller effect is classified as
+\emph{parent-dependent}: three of five effects are positive, but all are
+at least an order of magnitude below per-run evaluation noise. We
+therefore interpret the practical controller effect as absent under this
+stationary regime.
 
 \paragraph{What the controller actually emits.}
-All five evolved controllers emit a \emph{constant}: within-rollout std of
-$m_t$ is $0.002$--$0.004$ per channel, the correlation between $m_t$ and a
-post-lesion indicator is $|r|\leq0.17$, and the mean $|\Delta m|$ at
-lesion steps is indistinguishable from baseline drift. Evolution learned a
-parent-specific tonic calibration, not a release policy (per-controller
-diagnostics in Appendix~\ref{app:mt}).
+All five evolved controllers emit a \emph{constant at a nonzero level}:
+within-rollout std of $m_t$ is $0.002$--$0.004$ per channel, the
+correlation with a post-lesion indicator is $|r|\leq0.17$, and lesion-step
+$|\Delta m|$ is indistinguishable from baseline drift --- while channel
+means sit at parent-distinct offsets ranging from $-0.040$ to $+0.043$
+with differing signs per parent (e.g., $+0.022/+0.017/-0.033$ on seed 1
+vs $-0.029/-0.040/-0.010$ on seed 2). Evolution neither collapses to
+neutral output nor discovers a policy: it finds a parent-specific tonic
+calibration (diagnostics in Appendix~\ref{app:mt}).
 
 \section{Discussion}
 \label{sec:discussion}
 
 \paragraph{Which component causes robustness.}
-The robustness gain comes primarily from channel-aware parent training:
-zero-output channel parents beat their $K{=}0$ siblings in 5/5 seeds, with
-the largest effect exactly where the unmodulated parent is most fragile
-(seed 1: $0.179 \to 0.039$). Evolved controllers add nothing exceeding
-noise on any parent, and the artifact itself is a tonic constant.
-Single-parent controller evaluation --- ours included --- can therefore
-overattribute robustness to closed-loop control that is actually a
-property of training.
+Across five parent seeds, channel-aware training consistently improved
+robustness, while evolved controllers produced no noise-exceeding
+same-parent benefit and remained effectively tonic. Nevertheless, the
+learned tonic calibration was highly parent-specific: a controller evolved
+for the July parent degraded every recipient parent, lethally in two
+cases. Robustness therefore resides in the interaction between parent
+training and global state, rather than in a transferable closed-loop
+policy. Standard single-parent evaluation would have concluded the evolved
+controller was robust; cross-parent probing reveals the same controller is
+harmful on every independently trained recipient. Zero-output channel
+parents beat their $K{=}0$ siblings in 5/5 seeds, with the largest effect
+exactly where the unmodulated parent is most fragile (seed 1: $0.179 \to
+0.039$).
 
 \paragraph{Why cross-parent transfer fails.}
 The transfer probe uses one donor controller, five recipients --- a probe,
@@ -341,19 +347,21 @@ same ordering in every seed (full CSVs in the repository).
   \centering
   \small
   \caption{Per-controller $m_t$ diagnostics over one held-out hard-regime
-  rollout. corr = correlation with a post-lesion indicator; jump =
-  mean $|\Delta m|$ in the 10 steps after lesions; drift = mean $|\Delta m|$
-  elsewhere. All five: flat output, no lesion-locked response.}
+  rollout. mean($m$) = per-channel mean level (all nonzero, parent-distinct);
+  std$(m_t)$ = within-rollout std; corr = correlation with a post-lesion
+  indicator; jump = mean $|\Delta m|$ in the 10 steps after lesions vs
+  drift elsewhere. All five: flat output at nonzero levels, no
+  lesion-locked response.}
   \label{tab:mt}
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccccc}
     \toprule
-    Seed & std$(m_t)$ & corr & jump & drift \\
+    Seed & mean$(m)$ per channel & std$(m_t)$ & corr & jump & drift \\
     \midrule
-    0 & $0.0020$ & $-0.17$ & $0.0006$ & $0.0006$ \\
-    1 & $0.0031$ & $+0.03$ & $0.0010$ & $0.0010$ \\
-    2 & $0.0035$ & $-0.14$ & $0.0012$ & $0.0011$ \\
-    3 & $0.0026$ & $-0.13$ & $0.0008$ & $0.0008$ \\
-    4 & $0.0029$ & $+0.05$ & $0.0010$ & $0.0009$ \\
+    0 & $-0.033\,{+}0.000\,{-}0.009$ & $0.0020$ & $-0.17$ & $0.0006$ & $0.0006$ \\
+    1 & $+0.022\,{+}0.017\,{-}0.033$ & $0.0031$ & $+0.03$ & $0.0010$ & $0.0010$ \\
+    2 & $-0.029\,{-}0.040\,{-}0.010$ & $0.0035$ & $-0.14$ & $0.0012$ & $0.0011$ \\
+    3 & $-0.004\,{-}0.026\,{-}0.028$ & $0.0026$ & $-0.13$ & $0.0008$ & $0.0008$ \\
+    4 & $+0.043\,{+}0.004\,{-}0.019$ & $0.0029$ & $+0.05$ & $0.0010$ & $0.0009$ \\
     \bottomrule
   \end{tabular}
 \end{table}
