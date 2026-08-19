@@ -2,7 +2,7 @@
 # Defense study launcher — fully autonomous once started. Never destroys anything.
 # Self-stop watchdog bounds billing: stops instance 48080807 on completion or 30h.
 cd /Users/hjiang/Developer/neuromodulation
-NEW=48080807; NEWKEY=0f9b0e37125e74ec97a0dbd2e10f8428006cc954f6371a202bbacf37e220d984
+NEW=48124094; NEWKEY=06a2b2780f18c6fcb0e03b9b1c605347ea89f85f5abea85dffee294158c0d1f6
 OLD=47872539
 SSHO="-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=25"
 
