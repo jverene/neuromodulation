@@ -583,3 +583,7 @@ controller params: 259 | pop 64 x 8 damage seeds
 gen    0  best_in_gen 0.0132  best 0.0132  elapsed 37s
 gen    5  best_in_gen 0.0129  best 0.0126  elapsed 184s
 gen   10  best_in_gen 0.0129  best 0.0126  elapsed 331s
+gen   15  best_in_gen 0.0136  best 0.0126  elapsed 478s
+gen   20  best_in_gen 0.0137  best 0.0122  elapsed 624s
+gen   25  best_in_gen 0.0134  best 0.0122  elapsed 771s
+gen   30  best_in_gen 0.0124  best 0.0122  elapsed 918s
