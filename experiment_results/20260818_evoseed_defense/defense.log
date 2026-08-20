@@ -526,3 +526,60 @@ gen  280  best_in_gen 0.0128  best 0.0112  elapsed 8252s
 gen  285  best_in_gen 0.0122  best 0.0112  elapsed 8399s
 gen  290  best_in_gen 0.0128  best 0.0112  elapsed 8545s
 gen  295  best_in_gen 0.0130  best 0.0112  elapsed 8692s
+evolution done in 8809s; best fitness 0.0112
+  constant tonic c=-1.00 -> mean hamming 0.7922
+  constant tonic c=-0.50 -> mean hamming 0.6775
+  constant tonic c=+0.00 -> mean hamming 0.0153
+  constant tonic c=+0.50 -> mean hamming 0.6277
+  constant tonic c=+1.00 -> mean hamming 0.5420
+constant tonic grid search: best c = +0.00
+  closed_loop seed 0: final hamming 0.0225
+  closed_loop seed 1: final hamming 0.0198
+  closed_loop seed 2: final hamming 0.0178
+  closed_loop seed 3: final hamming 0.0220
+  closed_loop seed 4: final hamming 0.0211
+  static seed 0: final hamming 0.0167
+  static seed 1: final hamming 0.0244
+  static seed 2: final hamming 0.0213
+  static seed 3: final hamming 0.0182
+  static seed 4: final hamming 0.0227
+  constant seed 0: final hamming 0.0211
+  constant seed 1: final hamming 0.0194
+  constant seed 2: final hamming 0.0196
+  constant seed 3: final hamming 0.0197
+  constant seed 4: final hamming 0.0243
+  random seed 0: final hamming 0.6084
+  random seed 1: final hamming 0.5203
+  random seed 2: final hamming 0.5788
+  random seed 3: final hamming 0.4743
+  random seed 4: final hamming 0.4641
+  no_modulation seed 0: final hamming 0.0277
+  no_modulation seed 1: final hamming 0.0279
+  no_modulation seed 2: final hamming 0.0311
+  no_modulation seed 3: final hamming 0.0250
+  no_modulation seed 4: final hamming 0.0297
+condition evaluation written -> results/20260820_202930_e2_hard/trajectories.csv
+done -> results/20260820_202930_e2_hard
+zero-output control: 8 held-out damage seeds x 5 condition seeds, T=2000
+------------------------------------------------------------------------------
+  zero_output    survival 1.00  half-life 10.1±6.8  final H 0.0183±0.0145  AUC 0.0102±0.0081
+  closed_loop    survival 1.00  half-life 11.5±9.9  final H 0.0225±0.0149  AUC 0.0127±0.0094
+  no_modulation  survival 1.00  half-life 8.2±7.6  final H 0.0299±0.0178  AUC 0.0206±0.0131
+------------------------------------------------------------------------------
+VERDICT: zero_output final H = 0.0183
+  vs modulated band (closed_loop here: 0.0225; paper's 0.028-0.030)
+  vs no_modulation (here: 0.0299; paper's 0.063)
+  -> zero_output lands with the MODULATED band: improvement is largely
+     a parent-training effect (channels present during training).
+written -> results/defense_s2_e1/own/zero_control.csv
+m_t series: shape (2000, 3)
+per-channel std of m_t: [0.00290221 0.00362236 0.00286765]
+per-channel mean of m_t: [-0.02202649 -0.02762032 -0.02187683]
+verdict: TONIC-LIKE (near-constant release -> parent-specific tonic calibration)
+SEED 2 EVO 1 DONE
+=== SEED 2 EVO 2 ===
+damage: multi_block side=16 n_blocks=4 interval=150
+controller params: 259 | pop 64 x 8 damage seeds
+gen    0  best_in_gen 0.0132  best 0.0132  elapsed 37s
+gen    5  best_in_gen 0.0129  best 0.0126  elapsed 184s
+gen   10  best_in_gen 0.0129  best 0.0126  elapsed 331s
