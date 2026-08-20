@@ -353,3 +353,7 @@ SEED 1 EVO 1 DONE
 damage: multi_block side=16 n_blocks=4 interval=150
 controller params: 259 | pop 64 x 8 damage seeds
 gen    0  best_in_gen 0.0151  best 0.0151  elapsed 38s
+gen    5  best_in_gen 0.0156  best 0.0143  elapsed 186s
+gen   10  best_in_gen 0.0153  best 0.0143  elapsed 332s
+gen   15  best_in_gen 0.0149  best 0.0143  elapsed 479s
+gen   20  best_in_gen 0.0137  best 0.0137  elapsed 626s
