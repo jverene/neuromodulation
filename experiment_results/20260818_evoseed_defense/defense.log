@@ -1,0 +1,238 @@
+=== SEED 0 EVO 1 ===
+damage: multi_block side=16 n_blocks=4 interval=150
+controller params: 259 | pop 64 x 8 damage seeds
+gen    0  best_in_gen 0.0213  best 0.0213  elapsed 38s
+gen    5  best_in_gen 0.0210  best 0.0205  elapsed 188s
+gen   10  best_in_gen 0.0212  best 0.0205  elapsed 338s
+gen   15  best_in_gen 0.0207  best 0.0203  elapsed 488s
+gen   20  best_in_gen 0.0211  best 0.0203  elapsed 638s
+gen   25  best_in_gen 0.0201  best 0.0201  elapsed 788s
+gen   30  best_in_gen 0.0205  best 0.0201  elapsed 938s
+gen   35  best_in_gen 0.0210  best 0.0200  elapsed 1088s
+gen   40  best_in_gen 0.0208  best 0.0200  elapsed 1238s
+gen   45  best_in_gen 0.0206  best 0.0200  elapsed 1387s
+gen   50  best_in_gen 0.0203  best 0.0200  elapsed 1537s
+gen   55  best_in_gen 0.0212  best 0.0200  elapsed 1687s
+gen   60  best_in_gen 0.0209  best 0.0200  elapsed 1837s
+gen   65  best_in_gen 0.0212  best 0.0200  elapsed 1987s
+gen   70  best_in_gen 0.0209  best 0.0196  elapsed 2137s
+gen   75  best_in_gen 0.0213  best 0.0196  elapsed 2287s
+gen   80  best_in_gen 0.0210  best 0.0196  elapsed 2437s
+gen   85  best_in_gen 0.0207  best 0.0196  elapsed 2586s
+gen   90  best_in_gen 0.0208  best 0.0196  elapsed 2736s
+gen   95  best_in_gen 0.0210  best 0.0196  elapsed 2886s
+gen  100  best_in_gen 0.0209  best 0.0196  elapsed 3036s
+gen  105  best_in_gen 0.0204  best 0.0196  elapsed 3186s
+gen  110  best_in_gen 0.0206  best 0.0196  elapsed 3336s
+gen  115  best_in_gen 0.0202  best 0.0196  elapsed 3486s
+gen  120  best_in_gen 0.0202  best 0.0196  elapsed 3636s
+gen  125  best_in_gen 0.0204  best 0.0196  elapsed 3785s
+gen  130  best_in_gen 0.0205  best 0.0196  elapsed 3935s
+gen  135  best_in_gen 0.0213  best 0.0196  elapsed 4085s
+gen  140  best_in_gen 0.0209  best 0.0196  elapsed 4235s
+gen  145  best_in_gen 0.0212  best 0.0196  elapsed 4385s
+gen  150  best_in_gen 0.0209  best 0.0196  elapsed 4535s
+gen  155  best_in_gen 0.0207  best 0.0196  elapsed 4685s
+gen  160  best_in_gen 0.0207  best 0.0196  elapsed 4835s
+gen  165  best_in_gen 0.0209  best 0.0196  elapsed 4984s
+gen  170  best_in_gen 0.0204  best 0.0196  elapsed 5134s
+gen  175  best_in_gen 0.0206  best 0.0196  elapsed 5284s
+gen  180  best_in_gen 0.0211  best 0.0196  elapsed 5434s
+gen  185  best_in_gen 0.0207  best 0.0196  elapsed 5584s
+gen  190  best_in_gen 0.0211  best 0.0196  elapsed 5734s
+gen  195  best_in_gen 0.0203  best 0.0196  elapsed 5884s
+gen  200  best_in_gen 0.0212  best 0.0196  elapsed 6033s
+gen  205  best_in_gen 0.0207  best 0.0196  elapsed 6183s
+gen  210  best_in_gen 0.0206  best 0.0196  elapsed 6333s
+gen  215  best_in_gen 0.0203  best 0.0196  elapsed 6483s
+gen  220  best_in_gen 0.0211  best 0.0196  elapsed 6633s
+gen  225  best_in_gen 0.0210  best 0.0196  elapsed 6783s
+gen  230  best_in_gen 0.0205  best 0.0196  elapsed 6933s
+gen  235  best_in_gen 0.0211  best 0.0194  elapsed 7083s
+gen  240  best_in_gen 0.0210  best 0.0194  elapsed 7233s
+gen  245  best_in_gen 0.0213  best 0.0194  elapsed 7382s
+gen  250  best_in_gen 0.0206  best 0.0194  elapsed 7532s
+gen  255  best_in_gen 0.0212  best 0.0194  elapsed 7682s
+gen  260  best_in_gen 0.0210  best 0.0194  elapsed 7832s
+gen  265  best_in_gen 0.0205  best 0.0194  elapsed 7982s
+gen  270  best_in_gen 0.0203  best 0.0194  elapsed 8132s
+gen  275  best_in_gen 0.0209  best 0.0194  elapsed 8282s
+gen  280  best_in_gen 0.0214  best 0.0194  elapsed 8432s
+gen  285  best_in_gen 0.0195  best 0.0194  elapsed 8582s
+gen  290  best_in_gen 0.0207  best 0.0194  elapsed 8732s
+gen  295  best_in_gen 0.0203  best 0.0194  elapsed 8882s
+evolution done in 9002s; best fitness 0.0194
+  constant tonic c=-1.00 -> mean hamming 0.9260
+  constant tonic c=-0.50 -> mean hamming 0.9204
+  constant tonic c=+0.00 -> mean hamming 0.0220
+  constant tonic c=+0.50 -> mean hamming 0.9013
+  constant tonic c=+1.00 -> mean hamming 0.9018
+constant tonic grid search: best c = +0.00
+  closed_loop seed 0: final hamming 0.0291
+  closed_loop seed 1: final hamming 0.0321
+  closed_loop seed 2: final hamming 0.0294
+  closed_loop seed 3: final hamming 0.0325
+  closed_loop seed 4: final hamming 0.0328
+  static seed 0: final hamming 0.0281
+  static seed 1: final hamming 0.0301
+  static seed 2: final hamming 0.0293
+  static seed 3: final hamming 0.0287
+  static seed 4: final hamming 0.0288
+  constant seed 0: final hamming 0.0286
+  constant seed 1: final hamming 0.0288
+  constant seed 2: final hamming 0.0304
+  constant seed 3: final hamming 0.0280
+  constant seed 4: final hamming 0.0283
+  random seed 0: final hamming 0.9201
+  random seed 1: final hamming 0.9299
+  random seed 2: final hamming 0.9312
+  random seed 3: final hamming 0.9019
+  random seed 4: final hamming 0.9261
+  no_modulation seed 0: final hamming 0.0351
+  no_modulation seed 1: final hamming 0.0298
+  no_modulation seed 2: final hamming 0.0333
+  no_modulation seed 3: final hamming 0.0319
+  no_modulation seed 4: final hamming 0.0386
+condition evaluation written -> results/20260819_162544_e2_hard/trajectories.csv
+done -> results/20260819_162544_e2_hard
+zero-output control: 8 held-out damage seeds x 5 condition seeds, T=2000
+------------------------------------------------------------------------------
+  zero_output    survival 1.00  half-life 10.9±10.6  final H 0.0290±0.0135  AUC 0.0172±0.0087
+  closed_loop    survival 1.00  half-life 9.6±8.6  final H 0.0303±0.0134  AUC 0.0172±0.0091
+  no_modulation  survival 1.00  half-life 7.2±8.7  final H 0.0361±0.0137  AUC 0.0238±0.0084
+------------------------------------------------------------------------------
+VERDICT: zero_output final H = 0.0290
+  vs modulated band (closed_loop here: 0.0303; paper's 0.028-0.030)
+  vs no_modulation (here: 0.0361; paper's 0.063)
+  -> zero_output lands with the MODULATED band: improvement is largely
+     a parent-training effect (channels present during training).
+written -> results/defense_s0_e1/own/zero_control.csv
+m_t series: shape (2000, 3)
+per-channel std of m_t: [0.0032654  0.00016276 0.0044924 ]
+per-channel mean of m_t: [-0.02482853 -0.00101061  0.0344842 ]
+verdict: TONIC-LIKE (near-constant release -> parent-specific tonic calibration)
+SEED 0 EVO 1 DONE
+=== SEED 0 EVO 2 ===
+damage: multi_block side=16 n_blocks=4 interval=150
+controller params: 259 | pop 64 x 8 damage seeds
+gen    0  best_in_gen 0.0209  best 0.0209  elapsed 37s
+gen    5  best_in_gen 0.0198  best 0.0198  elapsed 184s
+gen   10  best_in_gen 0.0210  best 0.0198  elapsed 331s
+gen   15  best_in_gen 0.0200  best 0.0198  elapsed 478s
+gen   20  best_in_gen 0.0207  best 0.0198  elapsed 624s
+gen   25  best_in_gen 0.0203  best 0.0198  elapsed 771s
+gen   30  best_in_gen 0.0209  best 0.0198  elapsed 918s
+gen   35  best_in_gen 0.0206  best 0.0198  elapsed 1065s
+gen   40  best_in_gen 0.0211  best 0.0198  elapsed 1211s
+gen   45  best_in_gen 0.0211  best 0.0198  elapsed 1358s
+gen   50  best_in_gen 0.0203  best 0.0198  elapsed 1505s
+gen   55  best_in_gen 0.0207  best 0.0198  elapsed 1652s
+gen   60  best_in_gen 0.0203  best 0.0198  elapsed 1798s
+gen   65  best_in_gen 0.0206  best 0.0198  elapsed 1945s
+gen   70  best_in_gen 0.0206  best 0.0198  elapsed 2092s
+gen   75  best_in_gen 0.0208  best 0.0198  elapsed 2238s
+gen   80  best_in_gen 0.0208  best 0.0198  elapsed 2385s
+gen   85  best_in_gen 0.0204  best 0.0198  elapsed 2532s
+gen   90  best_in_gen 0.0202  best 0.0198  elapsed 2679s
+gen   95  best_in_gen 0.0209  best 0.0198  elapsed 2825s
+gen  100  best_in_gen 0.0209  best 0.0198  elapsed 2972s
+gen  105  best_in_gen 0.0207  best 0.0198  elapsed 3119s
+gen  110  best_in_gen 0.0205  best 0.0198  elapsed 3266s
+gen  115  best_in_gen 0.0199  best 0.0198  elapsed 3412s
+gen  120  best_in_gen 0.0206  best 0.0198  elapsed 3559s
+gen  125  best_in_gen 0.0203  best 0.0198  elapsed 3706s
+gen  130  best_in_gen 0.0197  best 0.0197  elapsed 3852s
+gen  135  best_in_gen 0.0211  best 0.0197  elapsed 3999s
+gen  140  best_in_gen 0.0208  best 0.0197  elapsed 4146s
+gen  145  best_in_gen 0.0209  best 0.0197  elapsed 4292s
+gen  150  best_in_gen 0.0208  best 0.0197  elapsed 4439s
+gen  155  best_in_gen 0.0211  best 0.0197  elapsed 4586s
+gen  160  best_in_gen 0.0214  best 0.0197  elapsed 4732s
+gen  165  best_in_gen 0.0205  best 0.0197  elapsed 4879s
+gen  170  best_in_gen 0.0207  best 0.0197  elapsed 5026s
+gen  175  best_in_gen 0.0207  best 0.0197  elapsed 5172s
+gen  180  best_in_gen 0.0206  best 0.0197  elapsed 5319s
+gen  185  best_in_gen 0.0200  best 0.0197  elapsed 5466s
+gen  190  best_in_gen 0.0209  best 0.0197  elapsed 5612s
+gen  195  best_in_gen 0.0208  best 0.0197  elapsed 5759s
+gen  200  best_in_gen 0.0205  best 0.0197  elapsed 5906s
+gen  205  best_in_gen 0.0208  best 0.0197  elapsed 6052s
+gen  210  best_in_gen 0.0206  best 0.0197  elapsed 6199s
+gen  215  best_in_gen 0.0206  best 0.0197  elapsed 6345s
+gen  220  best_in_gen 0.0203  best 0.0197  elapsed 6492s
+gen  225  best_in_gen 0.0210  best 0.0197  elapsed 6639s
+gen  230  best_in_gen 0.0202  best 0.0193  elapsed 6785s
+gen  235  best_in_gen 0.0200  best 0.0193  elapsed 6932s
+gen  240  best_in_gen 0.0206  best 0.0193  elapsed 7078s
+gen  245  best_in_gen 0.0208  best 0.0193  elapsed 7225s
+gen  250  best_in_gen 0.0203  best 0.0193  elapsed 7372s
+gen  255  best_in_gen 0.0210  best 0.0193  elapsed 7518s
+gen  260  best_in_gen 0.0205  best 0.0193  elapsed 7665s
+gen  265  best_in_gen 0.0209  best 0.0193  elapsed 7812s
+gen  270  best_in_gen 0.0208  best 0.0193  elapsed 7959s
+gen  275  best_in_gen 0.0210  best 0.0193  elapsed 8105s
+gen  280  best_in_gen 0.0202  best 0.0193  elapsed 8252s
+gen  285  best_in_gen 0.0209  best 0.0193  elapsed 8399s
+gen  290  best_in_gen 0.0208  best 0.0193  elapsed 8545s
+gen  295  best_in_gen 0.0203  best 0.0193  elapsed 8692s
+evolution done in 8809s; best fitness 0.0193
+  constant tonic c=-1.00 -> mean hamming 0.9262
+  constant tonic c=-0.50 -> mean hamming 0.9204
+  constant tonic c=+0.00 -> mean hamming 0.0230
+  constant tonic c=+0.50 -> mean hamming 0.8990
+  constant tonic c=+1.00 -> mean hamming 0.9019
+constant tonic grid search: best c = +0.00
+  closed_loop seed 0: final hamming 0.0309
+  closed_loop seed 1: final hamming 0.0292
+  closed_loop seed 2: final hamming 0.0291
+  closed_loop seed 3: final hamming 0.0291
+  closed_loop seed 4: final hamming 0.0310
+  static seed 0: final hamming 0.0272
+  static seed 1: final hamming 0.0307
+  static seed 2: final hamming 0.0276
+  static seed 3: final hamming 0.0296
+  static seed 4: final hamming 0.0273
+  constant seed 0: final hamming 0.0265
+  constant seed 1: final hamming 0.0289
+  constant seed 2: final hamming 0.0283
+  constant seed 3: final hamming 0.0286
+  constant seed 4: final hamming 0.0285
+  random seed 0: final hamming 0.9240
+  random seed 1: final hamming 0.8424
+  random seed 2: final hamming 0.9220
+  random seed 3: final hamming 0.9221
+  random seed 4: final hamming 0.8956
+  no_modulation seed 0: final hamming 0.0384
+  no_modulation seed 1: final hamming 0.0287
+  no_modulation seed 2: final hamming 0.0333
+  no_modulation seed 3: final hamming 0.0369
+  no_modulation seed 4: final hamming 0.0356
+condition evaluation written -> results/20260819_185741_e2_hard/trajectories.csv
+done -> results/20260819_185741_e2_hard
+zero-output control: 8 held-out damage seeds x 5 condition seeds, T=2000
+------------------------------------------------------------------------------
+  zero_output    survival 1.00  half-life 9.4±8.1  final H 0.0294±0.0144  AUC 0.0170±0.0094
+  closed_loop    survival 1.00  half-life 10.0±8.4  final H 0.0292±0.0136  AUC 0.0161±0.0090
+  no_modulation  survival 1.00  half-life 10.1±15.9  final H 0.0354±0.0109  AUC 0.0229±0.0079
+------------------------------------------------------------------------------
+VERDICT: zero_output final H = 0.0294
+  vs modulated band (closed_loop here: 0.0292; paper's 0.028-0.030)
+  vs no_modulation (here: 0.0354; paper's 0.063)
+  -> zero_output lands with the MODULATED band: improvement is largely
+     a parent-training effect (channels present during training).
+written -> results/defense_s0_e2/own/zero_control.csv
+m_t series: shape (2000, 3)
+per-channel std of m_t: [0.00224521 0.00062041 0.00297131]
+per-channel mean of m_t: [-0.01713117  0.00402598  0.01862492]
+verdict: TONIC-LIKE (near-constant release -> parent-specific tonic calibration)
+SEED 0 EVO 2 DONE
+=== SEED 1 EVO 1 ===
+damage: multi_block side=16 n_blocks=4 interval=150
+controller params: 259 | pop 64 x 8 damage seeds
+gen    0  best_in_gen 0.0157  best 0.0157  elapsed 41s
+gen    5  best_in_gen 0.0144  best 0.0139  elapsed 189s
+gen   10  best_in_gen 0.0154  best 0.0139  elapsed 335s
+gen   15  best_in_gen 0.0152  best 0.0139  elapsed 482s
+SKIP SEED 0 EVO 1 (already done)
+SKIP SEED 0 EVO 2 (already done)
+=== SEED 1 EVO 1 ===
