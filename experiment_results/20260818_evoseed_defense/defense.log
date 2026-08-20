@@ -407,3 +407,7 @@ gen  255  best_in_gen 0.0128  best 0.0128  elapsed 7519s
 gen  260  best_in_gen 0.0155  best 0.0128  elapsed 7665s
 gen  265  best_in_gen 0.0151  best 0.0128  elapsed 7812s
 gen  270  best_in_gen 0.0146  best 0.0128  elapsed 7959s
+gen  275  best_in_gen 0.0161  best 0.0128  elapsed 8105s
+gen  280  best_in_gen 0.0149  best 0.0128  elapsed 8252s
+gen  285  best_in_gen 0.0145  best 0.0128  elapsed 8399s
+gen  290  best_in_gen 0.0156  best 0.0128  elapsed 8545s
