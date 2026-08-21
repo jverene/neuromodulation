@@ -924,3 +924,7 @@ damage: multi_block side=16 n_blocks=4 interval=150
 controller params: 259 | pop 64 x 8 damage seeds
 gen    0  best_in_gen 0.0231  best 0.0231  elapsed 37s
 gen    5  best_in_gen 0.0211  best 0.0209  elapsed 184s
+gen   10  best_in_gen 0.0223  best 0.0209  elapsed 331s
+gen   15  best_in_gen 0.0221  best 0.0209  elapsed 478s
+gen   20  best_in_gen 0.0217  best 0.0206  elapsed 624s
+gen   25  best_in_gen 0.0215  best 0.0206  elapsed 771s
