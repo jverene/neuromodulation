@@ -1,0 +1,4 @@
+condition,survival,half_life,half_life_sd,final_hamming,final_hamming_sd,auc,auc_sd
+zero_output,1.000,5.56,2.72,0.033211,0.023286,0.018678,0.013478
+closed_loop,1.000,5.83,3.92,0.033632,0.022258,0.018986,0.012477
+no_modulation,1.000,5.29,7.18,0.041957,0.011140,0.043194,0.008903
