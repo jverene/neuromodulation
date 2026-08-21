@@ -616,3 +616,7 @@ gen  160  best_in_gen 0.0128  best 0.0116  elapsed 4731s
 gen  165  best_in_gen 0.0130  best 0.0116  elapsed 4878s
 gen  170  best_in_gen 0.0128  best 0.0116  elapsed 5025s
 gen  175  best_in_gen 0.0124  best 0.0116  elapsed 5171s
+gen  180  best_in_gen 0.0130  best 0.0116  elapsed 5318s
+gen  185  best_in_gen 0.0122  best 0.0116  elapsed 5465s
+gen  190  best_in_gen 0.0132  best 0.0116  elapsed 5611s
+gen  195  best_in_gen 0.0110  best 0.0110  elapsed 5758s
