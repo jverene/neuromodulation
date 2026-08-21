@@ -83,8 +83,14 @@ evolved controllers are \emph{tonic}: flat nonzero parent-specific
 constants with no lesion-locked response. Yet the fragile parent's tonic
 vector is nearly identical (cosine similarity $0.99$) to a non-beneficial
 sibling's, so the benefit arises from interaction with parent-specific
-dynamics, not from a distinctive chemical operating point. Cross-parent
-transfer is a penalty in five of five siblings --- lethally in two.
+dynamics, not from a distinctive chemical operating point. A single-donor
+probe penalizes five of five sibling parents --- lethally
+in two --- and a full $5{\times}5$ transfer matrix (40 off-diagonal
+evaluations, two controller replicas per parent) confirms parent-locking:
+most transfers are harmful, none beats the recipient's own controller,
+lethal failures replicate across controller replicas, and the only
+beneficial transfers land on the fragile parent, from the donors most
+aligned with its tonic vector.
 Single-parent evaluation hid all of this. The attribution protocol ---
 adversarial damage calibration, objective-hacking and
 search-initialization probes, and parent-seed-resolved decomposition ---
@@ -142,7 +148,9 @@ script are in the repository history, timestamped before the runs.
         reproducibly beneficial (2/2 independent evolutions) on the
         fragile parent; every evolved artifact is a parent-specific tonic
         \emph{constant} that transfers as a penalty in 5/5 siblings
-        (lethally in 2).
+        (lethally in 2); a full $5{\times}5$ transfer matrix confirms
+        parent-locking (harmful in 24/40 cells, beneficial only onto the
+        fragile parent from its most tonic-aligned donors).
 \end{enumerate}
 
 \section{Related Work}
@@ -212,7 +220,11 @@ at five seeds. The defense study reported here fixed the
 two-evolutions-per-parent rule in its preregistration before launch
 (\texttt{experiment\_results/20260818\_evoseed\_defense/PREREGISTRATION.md}
 in the repository history). Controller-output ($m_t$) series distinguish
-tonic calibration from event-locked policy (Appendix~\ref{app:mt}).
+tonic calibration from event-locked policy (Appendix~\ref{app:mt}). A
+post-hoc follow-up extends the single-donor July probe to the full
+$5{\times}5$ transfer matrix among the five defense parents, using both
+controller replicas per parent (evaluation only, 8 held-out damage seeds
+per cell, one condition seed; Table~\ref{tab:matrix}).
 
 \section{Results}
 \label{sec:results}
@@ -275,6 +287,25 @@ therefore arises from the interaction between a tonic calibration and
 parent-specific local dynamics, not from a distinctive chemical operating
 point.
 
+\paragraph{Cross-parent transfer matrix.}
+The single-donor probe generalizes. Extending it to the full $5{\times}5$
+matrix among the five defense parents --- both controller replicas per
+parent, 40 off-diagonal evaluations
+(Table~\ref{tab:matrix}) --- 24/40 transfers are harmful (survival $<0.9$
+or final Hamming worse than the recipient's zero-output baseline by
+$>0.005$), 13 are indistinguishable from zero-output, and 3 beat it. No
+foreign controller beats the recipient's own controller beyond noise.
+Lethal transfer replicates across evolution seeds: donor s3 kills
+recipient s2 in both replicas (survival $0.00$), and donor s0 on recipient
+s1 is lethal in e1 ($0.00$) and near-lethal in e2 ($0.38$). All lethal
+instances pair strongly negative tonic-vector cosines (s3$\to$s2: $-0.61$;
+s0$\to$s1: $-0.93$), while the only beneficial transfers --- beating
+zero-output and matching the own controller --- all land on the fragile
+parent s1, from the two donors with the highest tonic alignment to it
+(s4, cosine $+0.99$, both replicas; s3, cosine $+0.49$, one replica). Tonic
+alignment is necessary for benefit but not sufficient for safety: some
+benign cells have negative cosine (down to $-0.95$).
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -296,18 +327,25 @@ single-parent evaluation would have concluded the evolved controller was
 robust; cross-parent probing reveals the same controller is harmful on
 every independently trained recipient.
 
-\paragraph{Why cross-parent transfer fails.}
-The transfer probe uses one donor controller, five recipients --- a probe,
-not a full transfer study (which would test every donor--recipient pair).
-Even so, the observed penalties (positive in 5/5, lethal in 2) are
-structural: each controller's output is a constant calibrated against its
-own parent's channel weights, so the same release level drives different
-dynamics in a sibling. Evolution found an operating point for one
-organism, not a modulation law.
+\paragraph{Why cross-parent transfer fails --- and when it does not.}
+The full matrix (Table~\ref{tab:matrix}) sharpens the single-donor probe:
+transfer is not universally lethal, but it is parent-locked in a precise
+sense. No foreign controller beats the recipient's own controller; the
+majority of transfers are harmful (24/40); lethal failures replicate
+across independently evolved controller replicas (donor s3 kills recipient
+s2 in both); and the only beneficial transfers land on the fragile
+parent s1, from the two donors with the highest tonic alignment to it
+(s4, cosine $+0.99$, both replicas; s3, cosine $+0.49$, one replica). Tonic alignment is necessary for benefit but not sufficient for
+safety. The mechanism is unchanged: each controller's output is a constant
+calibrated against its own parent's channel weights, so the same release
+level drives different dynamics in a sibling. Evolution found an operating
+point for one organism, not a modulation law.
 
 \paragraph{Limitations and future work.}
 Five parent seeds; two controller evolutions per parent; one morphology;
-one stationary damage family; transfer probed with a single donor. Only
+one stationary damage family; the July transfer probe remains
+single-donor, and the full $5{\times}5$ matrix uses one condition seed per
+cell. Only
 one of the five parents proved controller-responsive, so the prevalence of
 such parents is unknown. Repair
 half-life is comparable only among conditions that return to near-target;
@@ -385,6 +423,42 @@ systems should be attributed across model seeds, not only damage seeds.
     2 & $0.434$ & $0.00$ (lethal) \\
     3 & $0.100$ & $0.45$ \\
     4 & $0.041$ & $1.00$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Full $5{\times}5$ cross-parent transfer matrix among the five
+  defense parents, both controller replicas (top: e1; bottom: e2). Rows:
+  donor controller; columns: recipient parent. Cells give final Hamming /
+  survival (8 held-out damage seeds, one condition seed). Diagonal
+  (bold): recipient's own controller (survival $1.00$ throughout).
+  $^{\dagger}$lethal (survival $0.00$). Across the 40 off-diagonal cells:
+  24 harmful, 13 indistinguishable from zero-output, 3 beneficial ---
+  the beneficial cells all land on the fragile parent s1, from its two
+  most tonic-aligned donors (s4, cosine $+0.99$; s3, cosine $+0.49$).}
+  \label{tab:matrix}
+  \footnotesize
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{lccccc}
+    \toprule
+    e1 donor & recip.\ s0 & recip.\ s1 & recip.\ s2 & recip.\ s3 & recip.\ s4 \\
+    \midrule
+    s0 & \textbf{0.0305} & $0.491/0.00^{\dagger}$ & $0.094/0.62$ & $0.029/1.00$ & $0.048/0.88$ \\
+    s1 & $0.036/1.00$ & \textbf{0.0296} & $0.021/1.00$ & $0.047/1.00$ & $0.034/1.00$ \\
+    s2 & $0.030/1.00$ & $0.047/0.88$ & \textbf{0.0182} & $0.030/1.00$ & $0.088/0.75$ \\
+    s3 & $0.035/1.00$ & $0.030/1.00$ & $0.205/0.00^{\dagger}$ & \textbf{0.0277} & $0.039/1.00$ \\
+    s4 & $0.035/1.00$ & $0.028/1.00$ & $0.019/1.00$ & $0.036/1.00$ & \textbf{0.0343} \\
+    \midrule
+    e2 donor & & & & & \\
+    \midrule
+    s0 & \textbf{0.0276} & $0.107/0.38$ & $0.057/0.88$ & $0.027/1.00$ & $0.033/1.00$ \\
+    s1 & $0.034/1.00$ & \textbf{0.0329} & $0.023/1.00$ & $0.040/1.00$ & $0.036/1.00$ \\
+    s2 & $0.044/1.00$ & $0.082/0.50$ & \textbf{0.0224} & $0.029/1.00$ & $0.137/0.25$ \\
+    s3 & $0.030/1.00$ & $0.055/0.88$ & $0.227/0.00^{\dagger}$ & \textbf{0.0280} & $0.041/1.00$ \\
+    s4 & $0.029/1.00$ & $0.031/1.00$ & $0.023/1.00$ & $0.034/1.00$ & \textbf{0.0346} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -604,7 +678,10 @@ future benchmark users can avoid them.
 Parents train in $\approx$20--30 min each on one A100; the defense study
 ran two independent 300-generation controller evolutions per parent (10
 total), each $\approx$2.5--3 h on the study A100, for a total
-defense-study cost of $\approx$\$25 of rented GPU time. Preregistration,
+defense-study cost of $\approx$\$25 of rented GPU time. The transfer
+matrix is evaluation-only over existing artifacts: 40 off-diagonal
+evaluations, $\approx$2 minutes of A100 time per full $5{\times}5$ replica
+matrix. Preregistration,
 analysis script, per-seed artifacts (controllers,
 parents, trajectories, $m_t$ series), and the mechanical outcome output are
 in the repository, timestamped before the results. Code will be released
