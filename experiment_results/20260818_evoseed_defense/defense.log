@@ -686,3 +686,15 @@ VERDICT: zero_output final H = 0.0208
   -> zero_output lands with the MODULATED band: improvement is largely
      a parent-training effect (channels present during training).
 written -> results/defense_s2_e2/own/zero_control.csv
+m_t series: shape (2000, 3)
+per-channel std of m_t: [0.00398093 0.00464556 0.00097012]
+per-channel mean of m_t: [-0.02988436 -0.03528498 -0.00741092]
+verdict: TONIC-LIKE (near-constant release -> parent-specific tonic calibration)
+SEED 2 EVO 2 DONE
+=== SEED 3 EVO 1 ===
+damage: multi_block side=16 n_blocks=4 interval=150
+controller params: 259 | pop 64 x 8 damage seeds
+gen    0  best_in_gen 0.0190  best 0.0190  elapsed 38s
+gen    5  best_in_gen 0.0193  best 0.0177  elapsed 185s
+gen   10  best_in_gen 0.0176  best 0.0176  elapsed 332s
+gen   15  best_in_gen 0.0199  best 0.0176  elapsed 478s
