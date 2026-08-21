@@ -250,8 +250,7 @@ Appendix~\ref{app:rawtables}.
   evolved controller (two independent evolutions; range where the runs
   differ). Survival shown in parentheses where it departs from $1.00$.
   Channel-aware training helps in 5/5 seeds; the controller effect is
-  parent-dependent. Cross-parent transfer results are in
-  Appendix~\ref{app:rawtables}.}
+  parent-dependent.}
   \label{tab:effects}
   \scriptsize
   \setlength{\tabcolsep}{2.5pt}
@@ -273,9 +272,9 @@ Applying the preregistered rule: the \emph{channel-training effect is
 supported} ($H(K0,s)-H(m0,s) > 0$ in 5/5 seeds; bar was $\geq$4/5); the
 \emph{transfer failure is supported} (penalty in 5/5; lethal in 2). The
 controller effect is classified as \emph{parent-dependent} ---
-preregistered \textbf{Outcome C}. The controller effect is absent or
+preregistered \textbf{Outcome C}: absent or
 noise-level on most parents, but reproducibly beneficial on the fragile
-parent: on seeds 0, 2, 3, and 4 the own controller matches zero-output or
+parent --- on seeds 0, 2, 3, and 4 the own controller matches zero-output or
 is slightly worse, while on seed 1 both independent evolutions reduce
 final Hamming from $0.035$--$0.038$ to $0.029$--$0.030$ and raise survival
 from $0.975$ to $1.00$.
@@ -287,10 +286,9 @@ with no lesion-locked response, in 10/10 runs --- while channel means sit
 at parent-distinct offsets (per-seed vectors in
 Appendix~\ref{app:mt}). Evolution neither collapses to neutral output nor
 discovers a policy: it finds a parent-specific tonic calibration.
-Strikingly, the tonic vector alone does not predict benefit: seed 1's
-tonic vector is nearly identical to seed 4's (cosine similarity $0.993$,
-Euclidean distance $0.0065$), yet only seed 1 benefits. The benefit
-therefore arises from the interaction between a tonic calibration and
+The tonic vector alone does not predict benefit: seeds 1 and 4 emit
+nearly identical tonic vectors (cosine $0.993$), yet only seed 1 benefits.
+The benefit arises from the interaction between a tonic calibration and
 parent-specific local dynamics, not from a distinctive chemical operating
 point.
 
@@ -304,28 +302,28 @@ $>0.005$), 15 are indistinguishable from zero-output, and 2 beat it. No
 foreign controller beats the recipient's own controller beyond noise.
 Lethal transfer replicates across controller replicas and condition seeds:
 donor s3 kills recipient s2 in both replicas (survival $0.00$); donor s0
-on recipient s1 is lethal in e1 ($0.00$) and near-lethal in e2 ($0.25$);
-every cell with survival $<1$ is harmful under all three condition seeds
+on recipient s1 is lethal in e1 ($0.00$) and near-lethal in e2 ($0.25$).
+Classifications are stable across the three condition seeds
 --- only marginal cells within $\pm 0.005$ of the threshold flip. All lethal instances
 pair strongly negative tonic-vector cosines (s3$\to$s2: $-0.61$;
 s0$\to$s1: $-0.93$), while the only beneficial transfers --- beating
 zero-output and matching the own controller --- occur exclusively within
 the tonic-aligned pair s4$\to$s1 (cosine $+0.99$, both replicas).
 Across all 40 cells, donor--recipient tonic cosine correlates with
-transfer penalty (Pearson $r=-0.30$) and survival ($r=+0.34$); all
-observed beneficial transfers came from positively aligned donors ---
-though alignment is not sufficient for safety: some benign cells have
-negative cosine (down to $-0.95$).
+transfer penalty (Pearson $r=-0.30$) and survival ($r=+0.34$); lethal and
+beneficial transfers occupy opposite alignment regimes, though alignment
+does not by itself determine outcome (some benign cells have negative
+cosine, down to $-0.95$).
 
 \paragraph{Tonic transplant.}
 Injecting each donor's realized mean $m_t$ as a constant in place of its
 controller (both replicas, three condition seeds) reproduces the full
-controller's transfer outcome in 46/50 cells, including every lethal one;
-the four mismatches are magnitude differences inside already-lethal cells,
-and a recipient's own transplant is indistinguishable from its own
-controller in all ten cases (Appendix~\ref{app:rawtables}). The
-controller's small dynamic residual is causally irrelevant, on-parent and
-off.
+controller's outcome in 36/40 off-diagonal cells, including every lethal
+transfer (the four mismatches are magnitude differences inside
+already-lethal cells), and matches the recipient's own controller in all
+10 diagonal cases (46/50 overall; Appendix~\ref{app:rawtables}). The
+transferable component is thus the tonic setpoint; the controller's small
+dynamic residual did not measurably contribute, on-parent or off.
 
 \section{Discussion}
 \label{sec:discussion}
@@ -339,24 +337,21 @@ $0.05$--$0.08 \to 0.975$). Evolved modulation is parent-dependent: on four
 parents the own controller matches zero-output or is slightly worse; only
 on the fragile parent do both independent evolutions add a final
 stabilization (survival $0.975 \to 1.00$, final Hamming
-$\to 0.029$--$0.030$). Robustness
-therefore resides in the interaction between parent training and global
-state, rather than in a transferable closed-loop policy.
+$\to 0.029$--$0.030$). Robustness thus resides in the interaction of
+parent training and global state, not in a transferable closed-loop
+policy.
 \paragraph{Why cross-parent transfer fails --- and when it does not.}
 The full matrix (Table~\ref{tab:matrix}) sharpens the single-donor probe:
 transfer is not universally lethal, but it is parent-locked in a precise
 sense. No foreign controller beats the recipient's own controller; the
 majority of transfers are harmful (23/40); lethal failures replicate
-across independently evolved controller replicas and across condition
-seeds (donor s3 kills recipient
-s2 in both replicas); and the only beneficial transfers occur exclusively
-within the tonic-aligned pair (s4$\to$s1, cosine
-$+0.99$, both replicas); tonic alignment predicts benefit, though not
-safety (Section~\ref{sec:results}).
+across controller replicas and condition seeds; and the only beneficial
+transfers occur within the tonic-aligned pair (s4$\to$s1)
+(Section~\ref{sec:results}).
 The tonic transplant makes the mechanism causal: injecting the donor's
-mean $m_t$ as a constant reproduces the full controller's transfer
-outcome in 46/50 cells, including every lethal one --- what transfers,
-for good or ill, \emph{is} the constant. Each controller's output is a
+mean $m_t$ as a constant reproduces the controller's outcome in 36/40
+off-diagonal cells (10/10 diagonal), including every lethal one --- what
+transfers, for good or ill, \emph{is} the constant. Each controller's output is a
 calibration against its own parent's channel weights, so the same release
 level drives different dynamics in a sibling. Evolution found an operating
 point for one organism, not a modulation law.
@@ -364,9 +359,8 @@ point for one organism, not a modulation law.
 \paragraph{Limitations and future work.}
 Five parent seeds; two controller evolutions per parent; one morphology;
 one stationary damage family; the July transfer probe remains
-single-donor. Only
-one of the five parents proved controller-responsive, so the prevalence of
-such parents is unknown.
+single-donor. Only one of five parents proved controller-responsive, so
+the prevalence of such parents is unknown.
 Next: multi-parent (population-based) evolution; full transfer matrices;
 non-stationary, diversity-driven damage co-evolution, for which this
 benchmark is the controlled baseline.
@@ -375,12 +369,11 @@ benchmark is the controlled baseline.
 \label{sec:conclusion}
 
 In regenerative NCAs under adversarial recurring damage, robustness comes
-from channel-aware training (5/5 seeds, rescuing even a nearly lethal
+from channel-aware training (5/5 seeds, rescuing a nearly lethal
 unmodulated parent); evolved modulation is a parent-dependent tonic
-calibration --- noise-level on most parents, reproducibly beneficial on
-the fragile one, and parent-locked under transfer (lethally in 2/5). The
-broader contribution is methodological: robustness claims about
-self-organizing systems should be attributed across model seeds, not only
+calibration --- noise-level on most parents, beneficial on the fragile
+one, parent-locked under transfer. The broader contribution is
+methodological: attribute robustness claims across model seeds, not only
 damage seeds.
 
 \appendix
@@ -487,9 +480,11 @@ s3$\to$s2: controller $0.208/0.00$ vs transplant $0.186/0.12$ (e1) and
 $0.239/0.00$ vs $0.234/0.00$ (e2); s0$\to$s1: $0.470/0.00$ vs
 $0.353/0.00$ (e1). The four mismatches are magnitude differences inside
 already-lethal cells. A recipient's own tonic transplant is likewise
-indistinguishable from its own controller in all ten cases. The small
-dynamic residual of the controllers is causally irrelevant, on-parent and
-off (full CSVs in the repository,
+indistinguishable from its own controller in all ten diagonal cases.
+In total, the transplant reproduces the controller's outcome in 36/40
+off-diagonal cells and 10/10 diagonal cells (46/50 overall). Under the
+tested regime, the small dynamic residual of the controllers did not
+measurably contribute, on-parent or off (full CSVs in the repository,
 \texttt{experiment\_results/20260822\_transfer\_matrix/cs3\_*}).
 
 AUC mirrors the same ordering in every seed (full CSVs in the repository).
