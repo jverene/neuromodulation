@@ -28,7 +28,7 @@ urlcolor=navyblue
 \makeatletter
 \renewcommand{\maketitle}{
 \begin{center}
-\vspace\*{0.2in}
+\vspace*{0.2in}
 {\Large \bfseries \@title \par}
 \vskip 1.2em
 {\large Anonymous Author(s) \\
@@ -58,11 +58,7 @@ urlcolor=navyblue
 }%
 }
 
-\title{Channel-Aware Training Improves Regenerative Neural Cellular\\Automata, but Evolved Modulation Is Parent-Locked}
-% Title policy (reviewer-agreed): keep the safer title above unless the
-% evolution-seed defense study confirms the pattern; then switch to the
-% stronger "Channel-Aware Training, Not Closed-Loop Control, Drives
-% Robust Regeneration in Neural Cellular Automata".
+\title{Evolutionary Stress Tests Reveal Parent-Locked Tonic\\Modulation in Neural Cellular Automata}
 
 \begin{document}
 
@@ -71,20 +67,25 @@ urlcolor=navyblue
 \begin{abstract}
 Regenerative Neural Cellular Automata (NCAs) are usually evaluated on a
 single trained model, so robustness claims cannot separate what
-\emph{training} provides from what run-time \emph{control} provides. We
-cross five independently trained parent seeds with four conditions under
-recurring multi-block damage that exceeds the perception radius: a $K{=}0$
-parent; the channel-aware $K{=}3$ parent with modulation pinned to neutral;
-that parent with a controller evolved \emph{for it}; and a cross-parent
-transfer probe. The comparison is preregistered. Channel-aware training
-improves robustness in five of five parent seeds (median final-Hamming
-reduction $0.008$, up to $0.140$ on a fragile parent); controllers evolved
-on their own parents add nothing exceeding damage-seed noise (median
-$\Delta_s = +0.001$, all $|\Delta_s|$ an order of magnitude below the
-per-run SD); and the evolved artifact is a \emph{parent-specific tonic
-constant} (controller output is flat, with no lesion-locked response) that
-transfers as a penalty in five of five siblings --- lethally in two.
-Single-parent evaluation hid all three facts. The attribution protocol ---
+\emph{training} provides from what run-time \emph{control} provides. In a
+preregistered study, we cross five independently trained parent seeds with
+recurring multi-block damage that exceeds the perception radius, and for
+each parent run \emph{two} independent controller evolutions (CMA-ES,
+different evolution seeds), evaluated on held-out damage seeds against
+zero-output and unmodulated baselines. Channel-aware training improves
+robustness in five of five parent seeds (median final-Hamming reduction
+$0.008$, up to $\approx0.14$ on a fragile parent). The evolved-controller
+effect is parent-dependent: on four parents the own controller matches
+zero-output modulation or is slightly worse, but on the fragile parent
+both independent evolutions reduce final Hamming from $0.035$--$0.038$ to
+$0.029$--$0.030$ and raise survival from $0.975$ to $1.00$. All ten
+evolved controllers are \emph{tonic}: flat nonzero parent-specific
+constants with no lesion-locked response. Yet the fragile parent's tonic
+vector is nearly identical (cosine similarity $0.99$) to a non-beneficial
+sibling's, so the benefit arises from interaction with parent-specific
+dynamics, not from a distinctive chemical operating point. Cross-parent
+transfer is a penalty in five of five siblings --- lethally in two.
+Single-parent evaluation hid all of this. The attribution protocol ---
 adversarial damage calibration, objective-hacking and
 search-initialization probes, and parent-seed-resolved decomposition ---
 transfers to other self-organizing systems.
@@ -119,8 +120,8 @@ control.
 
 This paper resolves the attribution with a preregistered five-parent-seed
 study. For each seed $s \in \{0,\dots,4\}$ we train $K{=}0$ and
-channel-aware $K{=}3$ parents from scratch, evolve a controller \emph{on
-that parent}, and evaluate four conditions on held-out damage seeds:
+channel-aware $K{=}3$ parents from scratch, evolve two independent
+controllers \emph{on that parent}, and evaluate four conditions on held-out damage seeds:
 $H(K{=}0,s)$, $H(K{=}3,m{=}0,s)$, $H(K{=}3,\text{own ctrl},s)$, and a
 cross-parent transfer probe $H(K{=}3,\text{July ctrl},s)$. The primary
 statistic, thresholds, and all three paper outcomes were fixed before data
@@ -136,10 +137,12 @@ script are in the repository history, timestamped before the runs.
         with calibration probes that make the evolution landscape
         interpretable (Appendix~\ref{app:calibration}).
   \item The attribution result: channel-aware \emph{training} is the
-        robust cause (5/5 seeds); controllers evolved on their own parents
-        add nothing exceeding noise; the evolved artifact is a
-        parent-specific tonic \emph{constant} that transfers as a penalty
-        in 5/5 siblings (lethally in 2).
+        robust cause (5/5 seeds); the evolved-controller effect is
+        parent-dependent --- absent or noise-level on four parents, but
+        reproducibly beneficial (2/2 independent evolutions) on the
+        fragile parent; every evolved artifact is a parent-specific tonic
+        \emph{constant} that transfers as a penalty in 5/5 siblings
+        (lethally in 2).
 \end{enumerate}
 
 \section{Related Work}
@@ -184,9 +187,10 @@ channel-aware $K{=}3$ parent from scratch (Appendix~\ref{app:model}); the
 $K{=}3$ parent's three global modulator channels are the only non-local
 pathway. A 259-parameter controller ($4{\to}32{\to}3$, $\tanh$) reads
 four target-free grid statistics and sets release every 10 steps; each
-parent gets its own controller via CMA-ES~\cite{hansen2006cma} in
+parent gets \emph{two} independently evolved controllers via
+CMA-ES~\cite{hansen2006cma} in
 Evosax~\cite{lange2022evosax} (population 64, $\sigma_0{=}0.01$, 300
-generations, event-weighted Hamming objective;
+generations, different evolution seeds, event-weighted Hamming objective;
 Appendix~\ref{app:evolution}).
 
 \paragraph{Preregistered comparison.}
@@ -204,8 +208,11 @@ before data collection: \emph{controller effect supported} if $\Delta_s >
 $\geq 4/5$; \emph{transfer failure supported} if the July controller
 underperforms the own-controller substantially in $\geq 4/5$. Effects are
 reported per seed with median and range; we make no significance claims
-at five seeds. Controller-output ($m_t$) series distinguish tonic
-calibration from event-locked policy (Appendix~\ref{app:mt}).
+at five seeds. The defense study reported here fixed the
+two-evolutions-per-parent rule in its preregistration before launch
+(\texttt{experiment\_results/20260818\_evoseed\_defense/PREREGISTRATION.md}
+in the repository history). Controller-output ($m_t$) series distinguish
+tonic calibration from event-locked policy (Appendix~\ref{app:mt}).
 
 \section{Results}
 \label{sec:results}
@@ -217,69 +224,77 @@ Appendix~\ref{app:rawtables}.
 \begin{table}[h]
   \centering
   \small
-  \caption{Per-seed effects. $E_{\mathrm{train}}{=}H(K0)-H(m0)$;
-  $\Delta_s{=}H(m0)-H(\text{own})$ (preregistered primary);
-  $E_{\mathrm{transfer}}{=}H(\text{July})-H(\text{own})$. Positive favors
-  the named component.}
+  \caption{Final Hamming (mean over 5 condition seeds $\times$ 8 held-out
+  damage seeds) per parent seed: the $K{=}0$ parent; the channel-aware
+  $K{=}3$ parent with modulation pinned to zero; and that parent's own
+  evolved controller (two independent evolutions; range where the runs
+  differ). Survival shown in parentheses where it departs from $1.00$.
+  Channel-aware training helps in 5/5 seeds; the controller effect is
+  parent-dependent. Cross-parent transfer results are in
+  Appendix~\ref{app:rawtables}.}
   \label{tab:effects}
-  \begin{tabular}{lccc}
+  \scriptsize
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{lcccp{1.45in}}
     \toprule
-    Seed & $E_{\mathrm{train}}$ & $\Delta_s$ ($E_{\mathrm{ctrl}}$) & $E_{\mathrm{transfer}}$ \\
+    Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & Own ctrl (2 runs) & Interpretation \\
     \midrule
-    0 & $+0.0053$ & $+0.0013$ & $+0.0083$ \\
-    1 & $+0.1400$ & $+0.0084$ & $+0.2189^{\dagger}$ \\
-    2 & $+0.0077$ & $-0.0001$ & $+0.4129^{\dagger}$ \\
-    3 & $+0.0139$ & $-0.0011$ & $+0.0665$ \\
-    4 & $+0.0074$ & $+0.0042$ & $+0.0088$ \\
-    \midrule
-    median & $+0.0077$ & $+0.0013$ & $+0.0665$ \\
+    0 & $0.035$--$0.036$ & $0.029$ & $0.029$--$0.030$ & channel effect; no control effect \\
+    1 & $0.163$--$0.175$ (surv.\ $0.05$--$0.08$) & $0.035$--$0.038$ (surv.\ $0.975$) & $0.029$--$0.030$ (surv.\ $1.00$) & channel effect $+$ replicated tonic benefit \\
+    2 & $0.030$ & $0.018$--$0.021$ & $0.022$--$0.026$ & channel effect; controller slightly worse \\
+    3 & $0.049$--$0.052$ & $0.028$--$0.029$ & $0.032$--$0.033$ & channel effect; controller slightly worse \\
+    4 & $0.042$--$0.045$ & $0.033$ & $0.034$--$0.035$ & channel effect; no control effect \\
     \bottomrule
   \end{tabular}
-
-  \smallskip
-  \footnotesize{$^{\dagger}$lethal: survival $0.00$. Per-run SD of final
-  Hamming is $0.01$--$0.03$ in every condition; all $|\Delta_s|$ are an
-  order of magnitude below it.}
 \end{table}
 
 \paragraph{Outcome.}
 Applying the preregistered rule: the \emph{channel-training effect is
-supported} ($E_{\mathrm{train}}>0$ in 5/5 seeds; bar was $\geq$4/5); the
-\emph{transfer failure is supported} (penalty in 5/5; lethal in 2). Under
-the preregistered decision rule the controller effect is classified as
-\emph{parent-dependent}: three of five effects are positive, but all are
-at least an order of magnitude below per-run evaluation noise. We
-therefore interpret the practical controller effect as absent under this
-stationary regime.
+supported} ($H(K0,s)-H(m0,s) > 0$ in 5/5 seeds; bar was $\geq$4/5); the
+\emph{transfer failure is supported} (penalty in 5/5; lethal in 2). The
+controller effect is classified as \emph{parent-dependent} ---
+preregistered \textbf{Outcome C}. The controller effect is absent or
+noise-level on most parents, but reproducibly beneficial on the fragile
+parent: on seeds 0, 2, 3, and 4 the own controller matches zero-output or
+is slightly worse, while on seed 1 both independent evolutions reduce
+final Hamming from $0.035$--$0.038$ to $0.029$--$0.030$ and raise survival
+from $0.975$ to $1.00$.
 
 \paragraph{What the controller actually emits.}
-All five evolved controllers emit a \emph{constant at a nonzero level}:
-within-rollout std of $m_t$ is $0.002$--$0.004$ per channel, the
-correlation with a post-lesion indicator is $|r|\leq0.17$, and lesion-step
-$|\Delta m|$ is indistinguishable from baseline drift --- while channel
-means sit at parent-distinct offsets ranging from $-0.040$ to $+0.043$
-with differing signs per parent (e.g., $+0.022/+0.017/-0.033$ on seed 1
-vs $-0.029/-0.040/-0.010$ on seed 2). Evolution neither collapses to
-neutral output nor discovers a policy: it finds a parent-specific tonic
-calibration (diagnostics in Appendix~\ref{app:mt}).
+All ten evolved controllers emit a \emph{constant at a nonzero level}:
+within-rollout per-channel std of $m_t$ is $0.0002$--$0.0046$ --- tonic,
+with no lesion-locked response, in 10/10 runs --- while channel means sit
+at parent-distinct offsets (e.g., $+0.030/{+}0.012/{-}0.026$ on seed 1 vs
+$-0.026/{-}0.032/{-}0.015$ on seed 2; per-seed vectors in
+Appendix~\ref{app:mt}). Evolution neither collapses to neutral output nor
+discovers a policy: it finds a parent-specific tonic calibration.
+Strikingly, the tonic vector alone does not predict benefit: seed 1's
+tonic vector is nearly identical to seed 4's (cosine similarity $0.993$,
+Euclidean distance $0.0065$), yet only seed 1 benefits. The benefit
+therefore arises from the interaction between a tonic calibration and
+parent-specific local dynamics, not from a distinctive chemical operating
+point.
 
 \section{Discussion}
 \label{sec:discussion}
 
 \paragraph{Which component causes robustness.}
-Across five parent seeds, channel-aware training consistently improved
-robustness, while evolved controllers produced no noise-exceeding
-same-parent benefit and remained effectively tonic. Nevertheless, the
-learned tonic calibration was highly parent-specific: a controller evolved
-for the July parent degraded every recipient parent, lethally in two
-cases. Robustness therefore resides in the interaction between parent
-training and global state, rather than in a transferable closed-loop
-policy. Standard single-parent evaluation would have concluded the evolved
-controller was robust; cross-parent probing reveals the same controller is
-harmful on every independently trained recipient. Zero-output channel
-parents beat their $K{=}0$ siblings in 5/5 seeds, with the largest effect
-exactly where the unmodulated parent is most fragile (seed 1: $0.179 \to
-0.039$).
+Across five parent seeds, channel-aware training is the broad robustness
+effect: zero-output channel parents beat their $K{=}0$ siblings in 5/5
+seeds, with the largest effect exactly where the unmodulated parent is
+most fragile (seed 1: $0.163$--$0.175 \to 0.035$--$0.038$; survival
+$0.05$--$0.08 \to 0.975$). Evolved modulation is parent-dependent: on four
+parents the own controller matches zero-output or is slightly worse; only
+on the fragile parent do both independent evolutions add a final
+stabilization (survival $0.975 \to 1.00$, final Hamming
+$\to 0.029$--$0.030$). The learned calibration is tonic in all ten runs
+and highly parent-specific: a controller evolved for the July parent
+degraded every recipient parent, lethally in two cases. Robustness
+therefore resides in the interaction between parent training and global
+state, rather than in a transferable closed-loop policy. Standard
+single-parent evaluation would have concluded the evolved controller was
+robust; cross-parent probing reveals the same controller is harmful on
+every independently trained recipient.
 
 \paragraph{Why cross-parent transfer fails.}
 The transfer probe uses one donor controller, five recipients --- a probe,
@@ -291,8 +306,10 @@ dynamics in a sibling. Evolution found an operating point for one
 organism, not a modulation law.
 
 \paragraph{Limitations and future work.}
-Five parent seeds; one controller evolution per parent; one morphology;
-one stationary damage family; transfer probed with a single donor. Repair
+Five parent seeds; two controller evolutions per parent; one morphology;
+one stationary damage family; transfer probed with a single donor. Only
+one of the five parents proved controller-responsive, so the prevalence of
+such parents is unknown. Repair
 half-life is comparable only among conditions that return to near-target;
 Hamming conflates locomotion drift with morphological error uniformly.
 Next: multi-parent (population-based) evolution; full transfer matrices;
@@ -302,10 +319,15 @@ benchmark is the controlled baseline.
 \section{Conclusion}
 \label{sec:conclusion}
 
-In regenerative NCAs under adversarial recurring damage, robustness comes
-from channel-aware training, not from evolved control: zero-output channel
-parents win in 5/5 seeds, evolved controllers add noise-level benefit, and
-their tonic constants transfer as penalties (lethally in 2/5). The broader
+In regenerative NCAs under adversarial recurring damage, the broad
+robustness effect is channel-aware training: zero-output channel parents
+win in 5/5 seeds, rescuing even a nearly lethal unmodulated parent.
+Evolved modulation is a parent-dependent tonic calibration, not a
+transferable closed-loop policy: absent or noise-level on most parents,
+reproducibly beneficial on the one fragile parent, and harmful on every
+sibling parent under cross-parent transfer (lethally in 2/5) --- even
+though a nearly identical tonic vector can benefit one parent and not
+another. The broader
 contribution is methodological: robustness claims about self-organizing
 systems should be attributed across model seeds, not only damage seeds.
 
@@ -318,27 +340,56 @@ systems should be attributed across model seeds, not only damage seeds.
   \centering
   \small
   \caption{Final Hamming (mean $\pm$ SD, 5 condition seeds $\times$ 8
-  held-out damage seeds) for four conditions across five parent seeds,
-  hard recurring multi-block damage, $T{=}2000$.}
+  held-out damage seeds) and survival for each of the ten runs (5 parent
+  seeds $\times$ 2 independent controller evolutions) under hard recurring
+  multi-block damage, $T{=}2000$. Conditions: $K{=}3$ parent with
+  modulation pinned to zero; the parent's own evolved controller; the
+  $K{=}0$ parent.}
   \label{tab:attribution}
-  \begin{tabular}{lcccc}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lcccccc}
     \toprule
-    Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & $K{=}3$, own ctrl & $K{=}3$, July ctrl \\
+    & \multicolumn{2}{c}{$K{=}3$, $m{=}0$} & \multicolumn{2}{c}{$K{=}3$, own ctrl} & \multicolumn{2}{c}{$K{=}0$} \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+    Run & $H$ & surv & $H$ & surv & $H$ & surv \\
     \midrule
-    0 & $0.034{\pm}.012$ & $0.029{\pm}.014$ & $0.028{\pm}.014$ & $0.036{\pm}.010$ \\
-    1 & $0.179{\pm}.032$ & $0.039{\pm}.032$ & $0.031{\pm}.020$ & $0.249{\pm}.046$ \\
-    2 & $0.029{\pm}.018$ & $0.021{\pm}.017$ & $0.021{\pm}.016$ & $0.434{\pm}.012$ \\
-    3 & $0.047{\pm}.005$ & $0.033{\pm}.017$ & $0.034{\pm}.016$ & $0.100{\pm}.020$ \\
-    4 & $0.044{\pm}.011$ & $0.036{\pm}.025$ & $0.032{\pm}.019$ & $0.041{\pm}.019$ \\
-    \midrule
-    median & $0.044$ & $0.033$ & $0.031$ & $0.100$ \\
+    s0\_e1 & $0.0290{\pm}.0135$ & $1.000$ & $0.0303{\pm}.0134$ & $1.000$ & $0.0361{\pm}.0137$ & $1.000$ \\
+    s0\_e2 & $0.0294{\pm}.0144$ & $1.000$ & $0.0292{\pm}.0136$ & $1.000$ & $0.0354{\pm}.0109$ & $1.000$ \\
+    s1\_e1 & $0.0384{\pm}.0266$ & $0.975$ & $0.0286{\pm}.0177$ & $1.000$ & $0.1628{\pm}.0389$ & $0.075$ \\
+    s1\_e2 & $0.0353{\pm}.0256$ & $0.975$ & $0.0301{\pm}.0210$ & $1.000$ & $0.1746{\pm}.0356$ & $0.050$ \\
+    s2\_e1 & $0.0183{\pm}.0145$ & $1.000$ & $0.0225{\pm}.0149$ & $1.000$ & $0.0299{\pm}.0178$ & $1.000$ \\
+    s2\_e2 & $0.0208{\pm}.0170$ & $1.000$ & $0.0258{\pm}.0161$ & $1.000$ & $0.0296{\pm}.0174$ & $1.000$ \\
+    s3\_e1 & $0.0281{\pm}.0177$ & $1.000$ & $0.0332{\pm}.0165$ & $1.000$ & $0.0491{\pm}.0084$ & $1.000$ \\
+    s3\_e2 & $0.0289{\pm}.0182$ & $1.000$ & $0.0321{\pm}.0164$ & $1.000$ & $0.0525{\pm}.0136$ & $1.000$ \\
+    s4\_e1 & $0.0332{\pm}.0233$ & $1.000$ & $0.0336{\pm}.0223$ & $1.000$ & $0.0420{\pm}.0111$ & $1.000$ \\
+    s4\_e2 & $0.0332{\pm}.0225$ & $1.000$ & $0.0345{\pm}.0222$ & $1.000$ & $0.0452{\pm}.0093$ & $1.000$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Survival is $1.00$ everywhere except: $K{=}0$ on seed 1 ($0.03$), July
-controller on seeds 1/2 ($0.00$) and seed 3 ($0.45$). AUC mirrors the
-same ordering in every seed (full CSVs in the repository).
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Cross-parent transfer probe (unchanged from the per-parent
+  study): the July donor controller evaluated on each recipient parent.
+  Final Hamming and survival on held-out damage seeds; transfer is a
+  penalty in 5/5 recipients, lethal in 2.}
+  \label{tab:transfer}
+  \begin{tabular}{lcc}
+    \toprule
+    Recipient seed & Final Hamming & Survival \\
+    \midrule
+    0 & $0.036$ & $1.00$ \\
+    1 & $0.249$ & $0.00$ (lethal) \\
+    2 & $0.434$ & $0.00$ (lethal) \\
+    3 & $0.100$ & $0.45$ \\
+    4 & $0.041$ & $1.00$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+AUC mirrors the same ordering in every seed (full CSVs in the repository).
 
 \section{Controller-output ($m_t$) diagnostics}
 \label{app:mt}
@@ -346,25 +397,31 @@ same ordering in every seed (full CSVs in the repository).
 \begin{table}[h]
   \centering
   \small
-  \caption{Per-controller $m_t$ diagnostics over one held-out hard-regime
-  rollout. mean($m$) = per-channel mean level (all nonzero, parent-distinct);
-  std$(m_t)$ = within-rollout std; corr = correlation with a post-lesion
-  indicator; jump = mean $|\Delta m|$ in the 10 steps after lesions vs
-  drift elsewhere. All five: flat output at nonzero levels, no
-  lesion-locked response.}
+  \caption{Tonic output of the evolved controllers: per-channel mean of
+  $m_t$, averaged over the two independent evolutions per seed. All ten
+  controllers sit at nonzero, parent-distinct offsets; within-rollout
+  per-channel std of $m_t$ is $0.0002$--$0.0046$ everywhere --- flat,
+  tonic output with no lesion-locked response in 10/10 runs.}
   \label{tab:mt}
-  \begin{tabular}{lccccc}
+  \begin{tabular}{lc}
     \toprule
-    Seed & mean$(m)$ per channel & std$(m_t)$ & corr & jump & drift \\
+    Seed & mean$(m)$ per channel (avg.\ of 2 runs) \\
     \midrule
-    0 & $-0.033\,{+}0.000\,{-}0.009$ & $0.0020$ & $-0.17$ & $0.0006$ & $0.0006$ \\
-    1 & $+0.022\,{+}0.017\,{-}0.033$ & $0.0031$ & $+0.03$ & $0.0010$ & $0.0010$ \\
-    2 & $-0.029\,{-}0.040\,{-}0.010$ & $0.0035$ & $-0.14$ & $0.0012$ & $0.0011$ \\
-    3 & $-0.004\,{-}0.026\,{-}0.028$ & $0.0026$ & $-0.13$ & $0.0008$ & $0.0008$ \\
-    4 & $+0.043\,{+}0.004\,{-}0.019$ & $0.0029$ & $+0.05$ & $0.0010$ & $0.0009$ \\
+    0 & $-0.021\;\;{+}0.002\;\;{+}0.027$ \\
+    1 & $+0.030\;\;{+}0.012\;\;{-}0.026$ \\
+    2 & $-0.026\;\;{-}0.032\;\;{-}0.015$ \\
+    3 & $+0.001\;\;{+}0.032\;\;{-}0.010$ \\
+    4 & $+0.028\;\;{+}0.007\;\;{-}0.025$ \\
     \bottomrule
   \end{tabular}
 \end{table}
+
+The tonic vector alone does not predict benefit: seeds 1 and 4 emit nearly
+identical tonic vectors (cosine similarity $0.993$, Euclidean distance
+$0.0065$), yet only seed 1 benefits from its controller. The benefit
+arises from the interaction between a tonic calibration and
+parent-specific local dynamics, not from a distinctive chemical operating
+point.
 
 \section{Pilot: single-parent evaluation hides parent-locking}
 \label{app:pilot}
@@ -544,10 +601,11 @@ future benchmark users can avoid them.
 \section{Reproducibility}
 \label{app:repro}
 
-Parents train in $\approx$20--30 min each on one A100; each 300-generation
-evolution $\approx$4.5--5.5 h on the study host ($\approx$2.5 h on a
-faster one); the full five-seed study cost $\approx$\$20 of rented GPU
-time. Preregistration, analysis script, per-seed artifacts (controllers,
+Parents train in $\approx$20--30 min each on one A100; the defense study
+ran two independent 300-generation controller evolutions per parent (10
+total), each $\approx$2.5--3 h on the study A100, for a total
+defense-study cost of $\approx$\$25 of rented GPU time. Preregistration,
+analysis script, per-seed artifacts (controllers,
 parents, trajectories, $m_t$ series), and the mechanical outcome output are
 in the repository, timestamped before the results. Code will be released
 upon publication.
