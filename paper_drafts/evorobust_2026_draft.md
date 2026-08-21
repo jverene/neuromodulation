@@ -744,7 +744,7 @@ S.~Sudhakaran, E.~Najarro, and S.~Risi.
 arXiv:2205.06806, 2022.
 
 \bibitem{masumori2026fluctuations}
-A.~Masumori, M.~Sato, and T.~Ikegami.
+A.~Masumori, H.~Sato, and T.~Ikegami.
 \emph{Structured Fluctuations and the Information Dynamics of Self-Maintenance in Growing Neural Cellular Automata}.
 arXiv:2607.12403, 2026.
 
@@ -765,11 +765,12 @@ arXiv:1901.01753, 2019.
 
 \bibitem{dennis2020paired}
 M.~Dennis, N.~Jaques, E.~Vinitsky, A.~Bayen, S.~Russell, A.~Critch, and S.~Levine.
-\emph{Emergent Complexity and Zero-Shot Transfer Through Unsupervised Environment Design}.
+\emph{Emergent Complexity and Zero-Shot Transfer via Unsupervised Environment Design}.
 NeurIPS 2020.
 
 \bibitem{parkerholder2022accel}
-J.~Parker-Holder, R.~Rajeev, K.~Hartikainen, et al.
+J.~Parker-Holder, M.~Jiang, M.~Dennis, M.~Samvelyan, J.~Foerster,
+E.~Grefenstette, and T.~Rockt\"aschel.
 \emph{Evolving Curricula with Regret-Based Environment Design}.
 ICML 2022; arXiv:2203.01302.
 
