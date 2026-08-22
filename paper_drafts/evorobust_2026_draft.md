@@ -283,8 +283,7 @@ from $0.975$ to $1.00$.
 All ten evolved controllers emit a \emph{constant at a nonzero level}:
 within-rollout per-channel std of $m_t$ is $0.0002$--$0.0046$ --- tonic,
 with no lesion-locked response, in 10/10 runs --- while channel means sit
-at parent-distinct offsets (per-seed vectors in
-Appendix~\ref{app:mt}). Evolution neither collapses to neutral output nor
+at parent-distinct offsets (Appendix~\ref{app:mt}, Figure~\ref{fig:tonic}). Evolution neither collapses to neutral output nor
 discovers a policy: it finds a parent-specific tonic calibration.
 The tonic vector alone does not predict benefit: seeds 1 and 4 emit
 nearly identical tonic vectors (cosine $0.993$), yet only seed 1 benefits.
@@ -296,14 +295,14 @@ point.
 Extending the single-donor probe to the full $5{\times}5$
 matrix among the five defense parents --- both controller replicas per
 parent, three condition seeds per cell, 40 off-diagonal cells
-(Table~\ref{tab:matrix}) --- 23/40 transfers are harmful (survival $<0.9$
+(Table~\ref{tab:matrix}, Figure~\ref{fig:matrix}) --- 23/40 transfers are harmful (survival $<0.9$
 or final Hamming worse than the recipient's zero-output baseline by
 $>0.005$), 15 are indistinguishable from zero-output, and 2 beat it. No
 foreign controller beats the recipient's own controller beyond noise.
 Lethal transfer replicates across controller replicas and condition seeds:
 donor s3 kills recipient s2 in both replicas (survival $0.00$); donor s0
 on recipient s1 is lethal in e1 ($0.00$) and near-lethal in e2 ($0.25$).
-Classifications are stable across the three condition seeds
+Classifications are stable across condition seeds
 --- only marginal cells within $\pm 0.005$ of the threshold flip. All lethal instances
 pair strongly negative tonic-vector cosines (s3$\to$s2: $-0.61$;
 s0$\to$s1: $-0.93$), while the only beneficial transfers --- beating
@@ -471,6 +470,20 @@ damage seeds.
   \end{tabular}
 \end{table}
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig5_transfer_matrix}
+  \caption{Cross-parent transfer matrix as a heatmap (same data as
+  Table~\ref{tab:matrix}). Color: mean final Hamming over 3 condition
+  seeds (green: matches recipient's own controller; red: catastrophic).
+  $^{\dagger}$lethal (survival $0.00$); sub-threshold survival annotated
+  where $<1.00$. Diagonal boxed: recipient's own controller. The harmful
+  off-diagonal band and its replication across both evolutions are
+  immediately visible; the only beneficial off-diagonal cells are
+  s4$\to$s1 in both replicas.}
+  \label{fig:matrix}
+\end{figure}
+
 \paragraph{Tonic transplant.}
 Replacing each donor controller by its realized mean $m_t$ injected as a
 constant (same protocol, both replicas, 3 condition seeds) reproduces the
@@ -513,6 +526,19 @@ AUC mirrors the same ordering in every seed (full CSVs in the repository).
     \bottomrule
   \end{tabular}
 \end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.98\linewidth]{figures/fig6_tonic_traces}
+  \caption{Controller output $m_t$ over a full evaluation rollout, per
+  parent seed, both independent evolutions overlaid (solid/dashed), one
+  line per modulator channel. After a brief initial transient while the
+  perceptual state settles, every controller holds a constant,
+  parent-distinct offset through all lesion events --- tonic calibration,
+  not an event-locked policy. Note that the two independent evolutions of
+  the same parent sometimes settle at slightly different setpoints.}
+  \label{fig:tonic}
+\end{figure}
 
 The tonic vector alone does not predict benefit: seeds 1 and 4 emit nearly
 identical tonic vectors (cosine similarity $0.993$, Euclidean distance
