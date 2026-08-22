@@ -186,3 +186,74 @@ ax.grid(True, axis="y", alpha=0.25, lw=0.5)
 fig.savefig(OUT / "fig4_evolution_trajectory.png")
 plt.close(fig)
 print("fig4 done")
+
+# ------------------------------------------------------- fig5: transfer matrix
+# Heatmap of mean final Hamming for each donor->recipient cell, one panel per
+# controller replica (e1, e2). Cell annotation: Hamming; dagger if lethal
+# (worst-case survival 0 over the 3 condition seeds); survival if below 1.
+TM = Path("experiment_results/20260822_transfer_matrix")
+seeds = [0, 1, 2, 3, 4]
+fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4), constrained_layout=True)
+vmin, vmax = 0.0, 0.25
+for ax, rep in zip(axes, ["e1", "e2"]):
+    H = np.full((5, 5), np.nan)   # [donor][recipient]
+    S = np.full((5, 5), np.nan)   # worst-case survival
+    for ri, recip in enumerate(seeds):
+        rows = list(csv.DictReader(open(TM / f"cs3_{rep}" / f"recipient_s{recip}" / "transfer.csv")))
+        for r in rows:
+            if r["kind"] != "ctrl":
+                continue
+            donor = recip if r["donor"] == "own" else int(r["donor"][1:])
+            sub = [x for x in rows if x["kind"] == "ctrl" and x["donor"] == r["donor"]]
+            H[donor, ri] = np.mean([float(x["final_hamming"]) for x in sub])
+            S[donor, ri] = min(float(x["survival"]) for x in sub)
+    im = ax.imshow(H, cmap="RdYlGn_r", vmin=vmin, vmax=vmax, aspect="equal")
+    for d in range(5):
+        for r in range(5):
+            lethal = S[d, r] == 0.0
+            txt = f"{H[d, r]:.3f}" + ("$^\\dagger$" if lethal else
+                                      (f"\ns={S[d, r]:.2f}" if S[d, r] < 1.0 else ""))
+            ax.text(r, d, txt, ha="center", va="center", fontsize=6.2,
+                    color="white" if (lethal or H[d, r] > 0.15) else "black")
+            if d == r:
+                ax.add_patch(plt.Rectangle((r - 0.5, d - 0.5), 1, 1,
+                                           fill=False, edgecolor="black", lw=1.6))
+    ax.set_xticks(range(5)); ax.set_yticks(range(5))
+    ax.set_xticklabels([f"s{s}" for s in seeds]); ax.set_yticklabels([f"s{s}" for s in seeds])
+    ax.set_xlabel("recipient parent"); ax.set_ylabel("donor controller")
+    ax.set_title(f"replica {rep}", fontsize=8.5)
+fig.colorbar(im, ax=axes, shrink=0.85, label="mean final Hamming (3 condition seeds)")
+fig.savefig(OUT / "fig5_transfer_matrix.png")
+plt.close(fig)
+print("fig5 done")
+
+# ------------------------------------------------------- fig6: tonic m_t traces
+# Per parent seed: m_t per channel over the rollout, both independent evolutions
+# overlaid. Flat lines at parent-distinct offsets = tonic calibration.
+DF = Path("experiment_results/20260818_evoseed_defense")
+ch_cols = [C_BLUE, C_ORANGE, C_GREEN]
+fig, axes = plt.subplots(1, 5, figsize=(8.4, 1.9), sharey=True, constrained_layout=True)
+for ax, s in zip(axes, seeds):
+    for rep, ls in [("e1", "-"), ("e2", "--")]:
+        rows = list(csv.DictReader(open(DF / f"defense_s{s}_{rep}" / "m_series.csv")))
+        t = [int(r["step"]) for r in rows]
+        for k in range(3):
+            ax.plot(t, [float(r[f"m_k{k}"]) for r in rows],
+                    color=ch_cols[k], lw=0.7, ls=ls,
+                    alpha=0.9 if rep == "e1" else 0.6)
+    ax.set_title(f"parent s{s}", fontsize=8.5)
+    ax.set_xlabel("step", fontsize=7.5)
+    ax.tick_params(labelsize=6.5)
+    ax.grid(True, axis="y", alpha=0.25, lw=0.5)
+axes[0].set_ylabel("$m_t$", fontsize=8)
+axes[0].set_ylim(-0.06, 0.06)
+# Shared legend: panel s2's traces are all negative, so its upper area is empty.
+axes[2].plot([], [], color="0.4", lw=0.8, ls="-", label="evolution 1")
+axes[2].plot([], [], color="0.4", lw=0.8, ls="--", label="evolution 2")
+for k, c in enumerate(ch_cols):
+    axes[2].plot([], [], color=c, lw=1.2, label=f"channel {k}")
+axes[2].legend(frameon=False, fontsize=6, loc="upper left", ncol=1,
+               handlelength=1.4, borderpad=0.2, labelspacing=0.25)
+fig.savefig(OUT / "fig6_tonic_traces.png")
+plt.close(fig)
+print("fig6 done")
