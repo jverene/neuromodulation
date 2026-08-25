@@ -65,78 +65,75 @@ urlcolor=navyblue
 \maketitle
 
 \begin{abstract}
-Regenerative Neural Cellular Automata (NCAs) are usually evaluated on a
-single trained model, so robustness claims cannot separate what
-\emph{training} provides from what run-time \emph{control} provides. In a
-preregistered study, we cross five independently trained parent seeds with
-recurring multi-block damage that exceeds the perception radius, and for
-each parent run \emph{two} independent controller evolutions (CMA-ES,
-different evolution seeds), evaluated on held-out damage seeds against
-zero-output and unmodulated baselines. Channel-aware training improves
-robustness in five of five parent seeds (median final-Hamming reduction
-$0.008$, up to $\approx0.14$ on a fragile parent). The evolved-controller
-effect is parent-dependent: on four parents the own controller matches
-zero-output modulation or is slightly worse, but on the fragile parent
-both independent evolutions reduce final Hamming from $0.035$--$0.038$ to
-$0.029$--$0.030$ and raise survival from $0.975$ to $1.00$. All ten
-evolved controllers are \emph{tonic}: flat nonzero parent-specific
-constants with no lesion-locked response. Yet the fragile parent's tonic
-vector is nearly identical (cosine similarity $0.99$) to a non-beneficial
-sibling's, so the benefit arises from interaction with parent-specific
-dynamics, not from a distinctive chemical operating point. A single-donor
-probe penalizes five of five sibling parents --- lethally
-in two --- and a full $5{\times}5$ transfer matrix (40 off-diagonal
-cells, two controller replicas and three condition seeds per cell)
-confirms parent-locking:
-most transfers are harmful, none beats the recipient's own controller,
-lethal failures replicate across controller replicas, and the only
-beneficial transfers come from the donor whose tonic vector is nearly
-identical to the fragile parent's own. Injecting the learned tonic vector
-as a constant reproduces the full controller's transfer outcomes,
-including every lethal one --- the artifact evolution transmits \emph{is}
-the tonic calibration.
-Single-parent evaluation hid all of this. The attribution protocol ---
-adversarial damage calibration, objective-hacking and
-search-initialization probes, and parent-seed-resolved decomposition ---
-transfers to other self-organizing systems.
+We set out to test whether closed-loop control of global chemical signals
+makes regenerative Neural Cellular Automata (NCAs) more robust, and built
+the evaluation to prove it: recurring multi-block lesions larger than the
+perception radius, a small evolved controller for three broadcast
+modulator channels, held-out damage seeds. On a single trained model the
+experiment looked like a success. Crossing five independently trained
+parent seeds --- two independent controller evolutions each, under a
+preregistration fixed before data collection --- dissolves that success
+into three findings. First, the robustness we had attributed to control is
+mostly a property of training: parents trained with channels present beat
+unmodulated siblings in five of five seeds (median final-Hamming
+reduction $0.008$, up to $\approx 0.14$ on the most fragile parent) with
+modulation pinned to neutral. Second, evolved controllers add little on
+top: on four parents the effect is absent or noise-level; on the fragile
+parent both evolutions reproducibly help ($0.035$--$0.038 \to
+0.029$--$0.030$, survival $0.975 \to 1.00$) --- yet its tonic vector is
+nearly identical (cosine $0.99$) to a sibling's that does not help, so
+the benefit is an interaction with parent dynamics, not a distinctive
+operating point. All ten controllers emit flat, nonzero, parent-specific
+constants with no lesion-locked response. Third, these constants are
+organism-locked: a single-donor probe penalizes five of five siblings
+(lethally in two), a full $5{\times}5$ transfer matrix shows most
+transfers harmful and none better than the recipient's own controller,
+and injecting each donor's tonic constant directly --- no controller at
+all --- reproduces its transfer outcomes in 46 of 50 cells, including
+every lethal one. Single-parent evaluation would have approved all of it.
+The attribution protocol (adversarial damage calibration, hacking and
+initialization probes, parent-seed-resolved decomposition) is the
+transferable artifact.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-Growing Neural Cellular Automata (GNCAs) demonstrate that a single local,
-differentiable update rule can grow a target morphology from a seed and
-regenerate it after damage~\cite{mordvintsev2020gnca}. The capability is
-bounded by perception: wounds larger than the perception radius contain
-cells with no signal to integrate, and severed fragments retain no
-information about the body they came from. Prior work, including our own
-single-parent study (Appendix~\ref{app:singleparent}), adds global
-modulator channels and evolves release policies for them --- and reports
-the result on \emph{one} trained model.
+Growing Neural Cellular Automata (GNCAs) grow a target morphology from a
+single seed and regenerate it after damage using one local, differentiable
+update rule~\cite{mordvintsev2020gnca}. The catch is perception: a cell
+sees only its immediate neighborhood, so wounds larger than a few cells
+contain tissue with no signal to integrate, and a severed fragment has no
+way to know what it was part of. The natural remedy is a global signal.
+Prior work, our own single-parent study included
+(Appendix~\ref{app:singleparent}), adds global modulator channels and
+evolves release policies for them --- and reports the outcome on one
+trained model.
 
-Single-model evaluation cannot answer the question it appears to answer.
-When a modulated NCA outperforms an unmodulated one, three effects are
-confounded: (i) \emph{training with channels present}, (ii) \emph{run-time
-modulation} by a controller evolved for that parent, and (iii) transfer
-across independently trained parents. Our earlier five-condition study
-found closed-loop, static, and constant modulation indistinguishable, but
-could not tell whether its benefit over the unmodulated baseline came from
-the controller or from the parent happening to be trained with channels. A
-three-parent pilot (Appendix~\ref{app:pilot}) then found the evolved
-controller \emph{transfers lethally} to sibling parents while zero-output
-channel parents beat the $K{=}0$ baseline in every seed --- the single-
-parent table had mis-attributed a parent-training effect to closed-loop
-control.
+That single-model habit is the problem this paper is about. When a
+modulated NCA outperforms an unmodulated one, three effects are
+indistinguishable in the report: the channels being \emph{present during
+training}, the controller \emph{acting at run time}, and whatever
+\emph{transfers} to another organism. Our single-parent study exhibited
+the failure firsthand: it credited closed-loop control for a $2\times$
+improvement that a later pilot traced elsewhere --- the evolved
+controller transferred lethally to sibling parents while channel parents
+with modulation pinned to zero beat the unmodulated baseline in every
+seed (Appendix~\ref{app:pilot}). The improvement was real; the
+attribution was wrong.
 
-This paper resolves the attribution with a preregistered five-parent-seed
-study. For each seed $s \in \{0,\dots,4\}$ we train $K{=}0$ and
-channel-aware $K{=}3$ parents from scratch, evolve two independent
-controllers \emph{on that parent}, and evaluate four conditions on held-out damage seeds:
+We therefore ran the attribution study that the original design needed:
+preregistered, with the primary statistic and decision thresholds fixed
+before data collection. Five parent seeds, each trained from scratch as a
+$K{=}0$ pair and a channel-aware $K{=}3$ pair; \emph{two} independent
+controller evolutions per channel parent; four conditions per seed ---
 $H(K{=}0,s)$, $H(K{=}3,m{=}0,s)$, $H(K{=}3,\text{own ctrl},s)$, and a
-cross-parent transfer probe $H(K{=}3,\text{July ctrl},s)$. The primary
-statistic, thresholds, and all three paper outcomes were fixed before data
-collection (Section~\ref{sec:design}); the preregistration and analysis
-script are in the repository history, timestamped before the runs.
+cross-parent probe --- all on held-out damage seeds; then, post-hoc, a
+full $5{\times}5$ transfer matrix between all ten controllers and all
+five parents, and a tonic-transplant condition that replaces each
+controller with its realized mean output (Section~\ref{sec:design}).
+Preregistrations and the mechanical analysis scripts are in the
+repository history, timestamped before the runs they govern.
 
 \paragraph{Contributions.}
 \begin{enumerate}
@@ -144,19 +141,18 @@ script are in the repository history, timestamped before the runs.
         NCAs: adversarial damage calibrated to exceed perception, crossed
         with parent-seed variation, decomposed into
         $E_{\mathrm{train}}$, $E_{\mathrm{ctrl}}$, $E_{\mathrm{transfer}}$,
-        with calibration probes that make the evolution landscape
+        with calibration probes that keep the evolution landscape
         interpretable (Appendix~\ref{app:calibration}).
-  \item The attribution result: channel-aware \emph{training} is the
-        robust cause (5/5 seeds); the evolved-controller effect is
-        parent-dependent --- absent or noise-level on four parents, but
-        reproducibly beneficial (2/2 independent evolutions) on the
-        fragile parent; every evolved artifact is a parent-specific tonic
-        \emph{constant} that transfers as a penalty in 5/5 siblings
-        (lethally in 2); a full $5{\times}5$ transfer matrix confirms
-        parent-locking (harmful in 23/40 cells; beneficial only onto the
-        fragile parent from the donor with a near-identical tonic vector),
-        and tonic transplants reproduce transfer outcomes without the
-        controller.
+  \item The attribution, settled causally. Training with channels is the
+        robust cause (5/5 seeds). The controller effect is parent-
+        dependent --- absent or noise-level on four parents, reproducibly
+        present on the fragile one --- and the evolved artifact is a
+        parent-specific tonic constant, not a policy: it has no
+        lesion-locked response, it penalizes every sibling it meets
+        (lethally in two of five), and injecting the constant alone
+        reproduces the controller's transfer outcomes, every lethal one
+        included. The transfer matrix (23/40 off-diagonal cells harmful,
+        none better than the recipient's own controller) closes the case.
 \end{enumerate}
 
 \section{Related Work}
