@@ -124,14 +124,12 @@ attribution was wrong.
 
 We therefore ran the attribution study that the original design needed:
 preregistered, with the primary statistic and decision thresholds fixed
-before data collection. Five parent seeds, each trained from scratch as a
-$K{=}0$ pair and a channel-aware $K{=}3$ pair; \emph{two} independent
-controller evolutions per channel parent; four conditions per seed ---
-$H(K{=}0,s)$, $H(K{=}3,m{=}0,s)$, $H(K{=}3,\text{own ctrl},s)$, and a
-cross-parent probe --- all on held-out damage seeds; then, post-hoc, a
-full $5{\times}5$ transfer matrix between all ten controllers and all
-five parents, and a tonic-transplant condition that replaces each
-controller with its realized mean output (Section~\ref{sec:design}).
+before data collection. Five parent seeds, each trained from scratch as
+a $K{=}0$ pair and a channel-aware $K{=}3$ pair; \emph{two} independent
+controller evolutions per channel parent; four conditions per seed, all
+on held-out damage seeds; then, post-hoc, a full $5{\times}5$ transfer
+matrix and a tonic-transplant condition that replaces each controller
+with its realized mean output (Section~\ref{sec:design}).
 Preregistrations and the mechanical analysis scripts are in the
 repository history, timestamped before the runs they govern.
 
@@ -172,11 +170,12 @@ the prior question: when such a channel \emph{appears} to help, what is
 actually helping?
 
 \paragraph{Search over evaluation regimes.}
-Our design follows the insight, central to novelty
+Our design follows a concern shared by novelty
 search~\cite{lehman2011novelty} and quality-diversity
-optimization~\cite{mouret2015mapelites}, that a fixed objective can
-misdirect search and hide failure modes. Environment-generation methods
-co-evolve challenges with solutions:
+optimization~\cite{mouret2015mapelites}: a fixed objective can misdirect
+search and hide failure modes, so the evaluation itself has to be
+stress-tested. Environment-generation methods push this furthest,
+co-evolving challenges with solutions ---
 POET~\cite{wang2019poet}, PAIRED~\cite{dennis2020paired},
 ACCEL~\cite{parkerholder2022accel}. Our benchmark does not yet evolve the
 damage distribution; it is the controlled stationary baseline against
@@ -185,32 +184,33 @@ which such co-evolution can be judged.
 \section{Experimental design}
 \label{sec:design}
 
-\paragraph{Damage regime and parents.}
+\paragraph{Damage regime.}
 Recurring multi-block lesions --- every 150 steps, $n{=}4$ contiguous
 $16{\times}16$ blocks at seeded positions, $T{=}2000$ --- exceed the
 perception radius, so wound interiors have no living neighbors (the
 information-isolation regime mapped in Appendix~\ref{app:e1}). Damage
 seeds 0--7 drive evolution; held-out seeds 10000--10007 drive all
 reported numbers; the schedule is deliberately adversarial
-(Appendix~\ref{app:calibration}). Per seed $s$ we train a $K{=}0$ and a
-channel-aware $K{=}3$ parent from scratch (Appendix~\ref{app:model}); the
-$K{=}3$ parent's three global modulator channels are the only non-local
-pathway. A 259-parameter controller ($4{\to}32{\to}3$, $\tanh$) reads
-four target-free grid statistics and sets release every 10 steps; each
-parent gets \emph{two} independently evolved controllers via
-CMA-ES~\cite{hansen2006cma} in
-Evosax~\cite{lange2022evosax} (population 64, $\sigma_0{=}0.01$, 300
-generations, different evolution seeds, event-weighted Hamming objective;
-Appendix~\ref{app:evolution}).
+(Appendix~\ref{app:calibration}).
+
+\paragraph{Parents and controllers.}
+Per seed $s$ we train a $K{=}0$ and a channel-aware $K{=}3$ parent from
+scratch (Appendix~\ref{app:model}); the $K{=}3$ parent's three global
+modulator channels are the only non-local pathway, each carrying a
+\emph{tonic} (slow baseline) and \emph{phasic} (event-triggered,
+fast-decaying) component --- the distinction from biological
+neuromodulation. A 259-parameter controller ($4{\to}32{\to}3$,
+$\tanh$) reads four target-free grid statistics and sets release every
+10 steps; each parent gets \emph{two} independently evolved controllers
+via CMA-ES~\cite{hansen2006cma} in Evosax~\cite{lange2022evosax}
+(population 64, $\sigma_0{=}0.01$, 300 generations, different evolution
+seeds, event-weighted Hamming objective; Appendix~\ref{app:evolution}).
 
 \paragraph{Preregistered comparison.}
 All conditions run on the same held-out damage seeds (5 condition seeds
 $\times$ 8 damage seeds) from a shared $t{=}0$ state grown by the $K{=}3$
 parent. The primary statistic is
-\begin{equation}
-  \Delta_s \;=\; H(K{=}3, m{=}0, s) \;-\; H(K{=}3, \text{own controller}, s),
-  \label{eq:delta}
-\end{equation}
+$\Delta_s = H(K{=}3, m{=}0, s) - H(K{=}3, \text{own ctrl}, s)$,
 positive when the evolved controller helps \emph{its own} parent. Fixed
 before data collection: \emph{controller effect supported} if $\Delta_s >
 0$ in $\geq 4/5$ seeds with sign-consistent differences;
@@ -280,35 +280,36 @@ All ten evolved controllers emit a \emph{constant at a nonzero level}:
 within-rollout per-channel std of $m_t$ is $0.0002$--$0.0046$ --- tonic,
 with no lesion-locked response, in 10/10 runs --- while channel means sit
 at parent-distinct offsets (Appendix~\ref{app:mt}, Figure~\ref{fig:tonic}). Evolution neither collapses to neutral output nor
-discovers a policy: it finds a parent-specific tonic calibration.
-The tonic vector alone does not predict benefit: seeds 1 and 4 emit
-nearly identical tonic vectors (cosine $0.993$), yet only seed 1 benefits.
-The benefit arises from the interaction between a tonic calibration and
-parent-specific local dynamics, not from a distinctive chemical operating
-point.
+discovers a policy: it finds a parent-specific tonic calibration. That
+calibration alone does not predict benefit --- seeds 1 and 4 emit nearly
+identical vectors (cosine $0.993$), yet only seed 1 benefits --- so the
+benefit arises from the interaction between tonic and parent-specific
+dynamics, not from a distinctive operating point.
 
 \paragraph{Cross-parent transfer matrix.}
-Extending the single-donor probe to the full $5{\times}5$
-matrix among the five defense parents --- both controller replicas per
-parent, three condition seeds per cell, 40 off-diagonal cells
-(Table~\ref{tab:matrix}, Figure~\ref{fig:matrix}) --- 23/40 transfers are harmful (survival $<0.9$
-or final Hamming worse than the recipient's zero-output baseline by
-$>0.005$), 15 are indistinguishable from zero-output, and 2 beat it. No
-foreign controller beats the recipient's own controller beyond noise.
-Lethal transfer replicates across controller replicas and condition seeds:
-donor s3 kills recipient s2 in both replicas (survival $0.00$); donor s0
-on recipient s1 is lethal in e1 ($0.00$) and near-lethal in e2 ($0.25$).
-Classifications are stable across condition seeds
---- only marginal cells within $\pm 0.005$ of the threshold flip. All lethal instances
-pair strongly negative tonic-vector cosines (s3$\to$s2: $-0.61$;
-s0$\to$s1: $-0.93$), while the only beneficial transfers --- beating
-zero-output and matching the own controller --- occur exclusively within
-the tonic-aligned pair s4$\to$s1 (cosine $+0.99$, both replicas).
-Across all 40 cells, donor--recipient tonic cosine correlates with
-transfer penalty (Pearson $r=-0.30$) and survival ($r=+0.34$); lethal and
-beneficial transfers occupy opposite alignment regimes, though alignment
-does not by itself determine outcome (some benign cells have negative
-cosine, down to $-0.95$).
+Extending the single-donor probe to the full $5{\times}5$ matrix among
+the five defense parents --- both controller replicas per parent, three
+condition seeds per cell, 40 off-diagonal cells
+(Table~\ref{tab:matrix}, Figure~\ref{fig:matrix}) --- 23/40 transfers
+are harmful (survival $<0.9$ or final Hamming worse than the recipient's
+zero-output baseline by $>0.005$), 15 are indistinguishable from
+zero-output, and 2 beat it. No foreign controller beats the recipient's
+own controller beyond noise. Lethal transfer replicates across controller
+replicas and condition seeds: donor s3 kills recipient s2 in both
+replicas (survival $0.00$); donor s0 on recipient s1 is lethal in e1
+($0.00$) and near-lethal in e2 ($0.25$). Classifications are stable
+across condition seeds --- only marginal cells within $\pm 0.005$ of
+the threshold flip.
+
+\paragraph{Tonic alignment structures transfer.}
+All lethal instances pair strongly negative tonic-vector cosines
+(s3$\to$s2: $-0.61$; s0$\to$s1: $-0.93$), while the only beneficial
+transfers --- beating zero-output and matching the own controller ---
+occur exclusively within the tonic-aligned pair s4$\to$s1 (cosine
+$+0.99$, both replicas). Across all 40 cells, donor--recipient tonic
+cosine correlates with transfer penalty (Pearson $r=-0.30$) and survival
+($r=+0.34$); alignment is not sufficient, though --- some benign cells
+carry cosines as negative as $-0.95$.
 
 \paragraph{Tonic transplant.}
 Injecting each donor's realized mean $m_t$ as a constant in place of its
@@ -324,25 +325,27 @@ dynamic residual did not measurably contribute, on-parent or off.
 \label{sec:discussion}
 
 \paragraph{Which component causes robustness.}
-Channel-aware training is the broad robustness
-effect: zero-output channel parents beat their $K{=}0$ siblings in 5/5
-seeds, with the largest effect exactly where the unmodulated parent is
-most fragile (seed 1: $0.163$--$0.175 \to 0.035$--$0.038$; survival
-$0.05$--$0.08 \to 0.975$). Evolved modulation is parent-dependent: on four
-parents the own controller matches zero-output or is slightly worse; only
-on the fragile parent do both independent evolutions add a final
-stabilization (survival $0.975 \to 1.00$, final Hamming
-$\to 0.029$--$0.030$). Robustness thus resides in the interaction of
-parent training and global state, not in a transferable closed-loop
-policy.
+Channel-aware training, not run-time control. Parents that grew up with
+global channels beat their unmodulated siblings on every seed, most
+dramatically where the unmodulated parent collapses outright; the
+channels are a developmental scaffold, making the organism more robust
+even when they carry no signal at run time. What evolution adds is
+narrow: nothing measurable on four parents; on the fragile parent, a
+final stabilization that both independent evolutions find --- and since
+that parent's tonic vector is nearly identical to a sibling's that gains
+nothing from it, the benefit is not a property of the tonic. We
+conjecture the fragile parent's dynamics sit near a stability boundary,
+so a small tonic push re-stabilizes the attractor; confirming this needs
+analysis we have not run. The broader lesson: held-out \emph{damage}
+seeds approved every condition above; crossing \emph{parent} seeds is
+what separated training from
+control, benefit from harm, and policy from constant.
 \paragraph{Why cross-parent transfer fails --- and when it does not.}
-The full matrix (Table~\ref{tab:matrix}) sharpens the single-donor probe:
-transfer is not universally lethal, but it is parent-locked in a precise
-sense. No foreign controller beats the recipient's own controller; the
+The full matrix (Table~\ref{tab:matrix}) sharpens the single-donor
+probe. No foreign controller beats the recipient's own controller; the
 majority of transfers are harmful (23/40); lethal failures replicate
 across controller replicas and condition seeds; and the only beneficial
-transfers occur within the tonic-aligned pair (s4$\to$s1)
-(Section~\ref{sec:results}).
+transfers occur within the tonic-aligned pair (s4$\to$s1).
 The tonic transplant makes the mechanism causal: injecting the donor's
 mean $m_t$ as a constant reproduces the controller's outcome in 36/40
 off-diagonal cells (10/10 diagonal), including every lethal one --- what
@@ -352,13 +355,12 @@ level drives different dynamics in a sibling. Evolution found an operating
 point for one organism, not a modulation law.
 
 \paragraph{Limitations and future work.}
-Five parent seeds; two controller evolutions per parent; one morphology;
-one stationary damage family; the July transfer probe remains
-single-donor. Only one of five parents proved controller-responsive, so
-the prevalence of such parents is unknown.
-Next: multi-parent (population-based) evolution; full transfer matrices;
-non-stationary, diversity-driven damage co-evolution, for which this
-benchmark is the controlled baseline.
+Five parent seeds, two controller evolutions each; one morphology; one
+stationary damage family; the transfer matrix covers only these parents
+and replicas. Only one of five parents proved controller-responsive, so
+the prevalence of such parents is unknown. Next: multi-parent
+(population-based) evolution; non-stationary, diversity-driven damage
+co-evolution, for which this benchmark is the controlled baseline.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -367,9 +369,8 @@ In regenerative NCAs under adversarial recurring damage, robustness comes
 from channel-aware training (5/5 seeds, rescuing a nearly lethal
 unmodulated parent); evolved modulation is a parent-dependent tonic
 calibration --- noise-level on most parents, beneficial on the fragile
-one, parent-locked under transfer. The broader contribution is
-methodological: attribute robustness claims across model seeds, not only
-damage seeds.
+one, parent-locked under transfer. Attribute robustness across model
+seeds, not only damage seeds.
 
 \appendix
 
