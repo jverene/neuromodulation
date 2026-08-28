@@ -237,16 +237,6 @@ seeds: donor s3 kills recipient s2 in both replicas (survival $0.00$);
 donor s0 on recipient s1 is lethal in e1 and near-lethal in e2
 (Figure~\ref{fig:matrix}A).
 
-\paragraph{Tonic alignment structures transfer.}
-All lethal instances pair strongly negative tonic-vector cosines
-(s3$\to$s2: $-0.61$; s0$\to$s1: $-0.93$), while the only beneficial
-transfers, beating zero-output and matching the own controller, occur
-exclusively within the tonic-aligned pair s4$\to$s1 (cosine
-$+0.99$, both replicas; adjacent to the diagonal in
-Figure~\ref{fig:matrix}). Across all 40 cells, tonic cosine correlates with transfer penalty
-($r=-0.30$) and survival ($r=+0.34$); alignment is not sufficient, as
-some benign cells carry cosines to $-0.95$.
-
 \paragraph{Tonic transplant.}
 Injecting each donor's realized mean $m_t$ as a constant in place of its
 controller (both replicas, three condition seeds) reproduces the full
@@ -305,6 +295,7 @@ parent-dependent tonic calibration, noise-level on most parents,
 beneficial on the fragile one, parent-locked under transfer. Attribute
 robustness across model seeds, not only damage seeds.
 
+\clearpage
 \begin{thebibliography}{13}
 
 \bibitem{mordvintsev2020gnca}
@@ -402,16 +393,16 @@ $K{=}0$ parent.}
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 Run & $H$ & surv & $H$ & surv & $H$ & surv \\
 \midrule
-s0_e1 & $0.0290{\pm}.0135$ & $1.000$ & $0.0303{\pm}.0134$ & $1.000$ & $0.0361{\pm}.0137$ & $1.000$ \\
-s0_e2 & $0.0294{\pm}.0144$ & $1.000$ & $0.0292{\pm}.0136$ & $1.000$ & $0.0354{\pm}.0109$ & $1.000$ \\
-s1_e1 & $0.0384{\pm}.0266$ & $0.975$ & $0.0286{\pm}.0177$ & $1.000$ & $0.1628{\pm}.0389$ & $0.075$ \\
-s1_e2 & $0.0353{\pm}.0256$ & $0.975$ & $0.0301{\pm}.0210$ & $1.000$ & $0.1746{\pm}.0356$ & $0.050$ \\
-s2_e1 & $0.0183{\pm}.0145$ & $1.000$ & $0.0225{\pm}.0149$ & $1.000$ & $0.0299{\pm}.0178$ & $1.000$ \\
-s2_e2 & $0.0208{\pm}.0170$ & $1.000$ & $0.0258{\pm}.0161$ & $1.000$ & $0.0296{\pm}.0174$ & $1.000$ \\
-s3_e1 & $0.0281{\pm}.0177$ & $1.000$ & $0.0332{\pm}.0165$ & $1.000$ & $0.0491{\pm}.0084$ & $1.000$ \\
-s3_e2 & $0.0289{\pm}.0182$ & $1.000$ & $0.0321{\pm}.0164$ & $1.000$ & $0.0525{\pm}.0136$ & $1.000$ \\
-s4_e1 & $0.0332{\pm}.0233$ & $1.000$ & $0.0336{\pm}.0223$ & $1.000$ & $0.0420{\pm}.0111$ & $1.000$ \\
-s4_e2 & $0.0332{\pm}.0225$ & $1.000$ & $0.0345{\pm}.0222$ & $1.000$ & $0.0452{\pm}.0093$ & $1.000$ \\
+s0\_e1 & $0.0290{\pm}.0135$ & $1.000$ & $0.0303{\pm}.0134$ & $1.000$ & $0.0361{\pm}.0137$ & $1.000$ \\
+s0\_e2 & $0.0294{\pm}.0144$ & $1.000$ & $0.0292{\pm}.0136$ & $1.000$ & $0.0354{\pm}.0109$ & $1.000$ \\
+s1\_e1 & $0.0384{\pm}.0266$ & $0.975$ & $0.0286{\pm}.0177$ & $1.000$ & $0.1628{\pm}.0389$ & $0.075$ \\
+s1\_e2 & $0.0353{\pm}.0256$ & $0.975$ & $0.0301{\pm}.0210$ & $1.000$ & $0.1746{\pm}.0356$ & $0.050$ \\
+s2\_e1 & $0.0183{\pm}.0145$ & $1.000$ & $0.0225{\pm}.0149$ & $1.000$ & $0.0299{\pm}.0178$ & $1.000$ \\
+s2\_e2 & $0.0208{\pm}.0170$ & $1.000$ & $0.0258{\pm}.0161$ & $1.000$ & $0.0296{\pm}.0174$ & $1.000$ \\
+s3\_e1 & $0.0281{\pm}.0177$ & $1.000$ & $0.0332{\pm}.0165$ & $1.000$ & $0.0491{\pm}.0084$ & $1.000$ \\
+s3\_e2 & $0.0289{\pm}.0182$ & $1.000$ & $0.0321{\pm}.0164$ & $1.000$ & $0.0525{\pm}.0136$ & $1.000$ \\
+s4\_e1 & $0.0332{\pm}.0233$ & $1.000$ & $0.0336{\pm}.0223$ & $1.000$ & $0.0420{\pm}.0111$ & $1.000$ \\
+s4\_e2 & $0.0332{\pm}.0225$ & $1.000$ & $0.0345{\pm}.0222$ & $1.000$ & $0.0452{\pm}.0093$ & $1.000$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -528,6 +519,16 @@ $0.0065$), yet only seed 1 benefits from its controller. The benefit
 arises from the interaction between a tonic calibration and
 parent-specific local dynamics, not from a distinctive chemical operating
 point.
+
+\paragraph{Tonic alignment structures transfer.}
+All lethal instances pair strongly negative tonic-vector cosines
+(s3$\to$s2: $-0.61$; s0$\to$s1: $-0.93$), while the only beneficial
+transfers, beating zero-output and matching the own controller, occur
+exclusively within the tonic-aligned pair s4$\to$s1 (cosine
+$+0.99$, both replicas; adjacent to the diagonal in
+Figure~\ref{fig:matrix}). Across all 40 cells, tonic cosine correlates with transfer penalty
+($r=-0.30$) and survival ($r=+0.34$); alignment is not sufficient, as
+some benign cells carry cosines to $-0.95$.
 
 \section{Pilot: single-parent evaluation hides parent-locking}
 \label{app:pilot}
