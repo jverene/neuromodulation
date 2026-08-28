@@ -107,16 +107,16 @@ Prior work, our own single-parent study included
 evolves release policies for them --- and reports the outcome on one
 trained model.
 
-That single-model habit is the problem this paper is about. When a
-modulated NCA outperforms an unmodulated one, three effects are
-indistinguishable: the channels being \emph{present during training}, the
-controller \emph{acting at run time}, and whatever \emph{transfers} to
-another organism. Our single-parent study exhibited
-the failure firsthand: it credited closed-loop control for a $2\times$
-improvement that a later pilot traced elsewhere --- the controller
-transferred lethally to siblings while zero-modulation channel parents
-beat the unmodulated baseline in every seed (Appendix~\ref{app:pilot}).
-The improvement was real; the attribution was wrong.
+That single-model habit is the problem this paper is about: when a
+modulated NCA beats an unmodulated one, the channels being \emph{present
+during training}, the controller \emph{acting at run time}, and whatever
+\emph{transfers} to another organism are confounded. Our single-parent
+study learned this the hard way --- it credited closed-loop control for a
+$2\times$ improvement that vanished under cross-parent testing, where
+the controller transferred lethally to siblings while zero-modulation
+channel parents beat the unmodulated baseline in every seed
+(Appendix~\ref{app:pilot}). The improvement was real; the attribution
+was wrong.
 
 We therefore ran the attribution study that the original design needed:
 preregistered, with the primary statistic and decision thresholds fixed
@@ -124,10 +124,8 @@ before data collection. Five parent seeds, each trained from scratch as
 a $K{=}0$ pair and a channel-aware $K{=}3$ pair; \emph{two} independent
 controller evolutions per channel parent; four conditions per seed, all
 on held-out damage seeds; then, post-hoc, a full $5{\times}5$ transfer
-matrix and a tonic-transplant condition that replaces each controller
-with its realized mean output (Section~\ref{sec:design}).
-Preregistrations and analysis scripts are in the repository history,
-timestamped before the runs.
+matrix and a tonic-transplant condition (Section~\ref{sec:design};
+preregistrations and analysis scripts timestamped before the runs).
 
 \paragraph{Contributions.}
 \begin{enumerate}
@@ -178,9 +176,8 @@ co-evolution can be judged against.
 
 \paragraph{Damage regime.}
 Recurring multi-block lesions --- every 150 steps, $n{=}4$ contiguous
-$16{\times}16$ blocks at seeded positions, $T{=}2000$ --- exceed the
-perception radius, so wound interiors have no living neighbors
-(Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution; held-out
+$16{\times}16$ blocks at seeded positions, $T{=}2000$ (the
+information-isolation regime of Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution; held-out
 seeds 10000--10007 drive all reported numbers; the schedule is
 deliberately adversarial (Appendix~\ref{app:calibration}).
 
@@ -250,11 +247,10 @@ Appendix~\ref{app:rawtables}.
 \end{table}
 
 \paragraph{Outcome.}
-Applying the preregistered rule: \emph{channel-training supported}
-(positive in 5/5 seeds; bar $\geq$4/5); \emph{transfer failure
-supported} (penalty 5/5, lethal in 2). The
-controller effect is classified as \emph{parent-dependent} ---
-preregistered \textbf{Outcome C}: absent or
+\emph{Channel-training supported} (positive in 5/5 seeds; bar
+$\geq$4/5); \emph{transfer failure supported} (penalty 5/5, lethal in
+2). Under the preregistered rule the controller effect is classified as
+\emph{parent-dependent} --- preregistered \textbf{Outcome C}: absent or
 noise-level on four parents, reproducibly beneficial on the fragile one
 (both evolutions: $0.035$--$0.038 \to 0.029$--$0.030$, survival
 $0.975 \to 1.00$).
@@ -263,10 +259,9 @@ $0.975 \to 1.00$).
 All ten evolved controllers emit a \emph{constant at a nonzero level}:
 within-rollout per-channel std of $m_t$ is $0.0002$--$0.0046$ --- tonic,
 with no lesion-locked response, in 10/10 runs --- while channel means sit
-at parent-distinct offsets (Figure~\ref{fig:tonic}). Evolution neither collapses to neutral output nor
-discovers a policy: it finds a parent-specific tonic calibration. That
-calibration alone does not predict benefit: seeds 1 and 4 emit nearly
-identical vectors (cosine $0.993$), yet only seed 1 benefits.
+at parent-distinct offsets (Figure~\ref{fig:tonic}). Evolution neither collapses to neutral output nor discovers a policy:
+it finds a parent-specific tonic calibration (whose predictive limits
+are discussed in Section 5).
 
 \paragraph{Cross-parent transfer matrix.}
 The full $5{\times}5$ matrix among the defense parents --- both
@@ -275,10 +270,9 @@ replicas, three condition seeds per cell, 40 off-diagonal cells
 are harmful (survival $<0.9$ or final Hamming worse than the recipient's
 zero-output baseline by $>0.005$), 15 are indistinguishable from
 zero-output, and 2 beat it. No foreign controller beats the recipient's
-own controller beyond noise. Lethal transfer replicates across controller
-replicas and condition seeds: donor s3 kills recipient s2 in both
-replicas (survival $0.00$); donor s0 on recipient s1 is lethal in e1 and
-near-lethal in e2. Classifications are stable across condition seeds
+own controller beyond noise. Lethal transfer replicates across controller replicas and condition
+seeds: donor s3 kills recipient s2 in both replicas (survival $0.00$);
+donor s0 on recipient s1 is lethal in e1 and near-lethal in e2
 (Figure~\ref{fig:matrix}A).
 
 \paragraph{Tonic alignment structures transfer.}
