@@ -22,8 +22,6 @@
 
 \maketitle
 
-\maketitle
-
 \begin{abstract}
 We set out to test whether closed-loop control of global chemical signals
 makes regenerative Neural Cellular Automata (NCAs) more robust, and built
@@ -162,8 +160,8 @@ positive when the evolved controller helps \emph{its own} parent. Fixed
 before data collection: \emph{controller effect supported} if $\Delta_s >
 0$ in $\geq 4/5$ seeds with sign-consistent differences;
 \emph{channel-training effect supported} if $H(K0,s) - H(m0,s) > 0$ in
-$\geq 4/5$; \emph{transfer failure supported} if the July controller
-underperforms the own-controller substantially in $\geq 4/5$. Effects are
+$\geq 4/5$; \emph{transfer failure supported} if the pilot donor controller
+underperforms the own-controller substantially (preregistered criterion; operationalized as $> 0.005$ Hamming or survival $< 0.9$,\ \S4) in $\geq 4/5$. Effects are
 reported per seed (median and range); no significance claims at five
 seeds. The defense study reported here fixed the
 two-evolutions-per-parent rule in its preregistration before launch
@@ -408,7 +406,7 @@ s4\_e2 & $0.0332{\pm}.0225$ & $1.000$ & $0.0345{\pm}.0222$ & $1.000$ & $0.0452{\
 \centering
 \small
 \caption{Cross-parent transfer probe (unchanged from the per-parent
-study): the July donor controller evaluated on each recipient parent.
+study): the pilot donor controller evaluated on each recipient parent.
 Final Hamming and survival on held-out damage seeds; transfer is a
 penalty in 5/5 recipients, lethal in 2.}
 \label{tab:transfer}
@@ -546,8 +544,8 @@ the last four are RGBA with alpha last. Perception uses three fixed kernels
 (identity, Sobel-$x$, Sobel-$y$) per channel, giving
 $p_t \in \mathbb{R}^{48}$:
 \begin{equation}
-p*t = \big(K*{\mathrm{id}} _ x*t,\; K*{\mathrm{S}\_x} _ x*t,\;
-K*{\mathrm{S}\_y} \* x_t\big).
+p_t = \bigl(K_{\mathrm{id}} * x_t,\; K_{\mathrm{S\_x}} * x_t,\;
+K_{\mathrm{S\_y}} * x_t\bigr).
 \end{equation}
 The update MLP maps $(48{+}K)$ inputs to 128 hidden units (ReLU) and back to
 16 channel increments, with the final layer zero-initialized. Cells update
@@ -556,9 +554,9 @@ its $3{\times}3$ max-pooled neighborhood; dead cells are masked to zero.
 
 Tonic and phasic modulator dynamics:
 \begin{equation}
-m*t^{(\mathrm{tonic})} = \alpha\, m*{t-1}^{(\mathrm{tonic})} + (1-\alpha)\, c*t,
+m_t^{(\mathrm{tonic})} = \alpha\, m_{t-1}^{(\mathrm{tonic})} + (1-\alpha)\, c_t,
 \qquad
-m_t^{(\mathrm{phasic})} = m*{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau},
+m_t^{(\mathrm{phasic})} = m_{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau},
 \end{equation}
 with $\alpha = 0.95$, $\tau = 20$, and the injected level the clipped sum,
 broadcast to all cells and concatenated to perception (input dim $48+3=51$).
@@ -633,12 +631,12 @@ $\sigma_0{=}0.01$, 300 generations, neutral (all-zero) controller as the
 initial mean. Fitness is the event-weighted mean Hamming distance to the
 target alpha mask over full rollouts on the eight train damage seeds:
 \begin{equation}
-f(\theta) = \frac{1}{\sum*t w_t} \sum*{t=1}^{T} w*t\, H_t(\theta),
+f(\theta) = \frac{1}{\sum_t w_t} \sum_{t=1}^{T} w_t\, H_t(\theta),
 \qquad
-w_t = \exp\!\Big(-\frac{t - \tau*{\mathrm{last}}(t)}{\tau*w}\Big),
+w_t = \exp\!\Big(-\frac{t - \tau_{\mathrm{last}}(t)}{\tau_w}\Big),
 \label{eq:fitness}
 \end{equation}
-where $\tau*{\mathrm{last}}(t)$ is the most recent lesion step and
+where $\tau_{\mathrm{last}}(t)$ is the most recent lesion step and
 $\tau_w = 150/3 = 50$. The recency kernel resets at each lesion, so slow
 repair is expensive even when endpoint Hamming is identical, so it
 de-saturates the metric and prices repair speed directly. Fitness is not the
