@@ -112,9 +112,9 @@ trained model.
 
 That single-model habit is the problem this paper is about. When a
 modulated NCA outperforms an unmodulated one, three effects are
-indistinguishable in the report: the channels being \emph{present during
-training}, the controller \emph{acting at run time}, and whatever
-\emph{transfers} to another organism. Our single-parent study exhibited
+indistinguishable: the channels being \emph{present during training}, the
+controller \emph{acting at run time}, and whatever \emph{transfers} to
+another organism. Our single-parent study exhibited
 the failure firsthand: it credited closed-loop control for a $2\times$
 improvement that a later pilot traced elsewhere --- the evolved
 controller transferred lethally to sibling parents while channel parents
@@ -173,13 +173,12 @@ actually helping?
 Our design follows a concern shared by novelty
 search~\cite{lehman2011novelty} and quality-diversity
 optimization~\cite{mouret2015mapelites}: a fixed objective can misdirect
-search and hide failure modes, so the evaluation itself has to be
-stress-tested. Environment-generation methods push this furthest,
-co-evolving challenges with solutions ---
+search and hide failure modes. Environment-generation methods co-evolve
+challenges with solutions ---
 POET~\cite{wang2019poet}, PAIRED~\cite{dennis2020paired},
-ACCEL~\cite{parkerholder2022accel}. Our benchmark does not yet evolve the
-damage distribution; it is the controlled stationary baseline against
-which such co-evolution can be judged.
+ACCEL~\cite{parkerholder2022accel}; our benchmark does not yet evolve the
+damage distribution and serves as the stationary baseline such
+co-evolution can be judged against.
 
 \section{Experimental design}
 \label{sec:design}
@@ -187,11 +186,10 @@ which such co-evolution can be judged.
 \paragraph{Damage regime.}
 Recurring multi-block lesions --- every 150 steps, $n{=}4$ contiguous
 $16{\times}16$ blocks at seeded positions, $T{=}2000$ --- exceed the
-perception radius, so wound interiors have no living neighbors (the
-information-isolation regime mapped in Appendix~\ref{app:e1}). Damage
-seeds 0--7 drive evolution; held-out seeds 10000--10007 drive all
-reported numbers; the schedule is deliberately adversarial
-(Appendix~\ref{app:calibration}).
+perception radius, so wound interiors have no living neighbors
+(Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution; held-out
+seeds 10000--10007 drive all reported numbers; the schedule is
+deliberately adversarial (Appendix~\ref{app:calibration}).
 
 \paragraph{Parents and controllers.}
 Per seed $s$ we train a $K{=}0$ and a channel-aware $K{=}3$ parent from
@@ -223,12 +221,10 @@ two-evolutions-per-parent rule in its preregistration before launch
 (\texttt{experiment\_results/20260818\_evoseed\_defense/PREREGISTRATION.md}
 in the repository history). Controller-output ($m_t$) series distinguish
 tonic calibration from event-locked policy (Appendix~\ref{app:mt}). A
-post-hoc follow-up extends the single-donor July probe to the full
-$5{\times}5$ transfer matrix among the five defense parents, using both
-controller replicas per parent (evaluation only, 8 held-out damage seeds
-$\times$ 3 condition seeds per cell; Table~\ref{tab:matrix}), plus a
-\emph{tonic transplant} condition that injects each donor's realized mean
-$m_t$ as a constant in place of its controller.
+post-hoc follow-up evaluates the full $5{\times}5$ transfer matrix among
+the defense parents (both controller replicas, 8 damage $\times$ 3
+condition seeds per cell; Table~\ref{tab:matrix}) plus a \emph{tonic
+transplant} injecting each donor's realized mean $m_t$ as a constant.
 
 \section{Results}
 \label{sec:results}
@@ -269,11 +265,9 @@ supported} ($H(K0,s)-H(m0,s) > 0$ in 5/5 seeds; bar was $\geq$4/5); the
 \emph{transfer failure is supported} (penalty in 5/5; lethal in 2). The
 controller effect is classified as \emph{parent-dependent} ---
 preregistered \textbf{Outcome C}: absent or
-noise-level on most parents, but reproducibly beneficial on the fragile
-parent --- on seeds 0, 2, 3, and 4 the own controller matches zero-output or
-is slightly worse, while on seed 1 both independent evolutions reduce
-final Hamming from $0.035$--$0.038$ to $0.029$--$0.030$ and raise survival
-from $0.975$ to $1.00$.
+noise-level on four parents, reproducibly beneficial on the fragile one
+(both evolutions: $0.035$--$0.038 \to 0.029$--$0.030$, survival
+$0.975 \to 1.00$).
 
 \paragraph{What the controller actually emits.}
 All ten evolved controllers emit a \emph{constant at a nonzero level}:
@@ -296,17 +290,17 @@ zero-output baseline by $>0.005$), 15 are indistinguishable from
 zero-output, and 2 beat it. No foreign controller beats the recipient's
 own controller beyond noise. Lethal transfer replicates across controller
 replicas and condition seeds: donor s3 kills recipient s2 in both
-replicas (survival $0.00$); donor s0 on recipient s1 is lethal in e1
-($0.00$) and near-lethal in e2 ($0.25$). Classifications are stable
-across condition seeds --- only marginal cells within $\pm 0.005$ of
-the threshold flip.
+replicas (survival $0.00$); donor s0 on recipient s1 is lethal in e1 and
+near-lethal in e2. Classifications are stable across condition seeds
+(Figure~\ref{fig:matrix}A).
 
 \paragraph{Tonic alignment structures transfer.}
 All lethal instances pair strongly negative tonic-vector cosines
 (s3$\to$s2: $-0.61$; s0$\to$s1: $-0.93$), while the only beneficial
 transfers --- beating zero-output and matching the own controller ---
 occur exclusively within the tonic-aligned pair s4$\to$s1 (cosine
-$+0.99$, both replicas). Across all 40 cells, donor--recipient tonic
+$+0.99$, both replicas; adjacent to the diagonal in
+Figure~\ref{fig:matrix}). Across all 40 cells, donor--recipient tonic
 cosine correlates with transfer penalty (Pearson $r=-0.30$) and survival
 ($r=+0.34$); alignment is not sufficient, though --- some benign cells
 carry cosines as negative as $-0.95$.
@@ -321,13 +315,25 @@ already-lethal cells), and matches the recipient's own controller in all
 transferable component is thus the tonic setpoint; the controller's small
 dynamic residual did not measurably contribute, on-parent or off.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.84\linewidth]{figures/fig5_transfer_matrix}
+  \caption{Transfer redesigned for attribution (replica-averaged; per-cell
+  $\Delta$ from the recipient's own controller; survival as the split
+  lower triangle; rows/columns cosine-ordered so the aligned pair s4--s1
+  borders the diagonal and the anti-aligned pair s3--s2 sits at opposite
+  ends). Panel A: controllers. Panel B: the same matrix with each donor's
+  tonic constant injected instead --- matching A in 46/50 cells, every
+  lethal one included. Values: Table~\ref{tab:matrix}.}
+  \label{fig:matrix}
+\end{figure}
+
 \section{Discussion}
 \label{sec:discussion}
 
 \paragraph{Which component causes robustness.}
 Channel-aware training, not run-time control. Parents that grew up with
-global channels beat their unmodulated siblings on every seed, most
-dramatically where the unmodulated parent collapses outright; the
+global channels beat their unmodulated siblings on every seed; the
 channels are a developmental scaffold, making the organism more robust
 even when they carry no signal at run time. What evolution adds is
 narrow: nothing measurable on four parents; on the fragile parent, a
@@ -335,21 +341,18 @@ final stabilization that both independent evolutions find --- and since
 that parent's tonic vector is nearly identical to a sibling's that gains
 nothing from it, the benefit is not a property of the tonic. We
 conjecture the fragile parent's dynamics sit near a stability boundary,
-so a small tonic push re-stabilizes the attractor; confirming this needs
-analysis we have not run. The broader lesson: held-out \emph{damage}
+so a small tonic push re-stabilizes the attractor (unverified). The broader lesson: held-out \emph{damage}
 seeds approved every condition above; crossing \emph{parent} seeds is
 what separated training from
 control, benefit from harm, and policy from constant.
 \paragraph{Why cross-parent transfer fails --- and when it does not.}
 The full matrix (Table~\ref{tab:matrix}) sharpens the single-donor
-probe. No foreign controller beats the recipient's own controller; the
-majority of transfers are harmful (23/40); lethal failures replicate
-across controller replicas and condition seeds; and the only beneficial
-transfers occur within the tonic-aligned pair (s4$\to$s1).
-The tonic transplant makes the mechanism causal: injecting the donor's
-mean $m_t$ as a constant reproduces the controller's outcome in 36/40
-off-diagonal cells (10/10 diagonal), including every lethal one --- what
-transfers, for good or ill, \emph{is} the constant. Each controller's output is a
+probe: no foreign controller beats the recipient's own controller, most
+transfers are harmful (23/40), and the only beneficial ones stay within
+the tonic-aligned pair (s4$\to$s1).
+The tonic transplant makes it causal: what transfers, for good or ill,
+\emph{is} the constant (36/40 off-diagonal, 10/10 diagonal, every lethal
+cell included). Each controller's output is a
 calibration against its own parent's channel weights, so the same release
 level drives different dynamics in a sibling. Evolution found an operating
 point for one organism, not a modulation law.
@@ -362,9 +365,7 @@ the prevalence of such parents is unknown. Next: multi-parent
 (population-based) evolution; non-stationary, diversity-driven damage
 co-evolution, for which this benchmark is the controlled baseline.
 
-\section{Conclusion}
-\label{sec:conclusion}
-
+\paragraph{Conclusion.}
 In regenerative NCAs under adversarial recurring damage, robustness comes
 from channel-aware training (5/5 seeds, rescuing a nearly lethal
 unmodulated parent); evolved modulation is a parent-dependent tonic
@@ -372,7 +373,81 @@ calibration --- noise-level on most parents, beneficial on the fragile
 one, parent-locked under transfer. Attribute robustness across model
 seeds, not only damage seeds.
 
+\begin{thebibliography}{13}
+
+\bibitem{mordvintsev2020gnca}
+A.~Mordvintsev, E.~Randazzo, E.~Niklasson, and M.~Levin.
+\emph{Growing Neural Cellular Automata}.
+Distill 5(2):e23, 2020.
+
+\bibitem{randazzo2020selfclass}
+E.~Randazzo, A.~Mordvintsev, E.~Niklasson, M.~Levin, and S.~Greydanus.
+\emph{Self-classifying MNIST Digits}.
+Distill, 2020.
+
+\bibitem{mordvintsev2021texture}
+E.~Niklasson, A.~Mordvintsev, E.~Randazzo, and M.~Levin.
+\emph{Self-Organising Textures}.
+Distill 6(2), 2021.
+
+\bibitem{stovold2023signal}
+J.~Stovold.
+\emph{Neural Cellular Automata Can Respond to Signals}.
+ALIFE 2023; arXiv:2305.12971.
+
+\bibitem{sudhakaran2022goal}
+S.~Sudhakaran, E.~Najarro, and S.~Risi.
+\emph{Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems}.
+arXiv:2205.06806, 2022.
+
+\bibitem{masumori2026fluctuations}
+A.~Masumori, H.~Sato, and T.~Ikegami.
+\emph{Structured Fluctuations and the Information Dynamics of Self-Maintenance in Growing Neural Cellular Automata}.
+arXiv:2607.12403, 2026.
+
+\bibitem{lehman2011novelty}
+J.~Lehman and K.~O.~Stanley.
+\emph{Abandoning Objectives: Evolution Through the Search for Novelty Alone}.
+Evolutionary Computation, 19(2):189--223, 2011.
+
+\bibitem{mouret2015mapelites}
+J.-B.~Mouret and J.~Clune.
+\emph{Illuminating Search Spaces by Mapping Elites}.
+arXiv:1504.04909, 2015.
+
+\bibitem{wang2019poet}
+R.~Wang, J.~Lehman, J.~Clune, and K.~O.~Stanley.
+\emph{Paired Open-Ended Trailblazer (POET): Endlessly Generating Increasingly Complex and Diverse Learning Environments and Their Solutions}.
+arXiv:1901.01753, 2019.
+
+\bibitem{dennis2020paired}
+M.~Dennis, N.~Jaques, E.~Vinitsky, A.~Bayen, S.~Russell, A.~Critch, and S.~Levine.
+\emph{Emergent Complexity and Zero-Shot Transfer via Unsupervised Environment Design}.
+NeurIPS 2020.
+
+\bibitem{parkerholder2022accel}
+J.~Parker-Holder, M.~Jiang, M.~Dennis, M.~Samvelyan, J.~Foerster,
+E.~Grefenstette, and T.~Rockt\"aschel.
+\emph{Evolving Curricula with Regret-Based Environment Design}.
+ICML 2022; arXiv:2203.01302.
+
+\bibitem{hansen2006cma}
+N.~Hansen.
+\emph{The CMA Evolution Strategy: A Comparing Review}.
+In \emph{Towards a New Evolutionary Computation}, Studies in Fuzziness and
+Soft Computing vol.~192, pages 75--102. Springer, 2006.
+
+\bibitem{lange2022evosax}
+R.~T.~Lange.
+\emph{evosax: JAX-Based Evolution Strategies}.
+arXiv:2212.04180, 2022.
+
+\end{thebibliography}
+
 \appendix
+\setcounter{table}{0}\setcounter{figure}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thefigure}{A\arabic{figure}}
 
 \section{Full per-seed, per-condition results}
 \label{app:rawtables}
@@ -467,35 +542,15 @@ seeds, not only damage seeds.
   \end{tabular}
 \end{table}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig5_transfer_matrix}
-  \caption{Cross-parent transfer matrix as a heatmap (same data as
-  Table~\ref{tab:matrix}). Color: mean final Hamming over 3 condition
-  seeds (green: matches recipient's own controller; red: catastrophic).
-  $^{\dagger}$lethal (survival $0.00$); sub-threshold survival annotated
-  where $<1.00$. Diagonal boxed: recipient's own controller. The harmful
-  off-diagonal band and its replication across both evolutions are
-  immediately visible; the only beneficial off-diagonal cells are
-  s4$\to$s1 in both replicas.}
-  \label{fig:matrix}
-\end{figure}
-
 \paragraph{Tonic transplant.}
 Replacing each donor controller by its realized mean $m_t$ injected as a
 constant (same protocol, both replicas, 3 condition seeds) reproduces the
-full controller's transfer outcome in 46/50 cells (final Hamming within
-$0.01$ and same survival class), including every lethal cell --- e.g.\
-s3$\to$s2: controller $0.208/0.00$ vs transplant $0.186/0.12$ (e1) and
-$0.239/0.00$ vs $0.234/0.00$ (e2); s0$\to$s1: $0.470/0.00$ vs
-$0.353/0.00$ (e1). The four mismatches are magnitude differences inside
-already-lethal cells. A recipient's own tonic transplant is likewise
-indistinguishable from its own controller in all ten diagonal cases.
-In total, the transplant reproduces the controller's outcome in 36/40
-off-diagonal cells and 10/10 diagonal cells (46/50 overall). Under the
-tested regime, the small dynamic residual of the controllers did not
-measurably contribute, on-parent or off (full CSVs in the repository,
-\texttt{experiment\_results/20260822\_transfer\_matrix/cs3\_*}).
+controller's outcome in 36/40 off-diagonal cells and 10/10 diagonal cells
+(46/50 overall; Figure~\ref{fig:matrix}B) --- including every lethal
+cell, where the transplant kills exactly as the controller does. The
+four mismatches are magnitude differences inside already-lethal cells.
+Under the tested regime, the controllers' small dynamic residual did not
+measurably contribute, on-parent or off (full CSVs in the repository).
 
 AUC mirrors the same ordering in every seed (full CSVs in the repository).
 
@@ -734,75 +789,5 @@ parents, trajectories, $m_t$ series), and the mechanical outcome output are
 in the repository, timestamped before the results. Code will be released
 upon publication.
 
-\begin{thebibliography}{13}
-
-\bibitem{mordvintsev2020gnca}
-A.~Mordvintsev, E.~Randazzo, E.~Niklasson, and M.~Levin.
-\emph{Growing Neural Cellular Automata}.
-Distill 5(2):e23, 2020.
-
-\bibitem{randazzo2020selfclass}
-E.~Randazzo, A.~Mordvintsev, E.~Niklasson, M.~Levin, and S.~Greydanus.
-\emph{Self-classifying MNIST Digits}.
-Distill, 2020.
-
-\bibitem{mordvintsev2021texture}
-E.~Niklasson, A.~Mordvintsev, E.~Randazzo, and M.~Levin.
-\emph{Self-Organising Textures}.
-Distill 6(2), 2021.
-
-\bibitem{stovold2023signal}
-J.~Stovold.
-\emph{Neural Cellular Automata Can Respond to Signals}.
-ALIFE 2023; arXiv:2305.12971.
-
-\bibitem{sudhakaran2022goal}
-S.~Sudhakaran, E.~Najarro, and S.~Risi.
-\emph{Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems}.
-arXiv:2205.06806, 2022.
-
-\bibitem{masumori2026fluctuations}
-A.~Masumori, H.~Sato, and T.~Ikegami.
-\emph{Structured Fluctuations and the Information Dynamics of Self-Maintenance in Growing Neural Cellular Automata}.
-arXiv:2607.12403, 2026.
-
-\bibitem{lehman2011novelty}
-J.~Lehman and K.~O.~Stanley.
-\emph{Abandoning Objectives: Evolution Through the Search for Novelty Alone}.
-Evolutionary Computation, 19(2):189--223, 2011.
-
-\bibitem{mouret2015mapelites}
-J.-B.~Mouret and J.~Clune.
-\emph{Illuminating Search Spaces by Mapping Elites}.
-arXiv:1504.04909, 2015.
-
-\bibitem{wang2019poet}
-R.~Wang, J.~Lehman, J.~Clune, and K.~O.~Stanley.
-\emph{Paired Open-Ended Trailblazer (POET): Endlessly Generating Increasingly Complex and Diverse Learning Environments and Their Solutions}.
-arXiv:1901.01753, 2019.
-
-\bibitem{dennis2020paired}
-M.~Dennis, N.~Jaques, E.~Vinitsky, A.~Bayen, S.~Russell, A.~Critch, and S.~Levine.
-\emph{Emergent Complexity and Zero-Shot Transfer via Unsupervised Environment Design}.
-NeurIPS 2020.
-
-\bibitem{parkerholder2022accel}
-J.~Parker-Holder, M.~Jiang, M.~Dennis, M.~Samvelyan, J.~Foerster,
-E.~Grefenstette, and T.~Rockt\"aschel.
-\emph{Evolving Curricula with Regret-Based Environment Design}.
-ICML 2022; arXiv:2203.01302.
-
-\bibitem{hansen2006cma}
-N.~Hansen.
-\emph{The CMA Evolution Strategy: A Comparing Review}.
-In \emph{Towards a New Evolutionary Computation}, Studies in Fuzziness and
-Soft Computing vol.~192, pages 75--102. Springer, 2006.
-
-\bibitem{lange2022evosax}
-R.~T.~Lange.
-\emph{evosax: JAX-Based Evolution Strategies}.
-arXiv:2212.04180, 2022.
-
-\end{thebibliography}
 
 \end{document}

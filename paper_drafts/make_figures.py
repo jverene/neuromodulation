@@ -188,52 +188,127 @@ plt.close(fig)
 print("fig4 done")
 
 # ------------------------------------------------------- fig5: transfer matrix
-# Heatmap of mean final Hamming for each donor->recipient cell, one panel per
-# controller replica (e1, e2). Cell annotation: Hamming; dagger if lethal
-# (worst-case survival 0 over the 3 condition seeds); survival if below 1.
+# Redesigned punchline figure: two facing panels (controller vs tonic transplant).
+# Cell color = performance penalty Delta = H(donor) - H(recipient's own), binned:
+# green (<=0, matches/beats own), amber (0<Delta<=0.02, noise), crimson (>0.02, harm).
+# Bottom-right triangle: survival break - black if survival >= 0.90, white + skull if < 0.90.
+# Rows/cols ordered by greedy cosine seriation of the parents' tonic vectors:
+# aligned pair (s4,s1; cos 0.99) adjacent to the diagonal, anti-aligned far apart.
 TM = Path("experiment_results/20260822_transfer_matrix")
 seeds = [0, 1, 2, 3, 4]
-fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4), constrained_layout=True)
-vmin, vmax = 0.0, 0.25
-for ax, rep in zip(axes, ["e1", "e2"]):
-    H = np.full((5, 5), np.nan)   # [donor][recipient]
-    S = np.full((5, 5), np.nan)   # worst-case survival
-    for ri, recip in enumerate(seeds):
-        rows = list(csv.DictReader(open(TM / f"cs3_{rep}" / f"recipient_s{recip}" / "transfer.csv")))
-        for r in rows:
-            if r["kind"] != "ctrl":
-                continue
-            donor = recip if r["donor"] == "own" else int(r["donor"][1:])
-            sub = [x for x in rows if x["kind"] == "ctrl" and x["donor"] == r["donor"]]
-            H[donor, ri] = np.mean([float(x["final_hamming"]) for x in sub])
-            S[donor, ri] = min(float(x["survival"]) for x in sub)
-    im = ax.imshow(H, cmap="RdYlGn_r", vmin=vmin, vmax=vmax, aspect="equal")
-    for d in range(5):
-        for r in range(5):
-            lethal = S[d, r] == 0.0
-            txt = f"{H[d, r]:.3f}" + ("$^\\dagger$" if lethal else
-                                      (f"\ns={S[d, r]:.2f}" if S[d, r] < 1.0 else ""))
-            ax.text(r, d, txt, ha="center", va="center", fontsize=6.2,
-                    color="white" if (lethal or H[d, r] > 0.15) else "black")
-            if d == r:
-                ax.add_patch(plt.Rectangle((r - 0.5, d - 0.5), 1, 1,
-                                           fill=False, edgecolor="black", lw=1.6))
+
+def load_matrix(kind):
+    """H[donor, recip] mean over replicas x cond seeds; S worst-case survival."""
+    H = np.full((5, 5), np.nan); S = np.full((5, 5), np.nan)
+    for rep in ["e1", "e2"]:
+        for ri, recip in enumerate(seeds):
+            rows = list(csv.DictReader(open(TM / f"cs3_{rep}" / f"recipient_s{recip}" / "transfer.csv")))
+            for donor_label in ["own", "s0", "s1", "s2", "s3", "s4"]:
+                if donor_label == f"s{recip}":
+                    continue
+                sub = [x for x in rows if x["kind"] == kind and x["donor"] == donor_label]
+                if not sub:
+                    continue
+                d = recip if donor_label == "own" else int(donor_label[1:])
+                h = np.mean([float(x["final_hamming"]) for x in sub])
+                s = min(float(x["survival"]) for x in sub)
+                H[d, ri] = np.nanmean([H[d, ri], h]) if not np.isnan(H[d, ri]) else h
+                S[d, ri] = np.nanmin([S[d, ri], s]) if not np.isnan(S[d, ri]) else s
+    return H, S
+
+def delta_from_self(H):
+    D = np.copy(H)
+    for r in range(5):
+        D[:, r] -= H[r, r]     # recipient's own diagonal = zero baseline
+    return D
+
+# tonic-vector seriation order (greedy chain over pairwise cosines, most-negative start)
+DF = Path("experiment_results/20260818_evoseed_defense")
+tonics = {}
+for s in seeds:
+    vs = []
+    for rep in ["e1", "e2"]:
+        rows = list(csv.DictReader(open(DF / f"defense_s{s}_{rep}" / "m_series.csv")))
+        M = np.array([[float(r[f"m_k{k}"]) for k in range(3)] for r in rows])
+        vs.append(M.mean(axis=0))
+    tonics[s] = np.mean(vs, axis=0)
+COS = np.zeros((5, 5))
+for i, a in enumerate(seeds):
+    for j, b in enumerate(seeds):
+        COS[i, j] = np.dot(tonics[a], tonics[b]) / (np.linalg.norm(tonics[a]) * np.linalg.norm(tonics[b]))
+import itertools
+best = min(itertools.combinations(range(5), 2), key=lambda p: COS[p[0], p[1]])
+order = [best[0]]
+remaining = [x for x in range(5) if x != best[0]]
+while remaining:
+    nxt = max(remaining, key=lambda x: COS[order[-1], x])
+    order.append(nxt); remaining.remove(nxt)
+
+GREEN, AMBER, CRIMSON, NEUTRAL = "#4daf4a", "#fdb462", "#a50026", "#e8e8e8"
+def bin_color(d):
+    if np.isnan(d):
+        return NEUTRAL
+    return GREEN if d <= 0 else (AMBER if d <= 0.02 else CRIMSON)
+
+fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.55), constrained_layout=True)
+for ax, kind, title in zip(axes, ["ctrl", "tonic"],
+                           ["A  controller transfer", "B  tonic transplant (constant injection)"]):
+    H, S = load_matrix(kind)
+    D = delta_from_self(H)
+    ax.set_xlim(-0.5, 4.5); ax.set_ylim(4.5, -0.5)
     ax.set_xticks(range(5)); ax.set_yticks(range(5))
-    ax.set_xticklabels([f"s{s}" for s in seeds]); ax.set_yticklabels([f"s{s}" for s in seeds])
-    ax.set_xlabel("recipient parent"); ax.set_ylabel("donor controller")
-    ax.set_title(f"replica {rep}", fontsize=8.5)
-fig.colorbar(im, ax=axes, shrink=0.85, label="mean final Hamming (3 condition seeds)")
-fig.savefig(OUT / "fig5_transfer_matrix.png")
+    ax.set_xticklabels([f"s{seeds[c]}" for c in order])
+    ax.set_yticklabels([f"s{seeds[r]}" for r in order])
+    ax.set_xlabel("recipient parent", fontsize=8)
+    ax.set_ylabel("donor", fontsize=8)
+    ax.set_title(title, fontsize=9, loc="left")
+    ax.set_aspect("equal")
+    for gi, d_idx in enumerate(order):        # grid position gi = row, gj = col
+        for gj, r_idx in enumerate(order):
+            dval, sval = D[d_idx, r_idx], S[d_idx, r_idx]
+            x, y = gj, d_idx                   # cell center in data coords
+            # top-left triangle: Delta color (diagonal = self, neutral)
+            col = NEUTRAL if d_idx == r_idx else bin_color(dval)
+            ax.add_patch(plt.Polygon([(x-0.5, y-0.5), (x+0.5, y-0.5), (x-0.5, y+0.5)],
+                                     closed=True, fc=col, ec="0.3", lw=0.4))
+            # bottom-right triangle: survival break (black = fine, white+skull = collapse)
+            br_black = (not np.isnan(sval)) and sval >= 0.90
+            ax.add_patch(plt.Polygon([(x+0.5, y-0.5), (x+0.5, y+0.5), (x-0.5, y+0.5)],
+                                     closed=True, fc="black" if br_black else "white",
+                                     ec="0.3", lw=0.4))
+            # annotations: Delta in top-left; skull in bottom-right when lethal-ish
+            if d_idx == r_idx:
+                ax.text(gj, d_idx, "self", ha="center", va="center", fontsize=5.5, color="0.35", style="italic")
+            else:
+                ax.text(gj-0.24, d_idx-0.24, f"{dval:+.3f}", ha="center", va="center",
+                        fontsize=5.4, color="white" if col == CRIMSON else "black")
+            if (not np.isnan(sval)) and sval < 0.90:
+                ax.text(gj+0.22, d_idx+0.24, "\u2620", ha="center", va="center",
+                        fontsize=8, color=CRIMSON, fontfamily="DejaVu Sans")
+# shared legend
+import matplotlib.patches as mpatches
+handles = [mpatches.Patch(fc=GREEN, label="$\\Delta\\leq 0$ (matches own)"),
+           mpatches.Patch(fc=AMBER, label="$0<\\Delta\\leq0.02$ (noise)"),
+           mpatches.Patch(fc=CRIMSON, label="$\\Delta>0.02$ (harm)"),
+           mpatches.Patch(fc="black", label="survival $\\geq0.9$"),
+           mpatches.Patch(fc="white", ec="0.3", label="survival $<0.9$  (skull)")]
+fig.legend(handles=handles, frameon=False, fontsize=6.4, ncol=5,
+           loc="lower center", bbox_to_anchor=(0.5, -0.045), handlelength=1.2, columnspacing=0.9)
+fig.savefig(OUT / "fig5_transfer_matrix.png", bbox_inches="tight")
 plt.close(fig)
-print("fig5 done")
+print("fig5 done (redesigned: delta-from-self + survival split + cosine order)")
 
 # ------------------------------------------------------- fig6: tonic m_t traces
 # Per parent seed: m_t per channel over the rollout, both independent evolutions
-# overlaid. Flat lines at parent-distinct offsets = tonic calibration.
+# overlaid. Flat lines at parent-distinct offsets = tonic calibration. Each panel
+# carries a micro-zoom inset around one lesion event (rotating across panels):
+# y-axis stretched to +/-0.01, lesion marked by a red dotted line — showing that
+# not even a phasic flicker occurs at the moment of damage.
 DF = Path("experiment_results/20260818_evoseed_defense")
 ch_cols = [C_BLUE, C_ORANGE, C_GREEN]
-fig, axes = plt.subplots(1, 5, figsize=(8.4, 1.9), sharey=True, constrained_layout=True)
-for ax, s in zip(axes, seeds):
+fig, axes = plt.subplots(1, 5, figsize=(8.4, 2.1), sharey=True, constrained_layout=True)
+zoom_lesion = [300, 450, 600, 750, 900]   # one distinct lesion per panel
+for ax, s, les in zip(axes, seeds, zoom_lesion):
     for rep, ls in [("e1", "-"), ("e2", "--")]:
         rows = list(csv.DictReader(open(DF / f"defense_s{s}_{rep}" / "m_series.csv")))
         t = [int(r["step"]) for r in rows]
@@ -245,6 +320,22 @@ for ax, s in zip(axes, seeds):
     ax.set_xlabel("step", fontsize=7.5)
     ax.tick_params(labelsize=6.5)
     ax.grid(True, axis="y", alpha=0.25, lw=0.5)
+    # micro-zoom inset around this panel's lesion
+    axi = ax.inset_axes([0.52, 0.60, 0.44, 0.36])
+    for rep, ls in [("e1", "-"), ("e2", "--")]:
+        rows = list(csv.DictReader(open(DF / f"defense_s{s}_{rep}" / "m_series.csv")))
+        for k in range(3):
+            axi.plot([int(r["step"]) for r in rows], [float(r[f"m_k{k}"]) for r in rows],
+                     color=ch_cols[k], lw=0.7, ls=ls, alpha=0.9 if rep == "e1" else 0.6)
+    axi.axvline(les, color="red", ls=":", lw=1.0)
+    axi.set_xlim(les - 30, les + 30)
+    axi.set_ylim(-0.01, 0.01)
+    axi.set_xticks([les]); axi.tick_params(labelsize=4.5)
+    axi.set_yticks([-0.01, 0.01])
+    for sp in axi.spines.values():
+        sp.set_linewidth(0.6); sp.set_color("0.3")
+    axi.set_facecolor("white")
+    ax.indicate_inset_zoom(axi, edgecolor="0.3", lw=0.6, alpha=0.8)
 axes[0].set_ylabel("$m_t$", fontsize=8)
 axes[0].set_ylim(-0.06, 0.06)
 # Shared legend: panel s2's traces are all negative, so its upper area is empty.
@@ -256,4 +347,4 @@ axes[2].legend(frameon=False, fontsize=6, loc="upper left", ncol=1,
                handlelength=1.4, borderpad=0.2, labelspacing=0.25)
 fig.savefig(OUT / "fig6_tonic_traces.png")
 plt.close(fig)
-print("fig6 done")
+print("fig6 done (with lesion micro-zoom insets)")
