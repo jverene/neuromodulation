@@ -191,7 +191,7 @@ print("fig4 done")
 # Redesigned punchline figure: two facing panels (controller vs tonic transplant).
 # Cell color = performance penalty Delta = H(donor) - H(recipient's own), binned:
 # green (<=0, matches/beats own), amber (0<Delta<=0.02, noise), crimson (>0.02, harm).
-# Bottom-right triangle: survival break - black if survival >= 0.90, white + skull if < 0.90.
+# Bottom-right triangle: survival break - green if survival >= 0.90, amber + skull if < 0.90.
 # Rows/cols ordered by greedy cosine seriation of the parents' tonic vectors:
 # aligned pair (s4,s1; cos 0.99) adjacent to the diagonal, anti-aligned far apart.
 TM = Path("experiment_results/20260822_transfer_matrix")
@@ -244,6 +244,13 @@ while remaining:
     nxt = max(remaining, key=lambda x: COS[order[-1], x])
     order.append(nxt); remaining.remove(nxt)
 
+SURV_GREEN = "#009E73"
+SURV_AMBER = "#E69F00"
+def bin_survival(sval):
+    if np.isnan(sval):
+        return NEUTRAL
+    return SURV_GREEN if sval >= 0.90 else SURV_AMBER
+
 GREEN, AMBER, CRIMSON, NEUTRAL = "#009E73", "#E69F00", "#D55E00", "#F0F0F0"
 def bin_color(d):
     if np.isnan(d):
@@ -252,7 +259,7 @@ def bin_color(d):
 
 fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.55), constrained_layout=True)
 for ax, kind, title in zip(axes, ["ctrl", "tonic"],
-                           ["A  controller transfer", "B  tonic transplant (constant injection)"]):
+                            ["A  controller transfer", "B  tonic transplant (constant injection)"]):
     H, S = load_matrix(kind)
     D = delta_from_self(H)
     ax.set_xlim(-0.5, 4.5); ax.set_ylim(4.5, -0.5)
@@ -271,11 +278,10 @@ for ax, kind, title in zip(axes, ["ctrl", "tonic"],
             col = NEUTRAL if d_idx == r_idx else bin_color(dval)
             ax.add_patch(plt.Polygon([(x-0.5, y-0.5), (x+0.5, y-0.5), (x-0.5, y+0.5)],
                                      closed=True, fc=col, ec="0.3", lw=0.4))
-            # bottom-right triangle: survival break (black = fine, white+skull = collapse)
-            br_black = (not np.isnan(sval)) and sval >= 0.90
+            # bottom-right triangle: survival break (colorblind-friendly)
+            sc = bin_survival(sval)
             ax.add_patch(plt.Polygon([(x+0.5, y-0.5), (x+0.5, y+0.5), (x-0.5, y+0.5)],
-                                     closed=True, fc="black" if br_black else "white",
-                                     ec="0.3", lw=0.4))
+                                     closed=True, fc=sc, ec="0.3", lw=0.4))
             # annotations: Delta in top-left; skull in bottom-right when lethal-ish
             if d_idx == r_idx:
                 ax.text(gj, d_idx, "self", ha="center", va="center", fontsize=5.5, color="0.35", style="italic")
@@ -284,14 +290,14 @@ for ax, kind, title in zip(axes, ["ctrl", "tonic"],
                         fontsize=5.4, color="white" if col == CRIMSON else "black")
             if (not np.isnan(sval)) and sval < 0.90:
                 ax.text(gj+0.22, d_idx+0.24, "\u2620", ha="center", va="center",
-                        fontsize=8, color=CRIMSON, fontfamily="DejaVu Sans")
+                        fontsize=8, color="black", fontfamily="DejaVu Sans")
 # shared legend
 import matplotlib.patches as mpatches
 handles = [mpatches.Patch(fc=GREEN, label="$\\Delta\\leq 0$ (matches own)"),
            mpatches.Patch(fc=AMBER, label="$0<\\Delta\\leq0.02$ (noise)"),
            mpatches.Patch(fc=CRIMSON, label="$\\Delta>0.02$ (harm)"),
-           mpatches.Patch(fc="black", label="survival $\\geq0.9$"),
-           mpatches.Patch(fc="white", ec="0.3", label="survival $<0.9$  (skull)")]
+           mpatches.Patch(fc=SURV_GREEN, label="survival $\\geq0.9$"),
+           mpatches.Patch(fc=SURV_AMBER, label="survival $<0.9$  (skull)")]
 fig.legend(handles=handles, frameon=False, fontsize=6.4, ncol=5,
            loc="lower center", bbox_to_anchor=(0.5, -0.045), handlelength=1.2, columnspacing=0.9)
 fig.savefig(OUT / "fig5_transfer_matrix.png", bbox_inches="tight")
