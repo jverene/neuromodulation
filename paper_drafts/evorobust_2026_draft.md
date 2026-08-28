@@ -58,7 +58,7 @@ urlcolor=navyblue
 }%
 }
 
-\title{Evolutionary Stress Tests Reveal Parent-Locked Tonic\\Modulation in Neural Cellular Automata}
+\title{Channel-Aware Training, Not Closed-Loop Control, Drives\\Robust Regeneration in Neural Cellular Automata}
 
 \begin{document}
 
