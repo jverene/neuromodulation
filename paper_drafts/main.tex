@@ -16,10 +16,7 @@
 
 \title{Channel-Aware Training, Not Closed-Loop Control, Drives Robust Regeneration in Neural Cellular Automata}
 
-\author{
-Anonymous Authors\\
-\texttt{anonymous@example.com}
-}
+\author{Anonymous Authors}
 
 \begin{document}
 
