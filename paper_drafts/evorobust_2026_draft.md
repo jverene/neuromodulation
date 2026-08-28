@@ -17,8 +17,8 @@
 \title{Channel-Aware Training, Not Closed-Loop Control, Drives Robust Regeneration in Neural Cellular Automata}
 
 \author{
-  Anonymous Authors\\
-  \texttt{anonymous@example.com}
+Anonymous Authors\\
+\texttt{anonymous@example.com}
 }
 
 \begin{document}
@@ -32,8 +32,8 @@ We set out to test whether closed-loop control of global chemical signals
 makes regenerative Neural Cellular Automata (NCAs) more robust, and built
 the evaluation to prove it: recurring multi-block lesions larger than the
 perception radius, a small evolved controller for three broadcast
-modulator channels, held-out damage seeds. On a single trained model the
-experiment looked like a success. Crossing five independently trained
+modulator channels, and held-out damage seeds. On a single trained model, the
+experiment looked like a success. However, crossing five independently trained
 parent seeds (two independent controller evolutions each;
 preregistered) dissolves that success into three findings. First, the robustness we had attributed to control is
 mostly a property of training: parents trained with channels present beat
@@ -42,7 +42,7 @@ reduction $0.008$, up to $\approx 0.14$ on the most fragile parent) with
 modulation pinned to neutral. Second, evolved controllers add little on
 top: on four parents the effect is absent or noise-level; on the fragile
 parent both evolutions reproducibly help ($0.035$--$0.038 \to
-0.029$--$0.030$, survival $0.975 \to 1.00$) --- yet its tonic vector is
+0.029$--$0.030$, survival $0.975 \to 1.00$); yet its tonic vector is
 nearly identical (cosine $0.99$) to a sibling's that does not help, so
 the benefit is an interaction with parent dynamics, not a distinctive
 operating point. All ten controllers emit flat, nonzero, parent-specific
@@ -50,10 +50,9 @@ constants with no lesion-locked response. Third, these constants are
 organism-locked: a single-donor probe penalizes five of five siblings
 (lethally in two), a full $5{\times}5$ transfer matrix shows most
 transfers harmful and none better than the recipient's own controller,
-and injecting each donor's tonic constant directly --- no controller at
-all --- reproduces its transfer outcomes in 46 of 50 cells, including
-every lethal one. Single-parent evaluation would have approved all of it.
-The attribution protocol itself is the transferable artifact.
+and injecting each donor's tonic constant directly, no controller at
+all, reproduces its transfer outcomes in 46 of 50 cells, including
+all lethal ones. Single-parent evaluation would have approved all of it, making the attribution protocol itself the transferable artifact.
 \end{abstract}
 
 \section{Introduction}
@@ -67,22 +66,22 @@ contain tissue with no signal to integrate, and a severed fragment has no
 way to know what it was part of. The natural remedy is a global signal.
 Prior work, our own single-parent study included
 (Appendix~\ref{app:singleparent}), adds global modulator channels and
-evolves release policies for them --- and reports the outcome on one
+evolves release policies for them, reporting the outcome on one
 trained model.
 
-That single-model habit is the problem this paper is about: when a
+That single-model habit is the problem this paper is about. When a
 modulated NCA beats an unmodulated one, the channels being \emph{present
 during training}, the controller \emph{acting at run time}, and whatever
 \emph{transfers} to another organism are confounded. Our single-parent
-study learned this the hard way --- it credited closed-loop control for a
+study learned this the hard way: it credited closed-loop control for a
 $2\times$ improvement that vanished under cross-parent testing, where
 the controller transferred lethally to siblings while zero-modulation
 channel parents beat the unmodulated baseline in every seed
-(Appendix~\ref{app:pilot}). The improvement was real; the attribution
+(Appendix~\ref{app:pilot}). The improvement was real, but the attribution
 was wrong.
 
-We therefore ran the attribution study that the original design needed:
-preregistered, with the primary statistic and decision thresholds fixed
+We therefore ran the preregistered attribution study that the original
+design needed with primary statistic and decision thresholds fixed
 before data collection. Five parent seeds, each trained from scratch as
 a $K{=}0$ pair and a channel-aware $K{=}3$ pair; \emph{two} independent
 controller evolutions per channel parent; four conditions per seed, all
@@ -92,20 +91,20 @@ preregistrations and analysis scripts timestamped before the runs).
 
 \paragraph{Contributions.}
 \begin{enumerate}
-  \item A preregistered robustness-attribution protocol for regenerative
-        NCAs: adversarial damage calibrated to exceed perception, crossed
-        with parent-seed variation, decomposed into
-        $E_{\mathrm{train}}$, $E_{\mathrm{ctrl}}$, $E_{\mathrm{transfer}}$,
-        with calibration probes that keep the evolution landscape
-        interpretable (Appendix~\ref{app:calibration}).
-  \item The attribution, settled causally: training with channels is the
-        robust cause (5/5 seeds); the controller effect is parent-
-        dependent (absent or noise-level on four parents, reproducible on
-        the fragile one); the evolved artifact is a parent-specific tonic
-        constant that penalizes every sibling it meets (lethally in two),
-        and injecting the constant alone reproduces its transfer
-        outcomes --- the matrix (23/40 harmful, none beating the
-        recipient's own) closes the case.
+\item A preregistered robustness-attribution protocol for regenerative
+NCAs: adversarial damage calibrated to exceed perception, crossed
+with parent-seed variation, decomposed into
+$E_{\mathrm{train}}$, $E_{\mathrm{ctrl}}$, $E_{\mathrm{transfer}}$,
+with calibration probes that keep the evolution landscape
+interpretable (Appendix~\ref{app:calibration}).
+\item The attribution, settled causally: training with channels is the
+robust cause (5/5 seeds); the controller effect is parent-
+dependent (absent or noise-level on four parents, reproducible on
+the fragile one); the evolved artifact is a parent-specific tonic
+constant that penalizes every sibling it meets (lethally in two),
+and injecting the constant alone reproduces its transfer
+outcomes: the matrix (23/40 harmful, none beating the
+recipient's own) closes the case.
 \end{enumerate}
 
 \section{Related Work}
@@ -116,11 +115,11 @@ GNCAs grow patterns from a seed and regenerate after
 damage~\cite{mordvintsev2020gnca}, with extensions to
 self-classification~\cite{randazzo2020selfclass} and
 textures~\cite{mordvintsev2021texture}. All rely on local perception, and
-regeneration degrades beyond the perception radius --- the regime our
+regeneration degrades beyond the perception radius; the regime that our
 benchmark exploits. Signal channels~\cite{stovold2023signal}, goal
 conditioning~\cite{sudhakaran2022goal}, and information-dynamical analyses
 of self-maintenance~\cite{masumori2026fluctuations} all treat the signal
-as fixed input or emergent byproduct, never a controlled output; we ask
+as fixed input or emergent byproduct instead of a controlled output; we ask
 what is actually helping when such a channel \emph{appears} to help.
 
 \paragraph{Search over evaluation regimes.}
@@ -128,9 +127,9 @@ Our design follows a concern shared by novelty
 search~\cite{lehman2011novelty} and quality-diversity
 optimization~\cite{mouret2015mapelites}: a fixed objective can misdirect
 search and hide failure modes. Environment-generation methods co-evolve
-challenges with solutions ---
+challenges with solutions.
 POET~\cite{wang2019poet}, PAIRED~\cite{dennis2020paired},
-ACCEL~\cite{parkerholder2022accel}; our benchmark does not yet evolve the
+ACCEL~\cite{parkerholder2022accel}; Our benchmark does not yet evolve the
 damage distribution and serves as the stationary baseline such
 co-evolution can be judged against.
 
@@ -138,7 +137,7 @@ co-evolution can be judged against.
 \label{sec:design}
 
 \paragraph{Damage regime.}
-Recurring multi-block lesions --- every 150 steps, $n{=}4$ contiguous
+Recurring multi-block lesions; every 150 steps, $n{=}4$ contiguous
 $16{\times}16$ blocks at seeded positions, $T{=}2000$ (the
 information-isolation regime of Appendix~\ref{app:e1}). Damage seeds 0--7 drive evolution; held-out
 seeds 10000--10007 drive all reported numbers; the schedule is
@@ -149,7 +148,7 @@ Per seed $s$ we train a $K{=}0$ and a channel-aware $K{=}3$ parent from
 scratch (Appendix~\ref{app:model}); the $K{=}3$ parent's three global
 modulator channels are the only non-local pathway, each carrying a
 \emph{tonic} (slow baseline) and \emph{phasic} (event-triggered,
-fast-decaying) component --- the distinction from biological
+fast-decaying) component: the distinction from biological
 neuromodulation. A 259-parameter controller ($4{\to}32{\to}3$,
 $\tanh$) reads four target-free grid statistics and sets release every
 10 steps; each parent gets \emph{two} independently evolved controllers
@@ -171,7 +170,7 @@ underperforms the own-controller substantially in $\geq 4/5$. Effects are
 reported per seed (median and range); no significance claims at five
 seeds. The defense study reported here fixed the
 two-evolutions-per-parent rule in its preregistration before launch
-(\texttt{experiment\_results/20260818\_evoseed\_defense/PREREGISTRATION.md}
+(\texttt{experiment_results/20260818_evoseed_defense/PREREGISTRATION.md}
 in the repository history). Controller-output ($m_t$) series distinguish
 tonic calibration from event-locked policy (Appendix~\ref{app:mt}). A
 post-hoc follow-up evaluates the full $5{\times}5$ transfer matrix among
@@ -187,49 +186,49 @@ per-seed, per-condition numbers behind it are in
 Appendix~\ref{app:rawtables}.
 
 \begin{table}[h]
-  \centering
-  \small
-  \caption{Final Hamming (mean over 5 condition seeds $\times$ 8
-  held-out damage seeds). Survival in parentheses where it departs from
-  $1.00$. Training helps in 5/5 seeds; the controller effect is
-  parent-dependent.}
-  \label{tab:effects}
-  \scriptsize
-  \setlength{\tabcolsep}{2.5pt}
-  \begin{tabular}{lcccp{1.45in}}
-    \toprule
-    Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & Own ctrl (2 runs) & Interpretation \\
-    \midrule
-    0 & $0.035$--$0.036$ & $0.029$ & $0.029$--$0.030$ & channel effect; no control effect \\
-    1 & $0.163$--$0.175$ (surv.\ $0.05$--$0.08$) & $0.035$--$0.038$ (surv.\ $0.975$) & $0.029$--$0.030$ (surv.\ $1.00$) & channel effect $+$ replicated tonic benefit \\
-    2 & $0.030$ & $0.018$--$0.021$ & $0.022$--$0.026$ & channel effect; controller slightly worse \\
-    3 & $0.049$--$0.052$ & $0.028$--$0.029$ & $0.032$--$0.033$ & channel effect; controller slightly worse \\
-    4 & $0.042$--$0.045$ & $0.033$ & $0.034$--$0.035$ & channel effect; no control effect \\
-    \bottomrule
-  \end{tabular}
+\centering
+\small
+\caption{Final Hamming (mean over 5 condition seeds $\times$ 8
+held-out damage seeds). Survival in parentheses where it departs from
+$1.00$. Training helps in 5/5 seeds; the controller effect is
+parent-dependent.}
+\label{tab:effects}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lcccp{1.45in}}
+\toprule
+Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & Own ctrl (2 runs) & Interpretation \\
+\midrule
+0 & $0.035$--$0.036$ & $0.029$ & $0.029$--$0.030$ & channel effect; no control effect \\
+1 & $0.163$--$0.175$ (surv.\ $0.05$--$0.08$) & $0.035$--$0.038$ (surv.\ $0.975$) & $0.029$--$0.030$ (surv.\ $1.00$) & channel effect $+$ replicated tonic benefit \\
+2 & $0.030$ & $0.018$--$0.021$ & $0.022$--$0.026$ & channel effect; controller slightly worse \\
+3 & $0.049$--$0.052$ & $0.028$--$0.029$ & $0.032$--$0.033$ & channel effect; controller slightly worse \\
+4 & $0.042$--$0.045$ & $0.033$ & $0.034$--$0.035$ & channel effect; no control effect \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \paragraph{Outcome.}
 \emph{Channel-training supported} (positive in 5/5 seeds; bar
 $\geq$4/5); \emph{transfer failure supported} (penalty 5/5, lethal in
 2). Under the preregistered rule the controller effect is classified as
-\emph{parent-dependent} --- preregistered \textbf{Outcome C}: absent or
+\emph{parent-dependent}, preregistered \textbf{Outcome C}: absent or
 noise-level on four parents, reproducibly beneficial on the fragile one
 (both evolutions: $0.035$--$0.038 \to 0.029$--$0.030$, survival
 $0.975 \to 1.00$).
 
 \paragraph{What the controller actually emits.}
 All ten evolved controllers emit a \emph{constant at a nonzero level}:
-within-rollout per-channel std of $m_t$ is $0.0002$--$0.0046$ --- tonic,
-with no lesion-locked response, in 10/10 runs --- while channel means sit
+within-rollout per-channel std of $m_t$ is $0.0002$--$0.0046$, tonic with
+no lesion-locked response in 10/10 runs, while channel means sit
 at parent-distinct offsets (Figure~\ref{fig:tonic}). Evolution neither collapses to neutral output nor discovers a policy:
 it finds a parent-specific tonic calibration (whose predictive limits
 are discussed in Section 5).
 
 \paragraph{Cross-parent transfer matrix.}
-The full $5{\times}5$ matrix among the defense parents --- both
-replicas, three condition seeds per cell, 40 off-diagonal cells
-(Table~\ref{tab:matrix}, Figure~\ref{fig:matrix}) --- 23/40 transfers
+The full $5{\times}5$ matrix among the defense parents, both replicas,
+three condition seeds per cell, 40 off-diagonal cells
+(Table~\ref{tab:matrix}, Figure~\ref{fig:matrix}), 23/40 transfers
 are harmful (survival $<0.9$ or final Hamming worse than the recipient's
 zero-output baseline by $>0.005$), 15 are indistinguishable from
 zero-output, and 2 beat it. No foreign controller beats the recipient's
@@ -241,11 +240,11 @@ donor s0 on recipient s1 is lethal in e1 and near-lethal in e2
 \paragraph{Tonic alignment structures transfer.}
 All lethal instances pair strongly negative tonic-vector cosines
 (s3$\to$s2: $-0.61$; s0$\to$s1: $-0.93$), while the only beneficial
-transfers --- beating zero-output and matching the own controller ---
-occur exclusively within the tonic-aligned pair s4$\to$s1 (cosine
+transfers, beating zero-output and matching the own controller, occur
+exclusively within the tonic-aligned pair s4$\to$s1 (cosine
 $+0.99$, both replicas; adjacent to the diagonal in
 Figure~\ref{fig:matrix}). Across all 40 cells, tonic cosine correlates with transfer penalty
-($r=-0.30$) and survival ($r=+0.34$); alignment is not sufficient ---
+($r=-0.30$) and survival ($r=+0.34$); alignment is not sufficient, as
 some benign cells carry cosines to $-0.95$.
 
 \paragraph{Tonic transplant.}
@@ -259,16 +258,16 @@ transferable component is thus the tonic setpoint; the controller's small
 dynamic residual did not measurably contribute, on-parent or off.
 
 \begin{figure}[t]
-  \centering
-  \includegraphics[width=0.75\linewidth]{figures/fig5_transfer_matrix}
-  \caption{Transfer redesigned for attribution (replica-averaged; per-cell
-  $\Delta$ from the recipient's own controller; survival as the split
-  lower triangle; rows/columns cosine-ordered so the aligned pair s4--s1
-  borders the diagonal and the anti-aligned pair s3--s2 sits at opposite
-  ends). Panel A: controllers. Panel B: the same matrix with each donor's
-  tonic constant injected instead --- matching A in 46/50 cells, every
-  lethal one included. Values: Table~\ref{tab:matrix}.}
-  \label{fig:matrix}
+\centering
+\includegraphics[width=0.75\linewidth]{figures/fig5_transfer_matrix}
+\caption{Transfer redesigned for attribution (replica-averaged; per-cell
+$\Delta$ from the recipient's own controller; survival as the split
+lower triangle; rows/columns cosine-ordered so the aligned pair s4--s1
+borders the diagonal and the anti-aligned pair s3--s2 sits at opposite
+ends). Panel A: controllers. Panel B: the same matrix with each donor's
+tonic constant injected instead, matching A in 46/50 cells, every
+lethal one included. Values: Table~\ref{tab:matrix}.}
+\label{fig:matrix}
 \end{figure}
 
 \section{Discussion}
@@ -280,7 +279,7 @@ global channels beat their unmodulated siblings on every seed; the
 channels are a developmental scaffold, making the organism more robust
 even when they carry no signal at run time. What evolution adds is
 narrow: nothing measurable on four parents; on the fragile parent, a
-final stabilization that both independent evolutions find --- and since
+final stabilization that both independent evolutions find, and since
 that parent's tonic vector is nearly identical to a sibling's that gains
 nothing from it, the benefit is not a property of the tonic. We
 conjecture the fragile parent's dynamics sit near a stability boundary,
@@ -288,7 +287,7 @@ so a small tonic push re-stabilizes the attractor (unverified). The broader less
 seeds approved every condition above; crossing \emph{parent} seeds is
 what separated training from
 control, benefit from harm, and policy from constant.
-\paragraph{Why cross-parent transfer fails --- and when it does not.}
+\paragraph{Why cross-parent transfer fails, and when it does not.}
 The full matrix (Table~\ref{tab:matrix}) sharpens the single-donor
 probe: no foreign controller beats the recipient's own controller, most
 transfers are harmful (23/40), and the only beneficial ones stay within
@@ -296,7 +295,7 @@ the tonic-aligned pair (s4$\to$s1).
 The tonic transplant makes it causal: what transfers, for good or ill,
 \emph{is} the constant (36/40 off-diagonal, 10/10 diagonal, every lethal
 cell included). Each controller's output is a
-calibration against its own parent's channel weights --- the same
+calibration against its own parent's channel weights, so the same
 release level drives different dynamics in a sibling; evolution found an
 operating point for one organism, not a modulation law.
 
@@ -305,12 +304,12 @@ Five parents, two evolutions each; one morphology; one damage family; the
 matrix covers only these parents and replicas; with one
 controller-responsive parent in five, their prevalence is unknown. Next:
 multi-parent evolution and non-stationary, diversity-driven damage
-co-evolution --- this benchmark is their controlled baseline.
+co-evolution, for which this benchmark is the controlled baseline.
 
 \paragraph{Conclusion.}\label{sec:conclusion}
 In regenerative NCAs under adversarial recurring damage, robustness comes
 from channel-aware training (5/5 seeds); evolved modulation is a
-parent-dependent tonic calibration --- noise-level on most parents,
+parent-dependent tonic calibration, noise-level on most parents,
 beneficial on the fragile one, parent-locked under transfer. Attribute
 robustness across model seeds, not only damage seeds.
 
@@ -394,101 +393,99 @@ arXiv:2212.04180, 2022.
 \label{app:rawtables}
 
 \begin{table}[h]
-  \centering
-  \small
-  \caption{Final Hamming (mean $\pm$ SD, 5 condition seeds $\times$ 8
-  held-out damage seeds) and survival for each of the ten runs (5 parent
-  seeds $\times$ 2 independent controller evolutions) under hard recurring
-  multi-block damage, $T{=}2000$. Conditions: $K{=}3$ parent with
-  modulation pinned to zero; the parent's own evolved controller; the
-  $K{=}0$ parent.}
-  \label{tab:attribution}
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{lcccccc}
-    \toprule
-    & \multicolumn{2}{c}{$K{=}3$, $m{=}0$} & \multicolumn{2}{c}{$K{=}3$, own ctrl} & \multicolumn{2}{c}{$K{=}0$} \\
-    \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-    Run & $H$ & surv & $H$ & surv & $H$ & surv \\
-    \midrule
-    s0\_e1 & $0.0290{\pm}.0135$ & $1.000$ & $0.0303{\pm}.0134$ & $1.000$ & $0.0361{\pm}.0137$ & $1.000$ \\
-    s0\_e2 & $0.0294{\pm}.0144$ & $1.000$ & $0.0292{\pm}.0136$ & $1.000$ & $0.0354{\pm}.0109$ & $1.000$ \\
-    s1\_e1 & $0.0384{\pm}.0266$ & $0.975$ & $0.0286{\pm}.0177$ & $1.000$ & $0.1628{\pm}.0389$ & $0.075$ \\
-    s1\_e2 & $0.0353{\pm}.0256$ & $0.975$ & $0.0301{\pm}.0210$ & $1.000$ & $0.1746{\pm}.0356$ & $0.050$ \\
-    s2\_e1 & $0.0183{\pm}.0145$ & $1.000$ & $0.0225{\pm}.0149$ & $1.000$ & $0.0299{\pm}.0178$ & $1.000$ \\
-    s2\_e2 & $0.0208{\pm}.0170$ & $1.000$ & $0.0258{\pm}.0161$ & $1.000$ & $0.0296{\pm}.0174$ & $1.000$ \\
-    s3\_e1 & $0.0281{\pm}.0177$ & $1.000$ & $0.0332{\pm}.0165$ & $1.000$ & $0.0491{\pm}.0084$ & $1.000$ \\
-    s3\_e2 & $0.0289{\pm}.0182$ & $1.000$ & $0.0321{\pm}.0164$ & $1.000$ & $0.0525{\pm}.0136$ & $1.000$ \\
-    s4\_e1 & $0.0332{\pm}.0233$ & $1.000$ & $0.0336{\pm}.0223$ & $1.000$ & $0.0420{\pm}.0111$ & $1.000$ \\
-    s4\_e2 & $0.0332{\pm}.0225$ & $1.000$ & $0.0345{\pm}.0222$ & $1.000$ & $0.0452{\pm}.0093$ & $1.000$ \\
-    \bottomrule
-  \end{tabular}
+\centering
+\small
+\caption{Final Hamming (mean $\pm$ SD, 5 condition seeds $\times$ 8
+held-out damage seeds) and survival for each of the ten runs (5 parent
+seeds $\times$ 2 independent controller evolutions) under hard recurring
+multi-block damage, $T{=}2000$. Conditions: $K{=}3$ parent with
+modulation pinned to zero; the parent's own evolved controller; the
+$K{=}0$ parent.}
+\label{tab:attribution}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{2}{c}{$K{=}3$, $m{=}0$} & \multicolumn{2}{c}{$K{=}3$, own ctrl} & \multicolumn{2}{c}{$K{=}0$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Run & $H$ & surv & $H$ & surv & $H$ & surv \\
+\midrule
+s0_e1 & $0.0290{\pm}.0135$ & $1.000$ & $0.0303{\pm}.0134$ & $1.000$ & $0.0361{\pm}.0137$ & $1.000$ \\
+s0_e2 & $0.0294{\pm}.0144$ & $1.000$ & $0.0292{\pm}.0136$ & $1.000$ & $0.0354{\pm}.0109$ & $1.000$ \\
+s1_e1 & $0.0384{\pm}.0266$ & $0.975$ & $0.0286{\pm}.0177$ & $1.000$ & $0.1628{\pm}.0389$ & $0.075$ \\
+s1_e2 & $0.0353{\pm}.0256$ & $0.975$ & $0.0301{\pm}.0210$ & $1.000$ & $0.1746{\pm}.0356$ & $0.050$ \\
+s2_e1 & $0.0183{\pm}.0145$ & $1.000$ & $0.0225{\pm}.0149$ & $1.000$ & $0.0299{\pm}.0178$ & $1.000$ \\
+s2_e2 & $0.0208{\pm}.0170$ & $1.000$ & $0.0258{\pm}.0161$ & $1.000$ & $0.0296{\pm}.0174$ & $1.000$ \\
+s3_e1 & $0.0281{\pm}.0177$ & $1.000$ & $0.0332{\pm}.0165$ & $1.000$ & $0.0491{\pm}.0084$ & $1.000$ \\
+s3_e2 & $0.0289{\pm}.0182$ & $1.000$ & $0.0321{\pm}.0164$ & $1.000$ & $0.0525{\pm}.0136$ & $1.000$ \\
+s4_e1 & $0.0332{\pm}.0233$ & $1.000$ & $0.0336{\pm}.0223$ & $1.000$ & $0.0420{\pm}.0111$ & $1.000$ \\
+s4_e2 & $0.0332{\pm}.0225$ & $1.000$ & $0.0345{\pm}.0222$ & $1.000$ & $0.0452{\pm}.0093$ & $1.000$ \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{table}[h]
-  \centering
-  \small
-  \caption{Cross-parent transfer probe (unchanged from the per-parent
-  study): the July donor controller evaluated on each recipient parent.
-  Final Hamming and survival on held-out damage seeds; transfer is a
-  penalty in 5/5 recipients, lethal in 2.}
-  \label{tab:transfer}
-  \begin{tabular}{lcc}
-    \toprule
-    Recipient seed & Final Hamming & Survival \\
-    \midrule
-    0 & $0.036$ & $1.00$ \\
-    1 & $0.249$ & $0.00$ (lethal) \\
-    2 & $0.434$ & $0.00$ (lethal) \\
-    3 & $0.100$ & $0.45$ \\
-    4 & $0.041$ & $1.00$ \\
-    \bottomrule
-  \end{tabular}
+\centering
+\small
+\caption{Cross-parent transfer probe (unchanged from the per-parent
+study): the July donor controller evaluated on each recipient parent.
+Final Hamming and survival on held-out damage seeds; transfer is a
+penalty in 5/5 recipients, lethal in 2.}
+\label{tab:transfer}
+\begin{tabular}{lcc}
+\toprule
+Recipient seed & Final Hamming & Survival \\
+\midrule
+0 & $0.036$ & $1.00$ \\
+1 & $0.249$ & $0.00$ (lethal) \\
+2 & $0.434$ & $0.00$ (lethal) \\
+3 & $0.100$ & $0.45$ \\
+4 & $0.041$ & $1.00$ \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{table}[h]
-  \centering
-  \small
-  \caption{Full $5{\times}5$ cross-parent transfer matrix among the five
-  defense parents, both controller replicas (top: e1; bottom: e2). Rows:
-  donor controller; columns: recipient parent. Cells give mean final
-  Hamming / worst-case survival over 3 condition seeds $\times$ 8 held-out
-  damage seeds (24 rollouts per cell). Diagonal
-  (bold): recipient's own controller (survival $1.00$ throughout).
-  $^{\dagger}$lethal (survival $0.00$). Across the 40 off-diagonal cells:
-  23 harmful, 15 indistinguishable from zero-output, 2 beneficial ---
-  the beneficial cells are exclusively s4$\to$s1, the tonic-aligned pair
-  (cosine $+0.99$), in both replicas.}
-  \label{tab:matrix}
-  \footnotesize
-  \setlength{\tabcolsep}{3.5pt}
-  \begin{tabular}{lccccc}
-    \toprule
-    e1 donor & recip.\ s0 & recip.\ s1 & recip.\ s2 & recip.\ s3 & recip.\ s4 \\
-    \midrule
-    s0 & \textbf{0.0315} & $0.470/0.00^{\dagger}$ & $0.097/0.38$ & $0.028/1.00$ & $0.052/0.88$ \\
-    s1 & $0.035/1.00$ & \textbf{0.0306} & $0.023/1.00$ & $0.049/1.00$ & $0.035/1.00$ \\
-    s2 & $0.029/1.00$ & $0.043/0.88$ & \textbf{0.0201} & $0.033/1.00$ & $0.092/0.50$ \\
-    s3 & $0.035/1.00$ & $0.036/0.88$ & $0.208/0.00^{\dagger}$ & \textbf{0.0295} & $0.044/1.00$ \\
-    s4 & $0.034/1.00$ & $0.030/1.00$ & $0.023/1.00$ & $0.044/1.00$ & \textbf{0.0340} \\
-    \midrule
-    e2 donor & & & & & \\
-    \midrule
-    s0 & \textbf{0.0291} & $0.108/0.25$ & $0.056/0.88$ & $0.032/1.00$ & $0.039/1.00$ \\
-    s1 & $0.032/1.00$ & \textbf{0.0292} & $0.025/1.00$ & $0.049/1.00$ & $0.032/1.00$ \\
-    s2 & $0.041/1.00$ & $0.074/0.62$ & \textbf{0.0219} & $0.033/1.00$ & $0.113/0.25$ \\
-    s3 & $0.028/1.00$ & $0.058/0.75$ & $0.239/0.00^{\dagger}$ & \textbf{0.0262} & $0.028/1.00$ \\
-    s4 & $0.030/1.00$ & $0.030/1.00$ & $0.020/1.00$ & $0.033/1.00$ & \textbf{0.0336} \\
-    \bottomrule
-  \end{tabular}
+\centering
+\small
+\caption{Full $5{\times}5$ cross-parent transfer matrix among the five
+defense parents, both controller replicas (top: e1; bottom: e2). Rows:
+donor controller; columns: recipient parent. Cells give mean final
+Hamming / worst-case survival over 3 condition seeds $\times$ 8 held-out
+damage seeds (24 rollouts per cell). Diagonal
+(bold): recipient's own controller (survival $1.00$ throughout).
+$^{\dagger}$lethal (survival $0.00$). Across the 40 off-diagonal cells:
+23 harmful, 15 indistinguishable from zero-output, 2 beneficial; the beneficial cells are exclusively s4$\to$s1, the tonic-aligned pair
+(cosine $+0.99$), in both replicas.}
+\label{tab:matrix}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccccc}
+\toprule
+e1 donor & recip.\ s0 & recip.\ s1 & recip.\ s2 & recip.\ s3 & recip.\ s4 \\
+\midrule
+s0 & \textbf{0.0315} & $0.470/0.00^{\dagger}$ & $0.097/0.38$ & $0.028/1.00$ & $0.052/0.88$ \\
+s1 & $0.035/1.00$ & \textbf{0.0306} & $0.023/1.00$ & $0.049/1.00$ & $0.035/1.00$ \\
+s2 & $0.029/1.00$ & $0.043/0.88$ & \textbf{0.0201} & $0.033/1.00$ & $0.092/0.50$ \\
+s3 & $0.035/1.00$ & $0.036/0.88$ & $0.208/0.00^{\dagger}$ & \textbf{0.0295} & $0.044/1.00$ \\
+s4 & $0.034/1.00$ & $0.030/1.00$ & $0.023/1.00$ & $0.044/1.00$ & \textbf{0.0340} \\
+\midrule
+e2 donor & & & & & \\
+\midrule
+s0 & \textbf{0.0291} & $0.108/0.25$ & $0.056/0.88$ & $0.032/1.00$ & $0.039/1.00$ \\
+s1 & $0.032/1.00$ & \textbf{0.0292} & $0.025/1.00$ & $0.049/1.00$ & $0.032/1.00$ \\
+s2 & $0.041/1.00$ & $0.074/0.62$ & \textbf{0.0219} & $0.033/1.00$ & $0.113/0.25$ \\
+s3 & $0.028/1.00$ & $0.058/0.75$ & $0.239/0.00^{\dagger}$ & \textbf{0.0262} & $0.028/1.00$ \\
+s4 & $0.030/1.00$ & $0.030/1.00$ & $0.020/1.00$ & $0.033/1.00$ & \textbf{0.0336} \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \paragraph{Tonic transplant.}
 Replacing each donor controller by its realized mean $m_t$ injected as a
 constant (same protocol, both replicas, 3 condition seeds) reproduces the
 controller's outcome in 36/40 off-diagonal cells and 10/10 diagonal cells
-(46/50 overall; Figure~\ref{fig:matrix}B) --- including every lethal
-cell, where the transplant kills exactly as the controller does. The
+(46/50 overall; Figure~\ref{fig:matrix}B), including every lethal cell, where the transplant kills exactly as the controller does. The
 four mismatches are magnitude differences inside already-lethal cells.
 Under the tested regime, the controllers' small dynamic residual did not
 measurably contribute, on-parent or off (full CSVs in the repository).
@@ -499,38 +496,38 @@ AUC mirrors the same ordering in every seed (full CSVs in the repository).
 \label{app:mt}
 
 \begin{table}[h]
-  \centering
-  \small
-  \caption{Tonic output of the evolved controllers: per-channel mean of
-  $m_t$, averaged over the two independent evolutions per seed. All ten
-  controllers sit at nonzero, parent-distinct offsets; within-rollout
-  per-channel std of $m_t$ is $0.0002$--$0.0046$ everywhere --- flat,
-  tonic output with no lesion-locked response in 10/10 runs.}
-  \label{tab:mt}
-  \begin{tabular}{lc}
-    \toprule
-    Seed & mean$(m)$ per channel (avg.\ of 2 runs) \\
-    \midrule
-    0 & $-0.021\;\;{+}0.002\;\;{+}0.027$ \\
-    1 & $+0.030\;\;{+}0.012\;\;{-}0.026$ \\
-    2 & $-0.026\;\;{-}0.032\;\;{-}0.015$ \\
-    3 & $+0.001\;\;{+}0.032\;\;{-}0.010$ \\
-    4 & $+0.028\;\;{+}0.007\;\;{-}0.025$ \\
-    \bottomrule
-  \end{tabular}
+\centering
+\small
+\caption{Tonic output of the evolved controllers: per-channel mean of
+$m_t$, averaged over the two independent evolutions per seed. All ten
+controllers sit at nonzero, parent-distinct offsets; within-rollout
+per-channel std of $m_t$ is $0.0002$--$0.0046$ everywhere: flat, tonic
+output with no lesion-locked response in 10/10 runs.}
+\label{tab:mt}
+\begin{tabular}{lc}
+\toprule
+Seed & mean$(m)$ per channel (avg.\ of 2 runs) \\
+\midrule
+0 & $-0.021\;\;{+}0.002\;\;{+}0.027$ \\
+1 & $+0.030\;\;{+}0.012\;\;{-}0.026$ \\
+2 & $-0.026\;\;{-}0.032\;\;{-}0.015$ \\
+3 & $+0.001\;\;{+}0.032\;\;{-}0.010$ \\
+4 & $+0.028\;\;{+}0.007\;\;{-}0.025$ \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{figure}[h]
-  \centering
-  \includegraphics[width=0.98\linewidth]{figures/fig6_tonic_traces}
-  \caption{Controller output $m_t$ over a full evaluation rollout, per
-  parent seed, both independent evolutions overlaid (solid/dashed), one
-  line per modulator channel. After a brief initial transient while the
-  perceptual state settles, every controller holds a constant,
-  parent-distinct offset through all lesion events --- tonic calibration,
-  not an event-locked policy. Note that the two independent evolutions of
-  the same parent sometimes settle at slightly different setpoints.}
-  \label{fig:tonic}
+\centering
+\includegraphics[width=0.98\linewidth]{figures/fig6_tonic_traces}
+\caption{Controller output $m_t$ over a full evaluation rollout, per
+parent seed, both independent evolutions overlaid (solid/dashed), one
+line per modulator channel. After a brief initial transient while the
+perceptual state settles, every controller holds a constant,
+parent-distinct offset through all lesion events: tonic calibration, not
+an event-locked policy. Note that the two independent evolutions of
+the same parent sometimes settle at slightly different setpoints.}
+\label{fig:tonic}
 \end{figure}
 
 The tonic vector alone does not predict benefit: seeds 1 and 4 emit nearly
@@ -549,8 +546,7 @@ transferred lethally to two of three sibling parents (survival $0.00$,
 final Hamming $0.249$ and $0.434$), while zero-output channel parents beat
 the $K{=}0$ baseline in $3/3$ seeds ($0.029/0.034/0.020$ vs
 $0.034/0.177/0.028$). The original table's headline gap was therefore part
-parent-training effect and part parent-seed luck --- motivating this
-study.
+parent-training effect and part parent-seed luck, motivating this study.
 
 \section{Model and training details}
 \label{app:model}
@@ -560,8 +556,8 @@ the last four are RGBA with alpha last. Perception uses three fixed kernels
 (identity, Sobel-$x$, Sobel-$y$) per channel, giving
 $p_t \in \mathbb{R}^{48}$:
 \begin{equation}
-  p_t = \big(K_{\mathrm{id}} * x_t,\; K_{\mathrm{S}_x} * x_t,\;
-  K_{\mathrm{S}_y} * x_t\big).
+p*t = \big(K*{\mathrm{id}} _ x*t,\; K*{\mathrm{S}\_x} _ x*t,\;
+K*{\mathrm{S}\_y} \* x_t\big).
 \end{equation}
 The update MLP maps $(48{+}K)$ inputs to 128 hidden units (ReLU) and back to
 16 channel increments, with the final layer zero-initialized. Cells update
@@ -570,9 +566,9 @@ its $3{\times}3$ max-pooled neighborhood; dead cells are masked to zero.
 
 Tonic and phasic modulator dynamics:
 \begin{equation}
-  m_t^{(\mathrm{tonic})} = \alpha\, m_{t-1}^{(\mathrm{tonic})} + (1-\alpha)\, c_t,
-  \qquad
-  m_t^{(\mathrm{phasic})} = m_{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau},
+m*t^{(\mathrm{tonic})} = \alpha\, m*{t-1}^{(\mathrm{tonic})} + (1-\alpha)\, c*t,
+\qquad
+m_t^{(\mathrm{phasic})} = m*{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau},
 \end{equation}
 with $\alpha = 0.95$, $\tau = 20$, and the injected level the clipped sum,
 broadcast to all cells and concatenated to perception (input dim $48+3=51$).
@@ -597,26 +593,26 @@ information failures: the misbehaving cells are exactly the cells cut off
 from global context.
 
 \begin{figure}[h]
-  \centering
-  \includegraphics[width=0.85\linewidth]{figures/fig1_recovery_vs_radius}
-  \caption{E1 lesion sweep. Final Hamming distance as a function of lesion
-  radius and kind, with and without modulator channels (mean $\pm$ SD over 5
-  damage seeds). Inset: post-regrowth debris and scar tissue.}
-  \label{fig:e1}
+\centering
+\includegraphics[width=0.85\linewidth]{figures/fig1_recovery_vs_radius}
+\caption{E1 lesion sweep. Final Hamming distance as a function of lesion
+radius and kind, with and without modulator channels (mean $\pm$ SD over 5
+damage seeds). Inset: post-regrowth debris and scar tissue.}
+\label{fig:e1}
 \end{figure}
 
 \section{Calibration probes}
 \label{app:calibration}
 
 \paragraph{Collapse probe.}
-The target mask is only $4.6\%$ alive, so a fully-dead grid scores Hamming
-$\approx 0.046$ --- close to a struggling organism's $\approx 0.02$. We
+The target mask is only $4.6\%$ alive, so a fully-dead grid scores Hamming $\approx 0.046$, close to a struggling
+organism's $\approx 0.02$. We
 verified empirically that the all-dead state scores $0.0461$ against
 struggling-neutral's $0.0205$: death loses by $2.2\times$, so the
 alive-fraction floor is disabled ($0.0$). Notably, the runbook-default floor
 of $0.3$ would have \emph{penalized every healthy candidate} (a correct
-lizard lives at $\approx 0.057$ alive), pushing evolution toward overgrowth
---- a case where calibrating from the experiment's own data overrode a
+lizard lives at $\approx 0.057$ alive), pushing evolution toward overgrowth, a case where calibrating from the
+experiment's own data overrode a
 plausible default.
 
 \paragraph{Initial step-size probe.}
@@ -625,18 +621,17 @@ Perturbing the neutral controller by Gaussian noise at increasing $\sigma$
 healthy (some samples beat neutral); $\sigma = 0.05$ is bimodal;
 $\sigma = 0.3$ lands \emph{every} sample in saturated overgrowth (alive
 $\rightarrow 0.96$). A first evolution run with the library-default
-$\sigma_0 = 0.3$ froze at fitness $0.150$ from generation 2 onward ---
-$7\times$ worse than doing nothing --- because CMA-ES was ranking
+$\sigma_0 = 0.3$ froze at fitness $0.150$ from generation 2 onward, $7\times$ worse than
+doing nothing, because CMA-ES was ranking
 overgrowth-degree noise. $\sigma_0 = 0.01$ brackets the neutral point and
 the same budget converged smoothly (Figure~\ref{fig:evolution}).
 
 \begin{figure}[h]
-  \centering
-  \includegraphics[width=0.85\linewidth]{figures/fig4_evolution_trajectory}
-  \caption{CMA-ES fitness over 300 generations ($\sigma_0{=}0.01$). Dashed
-  line: neutral controller ($0.0205$). Best evolved fitness: $0.0135$ --- a
-  $34\%$ improvement with no stall.}
-  \label{fig:evolution}
+\centering
+\includegraphics[width=0.85\linewidth]{figures/fig4_evolution_trajectory}
+\caption{CMA-ES fitness over 300 generations ($\sigma_0{=}0.01$). Dashed
+line: neutral controller ($0.0205$). Best evolved fitness: $0.0135$, a $34\%$ improvement with no stall.}
+\label{fig:evolution}
 \end{figure}
 
 \section{Evolution objective}
@@ -648,29 +643,29 @@ $\sigma_0{=}0.01$, 300 generations, neutral (all-zero) controller as the
 initial mean. Fitness is the event-weighted mean Hamming distance to the
 target alpha mask over full rollouts on the eight train damage seeds:
 \begin{equation}
-  f(\theta) = \frac{1}{\sum_t w_t} \sum_{t=1}^{T} w_t\, H_t(\theta),
-  \qquad
-  w_t = \exp\!\Big(-\frac{t - \tau_{\mathrm{last}}(t)}{\tau_w}\Big),
-  \label{eq:fitness}
+f(\theta) = \frac{1}{\sum*t w_t} \sum*{t=1}^{T} w*t\, H_t(\theta),
+\qquad
+w_t = \exp\!\Big(-\frac{t - \tau*{\mathrm{last}}(t)}{\tau*w}\Big),
+\label{eq:fitness}
 \end{equation}
-where $\tau_{\mathrm{last}}(t)$ is the most recent lesion step and
+where $\tau*{\mathrm{last}}(t)$ is the most recent lesion step and
 $\tau_w = 150/3 = 50$. The recency kernel resets at each lesion, so slow
-repair is expensive even when endpoint Hamming is identical --- it
+repair is expensive even when endpoint Hamming is identical, so it
 de-saturates the metric and prices repair speed directly. Fitness is not the
 reported metric: all results report unweighted trajectory statistics
-on held-out seeds. Two calibration controls make this landscape
-interpretable --- a collapse probe (verifying the objective cannot be gamed
+on held-out seeds. Two calibration controls make this landscape interpretable: a collapse
+probe (verifying the objective cannot be gamed
 by alpha suppression) and an initial step-size ablation (showing
 $\sigma_0{=}0.3$ saturates the first population in overgrowth where no
-repair signal exists) --- both detailed in Appendix~\ref{app:calibration}.
+repair signal exists), both detailed in Appendix~\ref{app:calibration}.
 
 \section{Single-parent five-condition study}
 \label{app:singleparent}
 
 Five conditions share the same protocol, horizon, and damage seeds:
 \textbf{closed-loop} (evolved controller); \textbf{static} (the evolved
-controller evaluated once at $t{=}0$ and held constant --- isolating
-temporal modulation from the evolved tonic level itself); \textbf{constant}
+controller evaluated once at $t{=}0$ and held constant, isolating temporal
+modulation from the evolved tonic level itself); \textbf{constant}
 (fixed tonic, grid-searched over $\{-1,-0.5,0,0.5,1\}$ on train seeds);
 \textbf{random} (uniform $[-1,1]$ each step, actuation-matched noise); and
 \textbf{no modulation} ($K{=}0$ parent). All experiments ran on a single
@@ -682,16 +677,15 @@ Relative to no modulation, modulated conditions recover $2.2\times$ more
 completely (final Hamming $0.028$--$0.030$ vs.\ $0.063$) and sustain
 $\approx 4\times$ less cumulative damage (AUC $0.016$--$0.017$ vs.\ $0.064$).
 The wounds exceed the perception radius, so this improvement is attributable
-to the broadcast channel --- the only non-local pathway --- repairing damage
+to the broadcast channel, the only non-local pathway, which repairs damage
 that local rules cannot diagnose.
 
 \paragraph{A regime boundary, not a failed ablation (RQ2).}
 The three modulated conditions are statistically indistinguishable: final
 Hamming spans $0.028$--$0.030$, half-life $6.4$--$7.2$ steps, all differences
 within noise (pairwise effect sizes $< 0.15$). We read this as a measurement
-of the \emph{regime}, not a failure of the controller: the damage process is
-stationary and memoryless --- events are i.i.d.\ in size, number, and
-position --- so the optimal release policy is time-invariant and a fixed
+of the \emph{regime}, not a failure of the controller: the damage process is stationary and memoryless (events are i.i.d.\ in
+size, number, and position), so the optimal release policy is time-invariant and a fixed
 tonic gain is structurally adequate. There is no temporal structure for
 adaptive scheduling to exploit. Evolution's measured contribution is
 automatic discovery of the near-optimal tonic level in 2.5 hours from a
@@ -700,16 +694,16 @@ neutral start, without the hand search the constant condition required.
 \paragraph{Random modulation is lethal.}
 Random actuation kills every run (survival $0.00$, final Hamming $0.825$):
 pilot probes show constant levels alone swing mean Hamming from $0.003$ to
-$0.93$. The modulator channels are a high-gain control pathway, not a free
-architectural bonus --- the identity of the release schedule determines
+$0.93$. The modulator channels are a high-gain control pathway, not a free architectural bonus; the
+identity of the release schedule determines
 whether the organism lives.
 
 \paragraph{Metric artifacts of long-horizon evaluation (RQ3).}
 Two artifacts surfaced only under repeated damage. First, repair half-life is
 defined per lesion relative to each post-lesion jump; on the baseline's
 chronically damaged morphology, new lesions often land on already-degraded
-regions, producing no measurable jump and scoring as zero half-life --- so
-the baseline's $2.7$ steps does \emph{not} indicate fast repair. Second,
+regions, producing no measurable jump and scoring as zero half-life, so the
+baseline's $2.7$ steps does \emph{not} indicate fast repair. Second,
 residual Hamming in all conditions is partly attributable to locomotion drift
 during regeneration rather than permanent damage; the metric conflates
 spatial translation with morphological error. Both are documented so that
@@ -729,6 +723,5 @@ analysis script, per-seed artifacts (controllers,
 parents, trajectories, $m_t$ series), and the mechanical outcome output are
 in the repository, timestamped before the results. Code will be released
 upon publication.
-
 
 \end{document}
