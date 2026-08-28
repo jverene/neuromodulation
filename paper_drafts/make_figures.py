@@ -320,8 +320,8 @@ for ax, s, les in zip(axes, seeds, zoom_lesion):
         t = [int(r["step"]) for r in rows]
         for k in range(3):
             ax.plot(t, [float(r[f"m_k{k}"]) for r in rows],
-                    color=ch_cols[k], lw=0.7, ls=ls,
-                    alpha=0.9 if rep == "e1" else 0.6)
+                    color=ch_cols[k], lw=1.2, ls=ls,
+                    alpha=0.95 if rep == "e1" else 0.8)
     ax.set_title(f"parent s{s}", fontsize=8.5)
     ax.set_xlabel("step", fontsize=7.5)
     ax.tick_params(labelsize=6.5)
@@ -332,7 +332,7 @@ for ax, s, les in zip(axes, seeds, zoom_lesion):
         rows = list(csv.DictReader(open(DF / f"defense_s{s}_{rep}" / "m_series.csv")))
         for k in range(3):
             axi.plot([int(r["step"]) for r in rows], [float(r[f"m_k{k}"]) for r in rows],
-                     color=ch_cols[k], lw=0.7, ls=ls, alpha=0.9 if rep == "e1" else 0.6)
+                     color=ch_cols[k], lw=1.0, ls=ls, alpha=0.95 if rep == "e1" else 0.8)
     axi.axvline(les, color="#333333", ls=":", lw=1.0)
     axi.set_xlim(les - 30, les + 30)
     axi.set_ylim(-0.01, 0.01)
