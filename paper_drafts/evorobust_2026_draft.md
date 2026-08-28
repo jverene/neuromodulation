@@ -296,8 +296,7 @@ operating point for one organism, not a modulation law.
 \paragraph{Limitations and future work.}
 Five parents, two evolutions each; one morphology; one damage family.
 Only one parent in five proved controller-responsive. Next: multi-parent
-evolution and non-stationary, diversity-driven damage co-evolution ---
-this benchmark is their controlled baseline.
+evolution and non-stationary, diversity-driven damage co-evolution, for which this benchmark is the controlled baseline.
 
 \paragraph{Conclusion.}\label{sec:conclusion}
 In regenerative NCAs under adversarial recurring damage, robustness comes
