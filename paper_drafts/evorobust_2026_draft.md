@@ -1,66 +1,29 @@
-\documentclass[10pt]{article}
+\documentclass{article}
 
-% --- Geometry & NeurIPS Page Layout ---
-\usepackage[text={5.5in,9.0in}, centering, headheight=12pt]{geometry}
-\usepackage{newtxtext,newtxmath} % Standard Times Roman font baseline
-\usepackage{microtype} % Character protrusion & expansion for clean margins
-
-% --- Core Packages ---
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{amsmath}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{xcolor}
-\usepackage{url}
+% NeuralIPS 2024 official style (submission mode: anonymized, no line numbers)
+\usepackage[nonatbib]{neurips_2026}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts,amsmath,amssymb}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{subcaption}
 
-% --- Color Palette & Hyperlink Setup ---
-\definecolor{navyblue}{RGB}{0, 32, 96}
-\hypersetup{
-colorlinks=true,
-linkcolor=navyblue,
-citecolor=navyblue,
-urlcolor=navyblue
-}
+\title{Channel-Aware Training, Not Closed-Loop Control, Drives Robust Regeneration in Neural Cellular Automata}
 
-% --- Custom NeurIPS Style Macros ---
-\makeatletter
-\renewcommand{\maketitle}{
-\begin{center}
-\vspace*{0.2in}
-{\Large \bfseries \@title \par}
-\vskip 1.2em
-{\large Anonymous Author(s) \\
-\small \texttt{anonymous@example.com} \\
+\author{
+  Anonymous Authors\\
+  \texttt{anonymous@example.com}
 }
-\vskip 1.5em
-\end{center}
-}
-\makeatother
-
-\renewenvironment{abstract}{
-\begin{quote}
-\centerline{\small\bfseries Abstract}
-\vspace{0.5em}
-\small
-}{
-\end{quote}
-\vspace{1.0em}
-}
-
-% Helper macro to safely handle missing figure assets during compilation
-\newcommand{\safefigure}[2]{%
-\IfFileExists{#1}{%
-\includegraphics[width=\linewidth]{#1}%
-}{%
-\framebox[\linewidth]{\rule{0pt}{3.2cm}\footnotesize\color{gray}\textbf{Placeholder:} #2}%
-}%
-}
-
-\title{Channel-Aware Training, Not Closed-Loop Control, Drives\\Robust Regeneration in Neural Cellular Automata}
 
 \begin{document}
+
+\maketitle
 
 \maketitle
 
