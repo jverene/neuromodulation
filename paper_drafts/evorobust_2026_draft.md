@@ -715,6 +715,6 @@ matrix. Preregistration,
 analysis script, per-seed artifacts (controllers,
 parents, trajectories, $m_t$ series), and the mechanical outcome output are
 in the repository, timestamped before the results. Code will be released
-upon publication.
+upon publication. Code mirror: \url{https://anonymous.4open.science/r/neuromodulation-8C57/}.
 
 \end{document}

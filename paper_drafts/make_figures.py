@@ -244,7 +244,7 @@ while remaining:
     nxt = max(remaining, key=lambda x: COS[order[-1], x])
     order.append(nxt); remaining.remove(nxt)
 
-GREEN, AMBER, CRIMSON, NEUTRAL = "#4daf4a", "#fdb462", "#a50026", "#e8e8e8"
+GREEN, AMBER, CRIMSON, NEUTRAL = "#009E73", "#E69F00", "#D55E00", "#F0F0F0"
 def bin_color(d):
     if np.isnan(d):
         return NEUTRAL
@@ -327,7 +327,7 @@ for ax, s, les in zip(axes, seeds, zoom_lesion):
         for k in range(3):
             axi.plot([int(r["step"]) for r in rows], [float(r[f"m_k{k}"]) for r in rows],
                      color=ch_cols[k], lw=0.7, ls=ls, alpha=0.9 if rep == "e1" else 0.6)
-    axi.axvline(les, color="red", ls=":", lw=1.0)
+    axi.axvline(les, color="#333333", ls=":", lw=1.0)
     axi.set_xlim(les - 30, les + 30)
     axi.set_ylim(-0.01, 0.01)
     axi.set_xticks([les]); axi.tick_params(labelsize=4.5)
