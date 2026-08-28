@@ -170,7 +170,7 @@ underperforms the own-controller substantially in $\geq 4/5$. Effects are
 reported per seed (median and range); no significance claims at five
 seeds. The defense study reported here fixed the
 two-evolutions-per-parent rule in its preregistration before launch
-(\texttt{experiment_results/20260818_evoseed_defense/PREREGISTRATION.md}
+(\texttt{experiment\_results/20260818\_evoseed\_defense/PREREGISTRATION.md}
 in the repository history). Controller-output ($m_t$) series distinguish
 tonic calibration from event-locked policy (Appendix~\ref{app:mt}). A
 post-hoc follow-up evaluates the full $5{\times}5$ transfer matrix among
