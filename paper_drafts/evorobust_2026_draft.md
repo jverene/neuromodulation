@@ -356,6 +356,11 @@ E.~Grefenstette, and T.~Rockt\"aschel.
 \emph{Evolving Curricula with Regret-Based Environment Design}.
 ICML 2022; arXiv:2203.01302.
 
+\bibitem{faldor2025cax}
+M.~Faldor and A.~Cully.
+\emph{CAX: Cellular Automata Accelerated in JAX}.
+ICLR 2025; arXiv:2410.02651.
+
 \bibitem{hansen2006cma}
 N.~Hansen.
 \emph{The CMA Evolution Strategy: A Comparing Review}.
