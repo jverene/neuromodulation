@@ -16,7 +16,7 @@
 
 \title{Channel-Aware Training, Not Closed-Loop Control, Drives Robust Regeneration in Neural Cellular Automata}
 
-\author{Anonymous Authors}
+\author{Bowen Jiang}
 
 \begin{document}
 
@@ -291,6 +291,13 @@ beneficial on the fragile one, parent-locked under transfer. Attribute
 robustness across model seeds, not only damage seeds.
 
 \clearpage
+\section*{Acknowledgements}
+We thank the anonymous EvoRobust reviewers for constructive feedback.
+This work received no external funding; all compute was self-funded
+(roughly \$40 of rented GPU time). We thank the developers of
+JAX~\cite{faldor2025cax} and Evosax~\cite{lange2022evosax}, whose
+open-source infrastructure this study is built on.
+
 \begin{thebibliography}{13}
 
 \bibitem{mordvintsev2020gnca}
