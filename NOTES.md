@@ -506,3 +506,78 @@ rather than ML-benchmark language). NCA regeneration is squarely on-topic
 **Watch:** alife.vscht.cz + @ALifeConf for the CfP drop.
 
 ---
+
+## 2026-10-08 — Driving-analogy discussion surfaced a confound: the channels were dead during parent training
+
+**The analogy (candidate for the ALIFE version):** a new driver can't be
+blamed for crashing on roads they've never driven; an experienced driver on
+new roads usually doesn't crash. Sharpened mapping: **parent = car,
+controller = driver, damage regime = roads.**
+
+**Where the existing data already speaks:**
+- Parents trained *with* damage (random square-erasure mid-episode) handle
+  held-out recurring lesions — the "experienced driver, new roads" clause,
+  confirmed.
+- The transfer matrix is "a driver calibrated to one car, dropped into a
+  sibling car with a high-gain pedal": lethal, and the tonic transplant
+  reproduces every crash because the driver was cruise control all along
+  (flat m_t, std 0.0002–0.0046).
+
+**The finding (code read, not yet a run): `mod_noise: false`.**
+`configs/e0_channel_aware.yaml:27` plus the escape hatch at
+`src/train.py:71-72` ("train with random modulator inputs so the channel
+weights are exercised. Default off (frozen neutral m=0)") — the study
+parents trained all 8,000 steps with channel inputs pinned to m=0.
+Consequences:
+
+1. Gradient on the channel weights is zero throughout training → they stay
+   at init; at eval m=0 contributes nothing → **K=3(m=0) is functionally a
+   K=0 parent with a different init draw** (the extra first-layer weights
+   shift the RNG stream).
+2. The "developmental scaffold" mechanism as written claims experience that
+   never happened: E_train 5/5 is consistent with init luck on a bimodal
+   parent-quality distribution (one-sided sign test at 5/5: p≈0.03; the
+   preregistered ≥4/5 bar corresponds to p≈0.19 under a symmetric null;
+   s1's fragile K=0 twin at survival 0.05–0.08 dominates the gap).
+3. Connective thread with the 2026-07-25 probe note: its "PRD §5 concern
+   does NOT apply — the channels carry strong, exploitable signal" verdict
+   refuted *eval-time signal capacity* (forward pass through random-init
+   weights swings fitness — the high-gain finding), not *training-time
+   exercise* of the weights. Both facts coexist; the July phrasing let the
+   scaffold story stand unexamined.
+
+Caveat: this does not say the E_train effect is absent — it says the
+mechanism story is unsupported and the K=3-vs-K=0 comparison is confounded
+with init. P1b resolves it either way.
+
+**Second stacked deck (our own RQ2 argument):** the damage is stationary and
+memoryless, so a fixed tonic is *structurally optimal* — "no temporal
+structure for adaptive scheduling to exploit." We ran a driving test on
+featureless roads and concluded steering doesn't matter. And nobody in the
+current design ever learned under control either: controllers are bolted
+onto frozen parents post-hoc. "Control doesn't help" is scoped to control
+that arrived after development.
+
+**New experiment plan (pre-registration discipline applies — decision rules
+fixed before runs):**
+
+| # | Condition | Isolates | Cost |
+|---|-----------|----------|------|
+| P1 | Retrain 5 parents with `mod_noise: true`, full battery | true "grew up under modulation" vs dead-channel baseline; do lethal foreign-tonic transfers soften? | ~2.5 GPU-h, already implemented |
+| P1b | Extra K=0/K=3 init pairs → null spread of the paired gap | whether 5/5 survives an init-luck null | ~4 GPU-h |
+| P2 | Co-trained closed loop (parent training interleaved with controller CMA-ES on the current checkpoint) | development *under* control; do controllers finally evolve phasic lesion-locked policies? | ~1 GPU-day |
+| P3 | Structured/non-stationary damage (time-clustered, migrating, with memory), rerun evolution | makes roads worth learning — the only regime where closed-loop can beat cruise control; ties to the POET-lineage future work already cited | ~1 GPU-day |
+
+Every outcome publishes: co-training still collapsing to tonics strengthens
+the thesis ("even when the organism could use the signal, evolution settles
+on a setpoint"); co-training yielding phasic policies flips the headline
+into neuromodulation-as-developmental-context — a very ALIFE story.
+
+**Paper decisions:**
+- Hold the driving analogy out of the draft until P1 resolves the scaffold
+  claim — the analogy makes "training experience is what matters" *more*
+  load-bearing, and that is currently the confounded clause.
+- The analogy invites the co-training question from readers; if included,
+  pair it with P2 results rather than as future-work motivation.
+
+---
