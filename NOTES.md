@@ -463,3 +463,46 @@ v4 fixed it — remote self-stop owns billing, local never stops on
 unreachable.
 
 ---
+
+## 2026-10-07 — ALIFE 2027 chosen as next target: dates confirmed, deadlines projected, adaptation scoped
+
+**Decision context:** the NeurIPS workshop version is non-archival, so
+ALIFE's "full papers must be new unpublished work" rule is satisfied — full
+reuse of text, figures, and data is fine. ALIFE 2027 is the target.
+
+**Confirmed (alife.org / alife.vscht.cz):** Prague, Czech Republic,
+**July 19–23, 2027**; hosted by UCT Prague + Czech Technical University
+under ISAL; announced Aug 21, 2026 at the ALIFE 2026 (Waterloo) closing
+ceremony. The conference site (2027.alife.org → alife.vscht.cz) is live but
+has no CfP, deadlines, or templates yet — only venue/organizers/news.
+
+**Projected deadlines**, calibrated on the completed ALIFE 2026 cycle
+(Waterloo, Aug 17–21): workshops/tutorials Feb 20 · papers Mar 30 →
+extended Apr 12 · notification Jun 7 · camera-ready Jun 21 · late-breaking
+Jul 20. The 2027 conference sits ~1 month earlier, so shift everything a
+few weeks earlier and **plan against papers due mid-to-late March 2027**
+(~5 months out; CfP expected late 2026/early 2027). 2026 also had a
+deadline extension — flex is likely, but don't budget on it.
+
+**Format requirements (2026 rules, near-certain carryover):**
+- Full papers **3–8 pp excluding references/acknowledgements**.
+- **Single-blind, non-anonymous** — names, affiliations, funding on the
+  submission; the camera-ready de-anonymization already done fits.
+- **MIT Press open-access proceedings** with DOIs; registration +
+  presentation (in-person or online) required for inclusion.
+- MIT Press ALIFE template (two-column); the 2026 Overleaf/LaTeX/Word kits
+  are the reference until the 2027 kit lands.
+- Side tracks if needed: 2-pp summaries (published work) and 2-pp
+  late-breaking abstracts (posters, non-archival).
+
+**Adaptation scope:** the draft is 10 pp single-column NeurIPS (~4,300
+words); 8 pp two-column holds ~7k+ words, so the text fits with room — the
+work is the template port off `neurips_2026.sty`, figure reflow to
+two-column, and a framing pass pitching intro/related work at the ALIFE
+audience (regeneration / self-organization / morphogenetic-memory lineage
+rather than ML-benchmark language). NCA regeneration is squarely on-topic
+(self-repair and self-organization are core ALIFE tracks).
+
+**Watch:** alife.vscht.cz + @ALifeConf for the CfP drop.
+
+---
