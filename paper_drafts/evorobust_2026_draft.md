@@ -1,10 +1,11 @@
 \documentclass{article}
 
-% NeuralIPS 2024 official style (submission mode: anonymized, no line numbers)
-\usepackage[nonatbib]{neurips_2026}
+% NeurIPS 2026 official style (camera-ready: final, non-anonymized, workshop track)
+\usepackage[nonatbib,final,dblblindworkshop]{neurips_2026}
+\workshoptitle{EvoRobust: Self-Evolving Diversity-Driven Search for Robust AI Systems}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{hyperref}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{amsfonts,amsmath,amssymb}
@@ -16,7 +17,11 @@
 
 \title{Channel-Aware Training, Not Closed-Loop Control, Drives Robust Regeneration in Neural Cellular Automata}
 
-\author{Bowen Jiang}
+\author{%
+  Harry Jiang \\
+  Independent \\
+  \texttt{harryjiang14@crescentschool.org}
+}
 
 \begin{document}
 
@@ -721,7 +726,7 @@ evaluations, $\approx$2 minutes of A100 time per full $5{\times}5$ replica
 matrix. Preregistration,
 analysis script, per-seed artifacts (controllers,
 parents, trajectories, $m_t$ series), and the mechanical outcome output are
-in the repository, timestamped before the results. Code will be released
-upon publication. Code mirror: \url{https://anonymous.4open.science/r/neuromodulation-8C57/}.
+in the repository, timestamped before the results. Code is available at
+\url{https://github.com/jverene/neuromodulation}.
 
 \end{document}
