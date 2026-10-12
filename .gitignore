@@ -11,3 +11,6 @@ assets/*.png
 notebooks/
 .zcode/
 .DS_Store
+.freebuff/
+.pair/
+.v2c/
