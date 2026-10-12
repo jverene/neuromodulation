@@ -36,10 +36,15 @@ modulator channels, and held-out damage seeds. On a single trained model, the
 experiment looked like a success. However, crossing five independently trained
 parent seeds (two independent controller evolutions each;
 preregistered) dissolves that success into three findings. First, the robustness we had attributed to control is
-mostly a property of training: parents trained with channels present beat
-unmodulated siblings in five of five seeds (median final-Hamming
-reduction $0.008$, up to $\approx 0.14$ on the most fragile parent) with
-modulation pinned to neutral. Second, evolved controllers add little on
+not a property of the controller: parents trained with the channel
+architecture present --- the channels themselves silent throughout
+training --- beat unmodulated siblings in five of five seeds under the
+preregistered metric (median final-Hamming reduction $0.008$, up to
+$\approx 0.14$ on the most fragile parent) with modulation pinned to
+neutral; post-hoc controls (each parent from its own-grown initial
+state, translation-aligned scoring) reduce this to a single-seed effect
+on the fragile s1 pair, implicating parent initialization and protocol
+provenance rather than channel experience. Second, evolved controllers add little on
 top: on four parents the effect is absent or noise-level; on the fragile
 parent both evolutions reproducibly help ($0.035$--$0.038 \to
 0.029$--$0.030$, survival $0.975 \to 1.00$); yet its tonic vector is
@@ -145,7 +150,10 @@ deliberately adversarial (Appendix~\ref{app:calibration}).
 
 \paragraph{Parents and controllers.}
 Per seed $s$ we train a $K{=}0$ and a channel-aware $K{=}3$ parent from
-scratch (Appendix~\ref{app:model}); the $K{=}3$ parent's three global
+scratch; ``channel-aware'' means the three modulator inputs are part of
+the architecture during training, with their injected level pinned to
+the neutral vector throughout parent training
+(Appendix~\ref{app:model}); the $K{=}3$ parent's three global
 modulator channels are the only non-local pathway, each carrying a
 \emph{tonic} (slow baseline) and \emph{phasic} (event-triggered,
 fast-decaying) component: the distinction from biological
@@ -156,10 +164,30 @@ via CMA-ES~\cite{hansen2006cma} in Evosax~\cite{lange2022evosax}
 (population 64, $\sigma_0{=}0.01$, 300 generations, different evolution
 seeds, event-weighted Hamming objective; Appendix~\ref{app:evolution}).
 
+\paragraph{Metrics.}
+Final Hamming is the mismatch rate, at the final step, between the
+binarized alive mask ($\alpha > 0.5$) and the target's binarized
+$\alpha$ mask. Survival is the fraction of runs (damage seed $\times$
+condition seed) whose final Hamming falls below $0.1$; a condition is
+\emph{lethal} when survival is $0.00$, i.e., every run ends above the
+threshold. Hamming is computed against a fixed target frame and so
+conflates morphological error with whole-organism translation drift
+(Appendix~\ref{app:singleparent}); a translation-aligned variant is
+reported alongside a new initial-state control in
+Appendix~\ref{app:posthoc}.
+
 \paragraph{Preregistered comparison.}
 All conditions run on the same held-out damage seeds (5 condition seeds
 $\times$ 8 damage seeds) from a shared $t{=}0$ state grown by the $K{=}3$
-parent. The primary statistic is
+parent. The shared start is itself a loaded choice: the 12 non-RGBA
+channels of a grown state are a network-specific latent code, so the
+$K{=}0$ condition begins from an out-of-distribution initial state --- a
+$K{=}3$-grown morphology living under $K{=}0$ dynamics. Holding the
+starting morphology constant isolates the update rule, but it
+disadvantages the $K{=}0$ condition, and the most fragile pair (s1:
+survival $0.05$--$0.08$ vs.\ $0.975$) is exactly where this could bite;
+a post-hoc control re-evaluating every $K{=}0$ parent from its
+own-grown state is reported in Appendix~\ref{app:posthoc}. The primary statistic is
 $\Delta_s = H(K{=}3, m{=}0, s) - H(K{=}3, \text{own ctrl}, s)$,
 positive when the evolved controller helps \emph{its own} parent. Fixed
 before data collection: \emph{controller effect supported} if $\Delta_s >
@@ -190,12 +218,15 @@ Appendix~\ref{app:rawtables}.
 \small
 \caption{Final Hamming (mean over 5 condition seeds $\times$ 8
 held-out damage seeds). Survival in parentheses where it departs from
-$1.00$. Training helps in 5/5 seeds; the controller effect is
-parent-dependent.}
+$1.00$. Architecture-present training beats $K{=}0$ in 5/5 seeds ---
+attribution entangled (silent training channels,
+Appendix~\ref{app:model}; shared-state protocol, \S\ref{sec:design};
+post-hoc controls, Appendix~\ref{app:posthoc}); the controller effect
+is parent-dependent.}
 \label{tab:effects}
 \scriptsize
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lcccp{1.45in}}
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{lcccp{1.25in}}
 \toprule
 Parent seed & $K{=}0$ & $K{=}3$, $m{=}0$ & Own ctrl (2 runs) & Interpretation \\
 \midrule
@@ -215,7 +246,14 @@ $\geq$4/5); \emph{transfer failure supported} (penalty 5/5, lethal in
 \emph{parent-dependent}, preregistered \textbf{Outcome C}: noise-level
 on four parents, reproducibly beneficial on the fragile one
 (both evolutions: $0.035$--$0.038 \to 0.029$--$0.030$, survival
-$0.975 \to 1.00$).
+$0.975 \to 1.00$). The channel-training criterion was met as
+preregistered, but the comparison it names is coarser than the phrase
+suggests: the channels were silent throughout parent training, so the
+effect cannot be modulatory experience (Appendix~\ref{app:model}), and
+the $K{=}0$ sibling starts from the $K{=}3$-grown state
+(\S\ref{sec:design}). Appendix~\ref{app:posthoc} separates what these
+confounds leave separable: the 5/5 reduces to protocol and drift
+effects on healthy parents plus one genuinely fragile parent (s1).
 
 \paragraph{What the controller actually emits.}
 All ten evolved controllers emit a \emph{constant at a nonzero level}:
@@ -263,10 +301,25 @@ lethal one included. Values: Table~\ref{tab:matrix}.}
 \label{sec:discussion}
 
 \paragraph{Which component causes robustness.}
-Channel-aware training, not run-time control. Parents that grew up with
-global channels beat their unmodulated siblings on every seed; the
-channels are a developmental scaffold: more robust even with no
-run-time signal. What evolution adds is
+The trained organism, not run-time control. Parents trained with the
+channel architecture present beat their unmodulated siblings on every
+seed, even with modulation pinned neutral at evaluation. We initially
+read this as a developmental scaffold --- the organism more robust
+because it grew up under global signals. While preparing the
+camera-ready revision we audited the training configuration and found
+the channel inputs pinned to the neutral vector for the whole of parent
+training: nothing modulatory was ever experienced, the channel weights
+sit at their initialization, and the $m{=}0$ parent is functionally a
+$K{=}0$ network with a different initialization draw
+(Appendix~\ref{app:model}). The 5/5 direction does not survive the
+camera-ready controls: from each parent's own-grown initial state, s4
+flips on the plain metric ($0.029$ vs.\ $0.033$), and under
+translation-aligned scoring all four healthy-parent comparisons sit
+within noise and nominally favor $K{=}0$ --- only the fragile s1 pair
+retains a clear gap (aligned $0.026$ vs.\ $0.071$), a substantially
+intrinsic fragility of that parent draw that the shared-state protocol
+amplified (survival $0.10 \to 0.50$ from its own state;
+Appendix~\ref{app:posthoc}). What evolution adds is
 narrow: nothing measurable on four parents; on the fragile parent, a
 final stabilization that both independent evolutions find. Since that
 parent's tonic vector is nearly identical to a sibling's that gains
@@ -284,16 +337,36 @@ release level drives different dynamics in a sibling; evolution found an
 operating point for one organism, not a modulation law.
 
 \paragraph{Limitations and future work.}
-Five parents, two evolutions each; one morphology; one damage family.
-Only one parent in five proved controller-responsive. Next: multi-parent
-evolution and non-stationary, diversity-driven damage co-evolution, for which this benchmark is the controlled baseline.
+Five parents, two evolutions each; one morphology; one damage family;
+$n{=}5$ puts a one-sided sign test at $p{\approx}0.03$ for the 5/5
+training condition --- suggestive, not separable from initialization
+luck at this sample size. Only one parent in five proved
+controller-responsive, and the null controller result may partly
+reflect the search setup rather than the organism's capacity: the
+damage process is stationary and memoryless, a regime in which a fixed
+tonic is structurally optimal (Appendix~\ref{app:singleparent}), and
+CMA-ES ran 300 generations from a near-neutral start. Two observations
+argue against reading the null as pure search failure: both independent
+evolutions converged to the same tonic family on every parent, and the
+pathway is high-gain (random actuation is lethal; constant levels
+alone swing mean Hamming from $0.003$ to $0.93$), so exploitable signal
+was available. Decisive next steps: parents retrained with random
+modulator inputs, added $K{=}0$/$K{=}3$ initialization pairs,
+co-trained parent--controller loops, and non-stationary
+diversity-driven damage, for which this benchmark is the controlled
+baseline.
 
 \paragraph{Conclusion.}\label{sec:conclusion}
-In regenerative NCAs under adversarial recurring damage, robustness comes
-from channel-aware training (5/5 seeds); evolved modulation is a
-parent-dependent tonic calibration, noise-level on most parents,
-beneficial on the fragile one, parent-locked under transfer. Attribute
-robustness across model seeds, not only damage seeds.
+In regenerative NCAs under adversarial recurring damage, robustness
+travels with the trained organism rather than the run-time controller:
+5/5 parents trained with the (silent) channel architecture beat their
+$K{=}0$ siblings under the preregistered comparison, but own-state,
+translation-aligned controls reduce that effect to the fragile s1
+pair, implicating parent draw and protocol provenance over channel
+experience; evolved modulation is a parent-dependent tonic calibration, noise-level
+on most parents, beneficial on the fragile one, parent-locked under
+transfer. Attribute robustness across model seeds, not only damage
+seeds --- and across initial-state provenance.
 
 \clearpage
 \section*{Acknowledgements}
@@ -578,6 +651,31 @@ m_t^{(\mathrm{phasic})} = m_{t-1}^{(\mathrm{phasic})} \cdot e^{-\Delta t / \tau}
 with $\alpha = 0.95$, $\tau = 20$, and the injected level the clipped sum,
 broadcast to all cells and concatenated to perception (input dim $48+3=51$).
 
+\paragraph{Modulator inputs during parent training.}
+The \texttt{mod\_noise} flag was false in every parent-training run: the
+injected level $c_t$ was pinned to the neutral vector $m{=}0$ for all
+8{,}000 steps (the flag exists to train under random modulator inputs
+and exercise the channel weights; it was never enabled). Two
+consequences follow. First, the channel-input weights of the update MLP
+receive zero gradient whenever the injected level is zero, so they
+remain at their initialization values in every trained parent; the
+$K{=}3$ parent evaluated at $m{=}0$ is therefore functionally a $K{=}0$
+network with a different parameter-initialization draw (the extra
+first-layer columns shift the RNG stream). Second, ``channel-aware
+training'' as run isolates \emph{training with the architecture
+present}, not modulatory experience: any effect must act through
+initialization or through training with the enlarged input layer. At
+$n{=}5$ the preregistered 5/5 outcome is a one-sided sign test at
+$p{\approx}0.031$ (the $\geq 4/5$ bar corresponds to $p{\approx}0.19$
+under a symmetric null) --- consistent with a real effect, but not
+separable from initialization luck, and further entangled with the
+shared-state asymmetry of \S\ref{sec:design}. Retraining parents with
+random modulator inputs and adding $K{=}0$/$K{=}3$ initialization
+pairs are the planned resolution. Unaffected by this confound: the
+evaluation-time probes, since constant levels alone swing mean Hamming
+from $0.003$ to $0.93$ through the same (randomly initialized) channel
+weights, the pathway the controllers and transplants act on.
+
 Parents train on a $40{\times}40$ emoji target zero-padded to the canvas,
 with pool-based training (pool 1024, batch 8, worst-in-batch reseeding),
 random square-erasure damage mid-episode, MSE loss on RGBA, and Adam at
@@ -712,7 +810,73 @@ baseline's $2.7$ steps does \emph{not} indicate fast repair. Second,
 residual Hamming in all conditions is partly attributable to locomotion drift
 during regeneration rather than permanent damage; the metric conflates
 spatial translation with morphological error. Both are documented so that
-future benchmark users can avoid them.
+future benchmark users can avoid them; the camera-ready revision reports
+a translation-aligned metric and an initial-state-provenance control for
+the main comparison (Appendix~\ref{app:posthoc}).
+
+\section{Post-hoc controls: initial-state provenance and translation-aligned scoring}
+\label{app:posthoc}
+
+Added for the camera-ready revision at reviewer request. Two protocol
+properties could inflate the preregistered channel-training comparison:
+the shared $t{=}0$ state is grown by the $K{=}3$ parent, placing the
+$K{=}0$ condition in an out-of-distribution initial state
+(\S\ref{sec:design}); and fixed-frame final Hamming conflates shape
+error with whole-organism drift (Appendix~\ref{app:singleparent}). The
+controls rerun the exact evaluation protocol (held-out damage seeds
+10000--10007, five condition seeds, $T{=}2000$, identical key streams
+and the first controller replica's config wiring) with two changes, one
+at a time: \textbf{k0\_own} grows the $t{=}0$ state with the $K{=}0$
+parent itself (the shared state is already the $K{=}3$ parent's
+own-grown state, so the provenance comparison is symmetric), and
+\textbf{aligned} replaces final Hamming with the minimum mismatch over
+integer translations of up to $\pm10$ pixels. Plain columns reproduce
+the preregistered numbers (s1: $0.161$ here vs.\ $0.163$--$0.175$ in
+Table~\ref{tab:effects}).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Post-hoc controls (mean over 40 runs per cell). Survival in
+parentheses where below $1.00$; for the s1 own-grown row the bracketed
+value is survival under the aligned metric.}
+\label{tab:posthoc}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{2}{c}{$K{=}3$, $m{=}0$ (own-grown)} & \multicolumn{2}{c}{$K{=}0$, shared state} & \multicolumn{2}{c}{$K{=}0$, own-grown} \\
+Parent & plain & aligned & plain & aligned & plain & aligned \\
+\midrule
+s0 & 0.029 & 0.021 & 0.035 & 0.018 & 0.037 & 0.019 \\
+s1 & 0.038 & 0.026 & 0.161 (0.10) & 0.144 & 0.088 (0.50) & 0.071 {[}0.675{]} \\
+s2 & 0.018 & 0.011 & 0.030 & 0.013 & 0.028 & 0.010 \\
+s3 & 0.028 & 0.018 & 0.049 & 0.018 & 0.033 & 0.013 \\
+s4 & 0.033 & 0.020 & 0.043 & 0.026 & 0.029 & 0.019 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three readings. (i) The shared-state protocol itself flips one seed: on
+plain Hamming from own-grown states, s4 reverses ($0.029$ vs.\
+$0.033$), breaking the $5/5$. (ii) The fragile s1 pair is hit hardest:
+from its own state, final Hamming halves ($0.161 \to 0.088$) and
+survival rises from $0.10$ to $0.50$ ($0.675$ aligned) --- yet a clear
+gap remains ($0.026$ vs.\ $0.071$ aligned), so the fragility is
+substantially intrinsic to that initialization draw, amplified but not
+created by the shared state. (iii) Aligned scoring dissolves the
+healthy-parent gaps: all four non-s1 comparisons sit within noise
+(largest $|\Delta| = 0.006$ against SDs of $0.01$--$0.02$) and
+nominally favor $K{=}0$. The preregistered $5/5$ therefore decomposes
+into protocol-provenance and drift effects on healthy parents plus one
+genuinely fragile parent. What these controls do \emph{not} support is
+a channel-experience mechanism: the channels were silent during
+training (Appendix~\ref{app:model}), and the surviving s1 effect is a
+property of the parent draw. Separating initialization luck from any
+residual architecture effect requires the added initialization pairs
+of the planned follow-up (\S5). Script:
+\texttt{src/posthoc\_metrics.py}; data:
+\texttt{experiment\_results/20261011\_posthoc\_controls/}.
 
 \section{Reproducibility}
 \label{app:repro}
@@ -726,7 +890,14 @@ evaluations, $\approx$2 minutes of A100 time per full $5{\times}5$ replica
 matrix. Preregistration,
 analysis script, per-seed artifacts (controllers,
 parents, trajectories, $m_t$ series), and the mechanical outcome output are
-in the repository, timestamped before the results. Code is available at
+in the repository, timestamped before the results. The ten parent
+checkpoints (\texttt{k0\_s0..4}, \texttt{k3\_s0..4}), the data behind
+every figure (including the E1 lesion sweep and the transfer and
+tonic-transplant matrices), and the camera-ready control script
+(\texttt{src/posthoc\_metrics.py}; data in
+\texttt{experiment\_results/20261011\_posthoc\_controls/}) are in the
+same repository, and \texttt{paper\_drafts/make\_figures.py} maps each
+figure to its data file. Code is available at
 \url{https://github.com/jverene/neuromodulation}.
 
 \end{document}
