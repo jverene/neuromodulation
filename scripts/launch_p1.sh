@@ -9,30 +9,23 @@ SSH_OPTS="-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o
 OUT_REL="experiment_results/20261012_p1_p1b"
 
 echo "[1/5] checking auth + picking offer..."
-vastai whoami >/dev/null 2>&1 || { echo "FAIL: vastai CLI has no valid API key (run: vastai set api-key <KEY>)"; exit 1; }
-OFFER=$(vastai --raw search offers 'reliability>0.99 cuda_vers>=12.0 gpu_ram>=16 num_gpus=1 inet_down>=50 disk>=20' --order 'dph*' 2>/dev/null | python3 -c "
+vastai --raw show instances >/dev/null 2>&1 || { echo "FAIL: vastai CLI has no valid API key (run: vastai set api-key <KEY>)"; exit 1; }
+OFFER=$(vastai --raw search offers 'reliability>0.98 cuda_vers>=12.0 gpu_ram>=16 num_gpus=1 inet_down>=50 disk>=20' 2>/dev/null | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 offers = d if isinstance(d,list) else d.get('offers',[])
-for o in offers:
-    if o.get('gpu_name') in ('RTX 3090','RTX 4090','A100'):
-        print(o['id'], o['gpu_name'], round(o['dph'],3)); break
+cand=[o for o in offers if o.get('gpu_name') in ('RTX 3090','RTX 4090','A100')]
+cand.sort(key=lambda o:o.get('dph', 99))
+if cand: print(cand[0]['id'], cand[0]['gpu_name'], round(cand[0]['dph'],3))
 ")
 [ -z "${OFFER:-}" ] && { echo "FAIL: no suitable offer"; exit 1; }
 OID=$(echo $OFFER | cut -d' ' -f1); ONAME=$(echo $OFFER | cut -d' ' -f2); ODPH=$(echo $OFFER | cut -d' ' -f3)
 echo "    picked: $OFFER"
 
 echo "[2/5] creating instance $OID ($ONAME @ \$$ODPH/h)..."
-vastai create instance "$OID" --disk 24 --image pytorch/pytorch:latest -q >/dev/null 2>&1 || { echo "FAIL: create"; exit 1; }
-INST=$(vastai --raw show instances 2>/dev/null | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-if isinstance(d,dict) and 'instances' in d: d=d['instances']
-rows=[x for x in d if x['label']=='']
-import time
-# newest instance running our image
-best=max(rows,key=lambda x:x['id']) if rows else None
-print(best['id'] if best else '')")
+CREATE_OUT=$(vastai create instance "$OID" --disk 24 --image pytorch/pytorch:latest 2>&1)
+INST=$(echo "$CREATE_OUT" | grep -oE '[0-9]{6,}' | head -1)
+[ -z "${INST:-}" ] && { echo "FAIL: create -> $CREATE_OUT"; exit 1; }
 echo "    instance $INST; waiting for ssh..."
 for i in $(seq 1 60); do
   URL=$(vastai ssh-url "$INST" 2>/dev/null) || true
