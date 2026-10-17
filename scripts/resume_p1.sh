@@ -13,7 +13,7 @@
 set -uo pipefail
 REPO_DIR="/Users/hjiang/Developer/neuromodulation"
 KEYLOC="$HOME/.config/neuromodulation/p1_deploy"
-SSH_OPTS="-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=25"
+SSH_OPTS="-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=25 -o ServerAliveInterval=15 -o ServerAliveCountMax=8"
 
 [ -f "$KEYLOC" ] || { echo "FAIL: deploy key missing at $KEYLOC"; exit 1; }
 
@@ -54,7 +54,9 @@ wait_ssh || { echo "FAIL: ssh never became ready for $INST"; vastai stop instanc
 echo "    instance $INST, ssh: $H:$P"
 
 echo "[2/4] env setup (clone-or-pull, conda py3.12, install-if-missing)..."
-ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF' || { echo "FAIL: env setup"; vastai stop instance "$INST" >/dev/null 2>&1; exit 1; }
+ENV_OK=0
+for attempt in 1 2 3; do
+  if ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF'
 set -e
 export PATH=/opt/conda/bin:$PATH
 cd /workspace
@@ -66,6 +68,10 @@ $PY -m pip install -q -U pip >/dev/null 2>&1 || true
 $PY -c "import jax, flax, optax, cax, imageio, yaml" 2>/dev/null || $PY -m pip install -U "jax[cuda12]" flax optax -r requirements.txt >/tmp/pip.log 2>&1 || { tail -30 /tmp/pip.log; exit 1; }
 $PY -c "import jax; print('JAX OK:', jax.devices())"
 EOF
+  then ENV_OK=1; break; fi
+  echo "    env attempt $attempt dropped; retrying in 30s"; sleep 30
+done
+[ "$ENV_OK" = 1 ] || { echo "FAIL: env setup after 3 attempts"; vastai stop instance "$INST" >/dev/null 2>&1; exit 1; }
 
 echo "[3/4] uploading driver + watchdog + key, launching..."
 cat > /tmp/drv_vm.sh <<'DRV'
