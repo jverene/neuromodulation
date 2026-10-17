@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/nca-mod/src/train.py", line 263, in <module>
+    main()
+  File "/workspace/nca-mod/src/train.py", line 212, in main
+    target = load_target(**cfg["target"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/nca-mod/src/targets.py", line 36, in load_target
+    img = get_emoji_pil(emoji).resize((size, size), resample=PIL.Image.Resampling.LANCZOS)
+          ^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/nca-mod/src/targets.py", line 29, in get_emoji_pil
+    img = get_emoji(emoji).convert("RGBA")
+          ^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/site-packages/cax/utils/emoji.py", line 44, in get_emoji
+    image_pil = get_image_from_url(url)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/site-packages/cax/utils/emoji.py", line 20, in get_image_from_url
+    with urlopen(url) as response:
+         ^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/opt/conda/envs/nca/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
