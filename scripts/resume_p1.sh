@@ -63,7 +63,7 @@ cd nca-mod && git pull -q origin main
 PY=/opt/conda/envs/nca/bin/python
 [ -x "$PY" ] || conda create -y -n nca python=3.12 >/tmp/conda.log 2>&1
 $PY -m pip install -q -U pip >/dev/null 2>&1 || true
-$PY -c "import jax" 2>/dev/null || $PY -m pip install -U "jax[cuda12]" -r requirements.txt >/tmp/pip.log 2>&1 || { tail -30 /tmp/pip.log; exit 1; }
+$PY -c "import jax, flax, optax, cax, imageio, yaml" 2>/dev/null || $PY -m pip install -U "jax[cuda12]" flax optax -r requirements.txt >/tmp/pip.log 2>&1 || { tail -30 /tmp/pip.log; exit 1; }
 $PY -c "import jax; print('JAX OK:', jax.devices())"
 EOF
 
@@ -76,21 +76,27 @@ if [ -x /workspace/venv/bin/python ]; then PY=/workspace/venv/bin/python; elif [
 export GIT_SSH_COMMAND="ssh -i /workspace/.p1_deploy -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 git remote set-url origin git@github.com:jverene/neuromodulation.git
 git config user.name "Bowen Jiang"; git config user.email "eternalaxholo28@gmail.com"
+source /workspace/.p1env
 OUT=experiment_results/20261012_p1_p1b; mkdir -p $OUT/parents
 echo "in-VM driver start $(date)"
-echo "== sanity: GPU visible to JAX =="
-$PY -c "import jax; ds=jax.devices(); print(ds); assert any(d.platform=='gpu' for d in ds)" \
-  || { echo "NO GPU VISIBLE — powering off (billing-safe)"; touch /workspace/P1_FAIL; sleep 10; poweroff || /sbin/poweroff; exit 1; }
-echo "== smoke (50 steps) =="
-sed -e 's/^seed: 0/seed: 900/' -e 's/learning_rate: 2.0e-3/learning_rate: 1.0e-3/' configs/e0_baseline.yaml > /tmp/smoke.yaml
-$PY -m src.train --config /tmp/smoke.yaml --steps 50 >/tmp/smoke.log 2>&1 \
-  && echo "smoke OK" \
-  || { echo "SMOKE FAIL (see /tmp/smoke.log) — powering off"; cp /tmp/smoke.log $OUT/ 2>/dev/null; push_all; touch /workspace/P1_FAIL; sleep 10; poweroff || /sbin/poweroff; exit 1; }
 push_all () {
   git add $OUT >/dev/null 2>&1
   git diff --cached --quiet >/dev/null 2>&1 || git commit -q -m "data: P1/P1b in-VM incremental (auto $(date +%H:%M))"
   git push -q origin main || echo "push failed (retry at next unit)"
 }
+stop_self () {  # vast containers cannot poweroff; use the API like the original watchdog
+  curl -s --max-time 30 -X PUT --url "https://console.vast.ai/api/v0/instances/$P1_INST/" \
+    -H "Authorization: Bearer $(cat /workspace/.vastkey)" -H "Content-Type: application/json" \
+    -d '{"state":"stopped"}' && echo "instance stopped"
+}
+echo "== sanity: GPU visible to JAX =="
+$PY -c "import jax; ds=jax.devices(); print(ds); assert any(d.platform=='gpu' for d in ds)" \
+  || { echo "NO GPU VISIBLE — powering off (billing-safe)"; touch /workspace/P1_FAIL; sleep 10; stop_self; exit 1; }
+echo "== smoke (50 steps) =="
+sed -e 's/^seed: 0/seed: 900/' -e 's/learning_rate: 2.0e-3/learning_rate: 1.0e-3/' configs/e0_baseline.yaml > /tmp/smoke.yaml
+$PY -m src.train --config /tmp/smoke.yaml --steps 50 >/tmp/smoke.log 2>&1 \
+  && echo "smoke OK" \
+  || { echo "SMOKE FAIL (see /tmp/smoke.log) — powering off"; cp /tmp/smoke.log $OUT/ 2>/dev/null; push_all; touch /workspace/P1_FAIL; sleep 10; stop_self; exit 1; }
 train_one () {  # cfg out_pkl run_name ; skips if checkpoint exists; pushes each save
   if [ -s "$2" ]; then echo "skip $2 (exists)"; return 0; fi
   $PY -m src.train --config "$1" >/tmp/train_last.log 2>&1 || { echo "TRAIN FAIL $1"; return 1; }
@@ -183,7 +189,7 @@ push_all
 echo "P1/P1B COMPLETE (in-VM, self-managed) $(date)"
 touch /workspace/P1_DONE
 sleep 30
-poweroff || /sbin/poweroff
+stop_self
 DRV
 cat > /tmp/wdt_vm.sh <<'WDT'
 #!/bin/bash
@@ -199,12 +205,17 @@ while true; do
     git commit -q -m "data: P1/P1b auto-stop at 22h cap (partial)" >/dev/null 2>&1
     git push -q origin main || true
     echo "$(date) 22h cap reached" >> /workspace/self_stop.log
-    poweroff || /sbin/poweroff
+    source /workspace/.p1env
+    curl -s --max-time 30 -X PUT --url "https://console.vast.ai/api/v0/instances/$P1_INST/" \
+      -H "Authorization: Bearer $(cat /workspace/.vastkey)" -H "Content-Type: application/json" \
+      -d '{"state":"stopped"}' 
   fi
 done
 WDT
 scp -q $SSH_OPTS -P "$P" /tmp/drv_vm.sh /tmp/wdt_vm.sh root@$H:/workspace/
 scp -q $SSH_OPTS -P "$P" "$KEYLOC" root@$H:/workspace/.p1_deploy
+scp -q $SSH_OPTS -P "$P" "$HOME/.config/vastai/vast_api_key" root@$H:/workspace/.vastkey
+echo "P1_INST=$INST" | ssh $SSH_OPTS -p "$P" root@$H 'cat > /workspace/.p1env'
 ssh $SSH_OPTS -p "$P" root@$H "chmod +x /workspace/drv_vm.sh /workspace/wdt_vm.sh; chmod 600 /workspace/.p1_deploy
 tmux kill-session -t p1 2>/dev/null; tmux kill-session -t wdt 2>/dev/null
 tmux new-session -d -s p1 '/workspace/drv_vm.sh 2>&1 | tee -a /workspace/p1.log'
