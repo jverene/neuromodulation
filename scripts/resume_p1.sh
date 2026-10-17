@@ -61,7 +61,9 @@ set -e
 export PATH=/opt/conda/bin:$PATH
 cd /workspace
 [ -d nca-mod ] || git clone -q https://github.com/jverene/neuromodulation.git nca-mod
-cd nca-mod && git pull -q origin main
+cd nca-mod
+git remote set-url origin https://github.com/jverene/neuromodulation.git
+git pull -q origin main
 PY=/opt/conda/envs/nca/bin/python
 [ -x "$PY" ] || conda create -y -n nca python=3.12 >/tmp/conda.log 2>&1
 $PY -m pip install -q -U pip >/dev/null 2>&1 || true
