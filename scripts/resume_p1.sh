@@ -50,16 +50,18 @@ else
   echo "[1/4] restarting instance $INST..."
   vastai start instance "$INST" || { echo "FAIL: start"; exit 1; }
 fi
-wait_ssh || { echo "FAIL: ssh never became ready for $INST"; exit 1; }
+wait_ssh || { echo "FAIL: ssh never became ready for $INST"; vastai stop instance "$INST" >/dev/null 2>&1; exit 1; }
 echo "    instance $INST, ssh: $H:$P"
 
-echo "[2/4] env setup (clone-or-pull, install-if-missing)..."
-ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF' || { echo "FAIL: env setup"; exit 1; }
+echo "[2/4] env setup (clone-or-pull, conda py3.12, install-if-missing)..."
+ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF' || { echo "FAIL: env setup"; vastai stop instance "$INST" >/dev/null 2>&1; exit 1; }
 set -e
+export PATH=/opt/conda/bin:$PATH
 cd /workspace
 [ -d nca-mod ] || git clone -q https://github.com/jverene/neuromodulation.git nca-mod
 cd nca-mod && git pull -q origin main
-PY=$(command -v python3)
+PY=/opt/conda/envs/nca/bin/python
+[ -x "$PY" ] || conda create -y -n nca python=3.12 >/tmp/conda.log 2>&1
 $PY -m pip install -q -U pip >/dev/null 2>&1 || true
 $PY -c "import jax" 2>/dev/null || $PY -m pip install -U "jax[cuda12]" -r requirements.txt >/tmp/pip.log 2>&1 || { tail -30 /tmp/pip.log; exit 1; }
 $PY -c "import jax; print('JAX OK:', jax.devices())"
