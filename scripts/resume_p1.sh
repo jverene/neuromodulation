@@ -7,30 +7,59 @@
 #   - computes the preregistered decision rules into ANALYSIS.md at the end
 #   - powers off on completion (or the watchdog's 22h cap -> push+poweroff)
 # Progress is visible from anywhere as commits on GitHub.
-# Usage: bash scripts/resume_p1.sh [instance_id]   (default 56183964)
+# Usage: bash scripts/resume_p1.sh [instance_id|new]   (default: new)
+#   new  = pick a fresh reliable GPU (3090/4090/A100) and create an instance
+#   <id> = restart an existing stopped instance with the env already installed
 set -uo pipefail
 REPO_DIR="/Users/hjiang/Developer/neuromodulation"
-INST="${1:-56183964}"
 KEYLOC="$HOME/.config/neuromodulation/p1_deploy"
 SSH_OPTS="-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=25"
 
 [ -f "$KEYLOC" ] || { echo "FAIL: deploy key missing at $KEYLOC"; exit 1; }
 
-echo "[1/4] restarting instance $INST..."
-vastai start instance "$INST" || { echo "FAIL: start"; exit 1; }
-for i in $(seq 1 60); do
-  URL=$(vastai ssh-url "$INST" 2>/dev/null) || true
-  HP=$(echo "$URL" | sed 's|ssh://root@||'); H=$(echo "$HP" | cut -d: -f1); P=$(echo "$HP" | cut -d: -f2)
-  [ -n "${H:-}" ] && ssh $SSH_OPTS -p "$P" root@"$H" "echo ok" 2>/dev/null | grep -q ok && break
-  sleep 20
-done
-echo "    ssh: $H:$P"
+wait_ssh () {
+  for i in $(seq 1 90); do
+    URL=$(vastai ssh-url "$INST" 2>/dev/null) || true
+    HP=$(echo "$URL" | sed 's|ssh://root@||'); H=$(echo "$HP" | cut -d: -f1); P=$(echo "$HP" | cut -d: -f2)
+    [ -n "${H:-}" ] && ssh $SSH_OPTS -p "$P" root@"$H" "echo ok" 2>/dev/null | grep -q ok && return 0
+    sleep 20
+  done
+  return 1
+}
 
-echo "[2/4] env check..."
+if [ "${1:-new}" = "new" ]; then
+  echo "[1/4] picking offer + creating fresh instance..."
+  OFFER=$(vastai --raw search offers 'reliability>0.98 cuda_vers>=12.0 gpu_ram>=16 num_gpus=1 inet_down>=50 disk>=20' 2>/dev/null | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+offers = d if isinstance(d,list) else d.get('offers',[])
+cand=[o for o in offers if o.get('gpu_name') in ('RTX 3090','RTX 4090','A100')]
+cand.sort(key=lambda o:o.get('dph',99))
+if cand: print(cand[0]['id'], cand[0]['gpu_name'], round(cand[0]['dph'],3))
+")
+  [ -z "${OFFER:-}" ] && { echo "FAIL: no suitable offer"; exit 1; }
+  OID=$(echo $OFFER | cut -d' ' -f1); echo "    picked: $OFFER"
+  CREATE_OUT=$(vastai create instance "$OID" --disk 24 --image pytorch/pytorch:latest 2>&1)
+  INST=$(echo "$CREATE_OUT" | grep -oE '[0-9]{6,}' | head -1)
+  [ -z "${INST:-}" ] && { echo "FAIL: create -> $CREATE_OUT"; exit 1; }
+else
+  INST="$1"
+  echo "[1/4] restarting instance $INST..."
+  vastai start instance "$INST" || { echo "FAIL: start"; exit 1; }
+fi
+wait_ssh || { echo "FAIL: ssh never became ready for $INST"; exit 1; }
+echo "    instance $INST, ssh: $H:$P"
+
+echo "[2/4] env setup (clone-or-pull, install-if-missing)..."
 ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF'
-cd /workspace/nca-mod && git pull -q origin main
+cd /workspace
+[ -d nca-mod ] || git clone -q https://github.com/jverene/neuromodulation.git nca-mod
+cd nca-mod && git pull -q origin main
 if [ -x /workspace/venv/bin/python ]; then PY=/workspace/venv/bin/python; else PY=/opt/conda/envs/nca/bin/python; fi
-$PY -c "import jax; print('JAX OK:', jax.devices())" || { echo "ENV BROKEN"; exit 1; }
+if [ ! -x "$PY" ]; then python3 -m venv /workspace/venv && PY=/workspace/venv/bin/python; fi
+$PY -m pip install -q -U pip >/dev/null 2>&1
+$PY -c "import jax" 2>/dev/null || $PY -m pip install -q -U "jax[cuda12]" -r requirements.txt >/tmp/pip.log 2>&1
+$PY -c "import jax; print('JAX OK:', jax.devices())" || { echo "ENV BROKEN (see /tmp/pip.log)"; exit 1; }
 EOF
 
 echo "[3/4] uploading driver + watchdog + key, launching..."
