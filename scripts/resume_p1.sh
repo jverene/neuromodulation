@@ -54,15 +54,15 @@ wait_ssh || { echo "FAIL: ssh never became ready for $INST"; exit 1; }
 echo "    instance $INST, ssh: $H:$P"
 
 echo "[2/4] env setup (clone-or-pull, install-if-missing)..."
-ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF'
+ssh $SSH_OPTS -p "$P" root@$H 'bash -s' <<'EOF' || { echo "FAIL: env setup"; exit 1; }
+set -e
 cd /workspace
 [ -d nca-mod ] || git clone -q https://github.com/jverene/neuromodulation.git nca-mod
 cd nca-mod && git pull -q origin main
-if [ -x /workspace/venv/bin/python ]; then PY=/workspace/venv/bin/python; else PY=/opt/conda/envs/nca/bin/python; fi
-if [ ! -x "$PY" ]; then python3 -m venv /workspace/venv && PY=/workspace/venv/bin/python; fi
-$PY -m pip install -q -U pip >/dev/null 2>&1
-$PY -c "import jax" 2>/dev/null || $PY -m pip install -q -U "jax[cuda12]" -r requirements.txt >/tmp/pip.log 2>&1
-$PY -c "import jax; print('JAX OK:', jax.devices())" || { echo "ENV BROKEN (see /tmp/pip.log)"; exit 1; }
+PY=$(command -v python3)
+$PY -m pip install -q -U pip >/dev/null 2>&1 || true
+$PY -c "import jax" 2>/dev/null || $PY -m pip install -U "jax[cuda12]" -r requirements.txt >/tmp/pip.log 2>&1 || { tail -30 /tmp/pip.log; exit 1; }
+$PY -c "import jax; print('JAX OK:', jax.devices())"
 EOF
 
 echo "[3/4] uploading driver + watchdog + key, launching..."
@@ -70,7 +70,7 @@ cat > /tmp/drv_vm.sh <<'DRV'
 #!/bin/bash
 set -uo pipefail
 cd /workspace/nca-mod
-if [ -x /workspace/venv/bin/python ]; then PY=/workspace/venv/bin/python; else PY=/opt/conda/envs/nca/bin/python; fi
+if [ -x /workspace/venv/bin/python ]; then PY=/workspace/venv/bin/python; elif [ -x /opt/conda/envs/nca/bin/python ]; then PY=/opt/conda/envs/nca/bin/python; else PY=$(command -v python3); fi
 export GIT_SSH_COMMAND="ssh -i /workspace/.p1_deploy -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 git remote set-url origin git@github.com:jverene/neuromodulation.git
 git config user.name "Bowen Jiang"; git config user.email "eternalaxholo28@gmail.com"
@@ -78,12 +78,12 @@ OUT=experiment_results/20261012_p1_p1b; mkdir -p $OUT/parents
 echo "in-VM driver start $(date)"
 echo "== sanity: GPU visible to JAX =="
 $PY -c "import jax; ds=jax.devices(); print(ds); assert any(d.platform=='gpu' for d in ds)" \
-  || { echo "NO GPU VISIBLE — powering off (billing-safe)"; touch /workspace/P1_FAIL; sleep 10; sudo poweroff; exit 1; }
+  || { echo "NO GPU VISIBLE — powering off (billing-safe)"; touch /workspace/P1_FAIL; sleep 10; poweroff || /sbin/poweroff; exit 1; }
 echo "== smoke (50 steps) =="
 sed -e 's/^seed: 0/seed: 900/' -e 's/learning_rate: 2.0e-3/learning_rate: 1.0e-3/' configs/e0_baseline.yaml > /tmp/smoke.yaml
 $PY -m src.train --config /tmp/smoke.yaml --steps 50 >/tmp/smoke.log 2>&1 \
   && echo "smoke OK" \
-  || { echo "SMOKE FAIL (see /tmp/smoke.log) — powering off"; cp /tmp/smoke.log $OUT/ 2>/dev/null; push_all; touch /workspace/P1_FAIL; sleep 10; sudo poweroff; exit 1; }
+  || { echo "SMOKE FAIL (see /tmp/smoke.log) — powering off"; cp /tmp/smoke.log $OUT/ 2>/dev/null; push_all; touch /workspace/P1_FAIL; sleep 10; poweroff || /sbin/poweroff; exit 1; }
 push_all () {
   git add $OUT >/dev/null 2>&1
   git diff --cached --quiet >/dev/null 2>&1 || git commit -q -m "data: P1/P1b in-VM incremental (auto $(date +%H:%M))"
@@ -181,7 +181,7 @@ push_all
 echo "P1/P1B COMPLETE (in-VM, self-managed) $(date)"
 touch /workspace/P1_DONE
 sleep 30
-sudo poweroff
+poweroff || /sbin/poweroff
 DRV
 cat > /tmp/wdt_vm.sh <<'WDT'
 #!/bin/bash
@@ -197,7 +197,7 @@ while true; do
     git commit -q -m "data: P1/P1b auto-stop at 22h cap (partial)" >/dev/null 2>&1
     git push -q origin main || true
     echo "$(date) 22h cap reached" >> /workspace/self_stop.log
-    sudo poweroff
+    poweroff || /sbin/poweroff
   fi
 done
 WDT
