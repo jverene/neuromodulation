@@ -36,15 +36,15 @@ modulator channels, and held-out damage seeds. On a single trained model, the
 experiment looked like a success. However, crossing five independently trained
 parent seeds (two independent controller evolutions each;
 preregistered) dissolves that success into three findings. First, the robustness we had attributed to control is
-an effect of training, not control --- but only when the channels
+an effect of training, not control, but only when the channels
 actually carry signal: the study's parents (channels present yet
 silent throughout training) beat unmodulated siblings in five of five
 seeds under the preregistered metric, yet post-hoc controls
 (own-grown initial states, translation-aligned scoring) reduce that to
 a single-seed effect, while fresh preregistered retrains with random
 modulator inputs beat paired $K{=}0$ siblings in five of five seeds
-\emph{under the corrected protocol}. Growing up under modulation ---
-even random modulation --- is what confers robustness; the original
+\emph{under the corrected protocol}. Growing up under modulation, even
+random modulation, is what confers robustness; the original
 comparison never exercised the channels it credited. Second, evolved controllers add little on
 top: on four parents the effect is absent or noise-level; on the fragile
 parent both evolutions reproducibly help ($0.035$--$0.038 \to
@@ -182,7 +182,7 @@ All conditions run on the same held-out damage seeds (5 condition seeds
 $\times$ 8 damage seeds) from a shared $t{=}0$ state grown by the $K{=}3$
 parent. The shared start is itself a loaded choice: the 12 non-RGBA
 channels of a grown state are a network-specific latent code, so the
-$K{=}0$ condition begins from an out-of-distribution initial state --- a
+$K{=}0$ condition begins from an out-of-distribution initial state: a
 $K{=}3$-grown morphology living under $K{=}0$ dynamics. Holding the
 starting morphology constant isolates the update rule, but it
 disadvantages the $K{=}0$ condition, and the most fragile pair (s1:
@@ -219,7 +219,7 @@ Appendix~\ref{app:rawtables}.
 \small
 \caption{Final Hamming (mean over 5 condition seeds $\times$ 8
 held-out damage seeds). Survival in parentheses where it departs from
-$1.00$. Architecture-present training beats $K{=}0$ in 5/5 seeds ---
+$1.00$. Architecture-present training beats $K{=}0$ in 5/5 seeds, with
 attribution entangled (silent training channels,
 Appendix~\ref{app:model}; shared-state protocol, \S\ref{sec:design};
 post-hoc controls, Appendix~\ref{app:posthoc}); the controller effect
@@ -308,7 +308,7 @@ lethal one included. Values: Table~\ref{tab:matrix}.}
 The trained organism, not run-time control. Parents trained with the
 channel architecture present beat their unmodulated siblings on every
 seed, even with modulation pinned neutral at evaluation. We initially
-read this as a developmental scaffold --- the organism more robust
+read this as a developmental scaffold: the organism more robust
 because it grew up under global signals. While preparing the
 camera-ready revision we audited the training configuration and found
 the channel inputs pinned to the neutral vector for the whole of parent
@@ -319,7 +319,7 @@ $K{=}0$ network with a different initialization draw
 camera-ready controls: from each parent's own-grown initial state, s4
 flips on the plain metric ($0.029$ vs.\ $0.033$), and under
 translation-aligned scoring all four healthy-parent comparisons sit
-within noise and nominally favor $K{=}0$ --- only the fragile s1 pair
+within noise and nominally favor $K{=}0$; only the fragile s1 pair
 retains a clear gap (aligned $0.026$ vs.\ $0.071$), a substantially
 intrinsic fragility of that parent draw that the shared-state protocol
 amplified (survival $0.10 \to 0.50$ from its own state;
@@ -327,12 +327,12 @@ Appendix~\ref{app:posthoc}). Preregistered retrains close the loop
 (Appendix~\ref{app:p1}): parents trained with random modulator inputs
 beat fresh paired $K{=}0$ siblings in $5/5$ seeds on the corrected
 protocol (median gap $+0.012$), while fresh silent-channel pairs show
-no such effect --- restoring the scaffold reading in its precise form:
+no such effect, restoring the scaffold reading in its precise form:
 \emph{channel exercise during training}, not architecture or
 initialization luck, is what transfers robustness. (The title's
-``channel-aware training'' should be read in this exercised sense ---
-training with signal in the channels, as in the retrained pairs ---
-not as the study's silent-architecture variant, whose apparent effect
+``channel-aware training'' should be read in this exercised sense, meaning
+training with signal in the channels as in the retrained pairs,
+and not as the study's silent-architecture variant, whose apparent effect
 the corrected controls dissolve.) What evolution adds is
 narrow: nothing measurable on four parents; on the fragile parent, a
 final stabilization that both independent evolutions find. Since that
@@ -353,8 +353,8 @@ operating point for one organism, not a modulation law.
 \paragraph{Limitations and future work.}
 Five parents, two evolutions each; one morphology; one damage family;
 $n{=}5$ puts a one-sided sign test at $p{\approx}0.03$ for the 5/5
-training condition --- suggestive, not separable from initialization
-luck at this sample size. Only one parent in five proved
+training condition, which is suggestive but not separable from
+initialization luck at this sample size. Only one parent in five proved
 controller-responsive, and the null controller result may partly
 reflect the search setup rather than the organism's capacity: the
 damage process is stationary and memoryless, a regime in which a fixed
@@ -374,13 +374,13 @@ baseline.
 In regenerative NCAs under adversarial recurring damage, robustness is
 built in development, not by the run-time controller: the study's
 silent-channel comparison dissolves under corrected controls, while
-fresh preregistered retrains --- channels exercised by random inputs
---- restore a genuine $5/5$ advantage: growing up under modulation,
+fresh preregistered retrains with channels exercised by random
+inputs restore a genuine $5/5$ advantage: growing up under modulation,
 even random modulation, is what confers robustness. Evolved modulation
 remains a parent-dependent tonic calibration, noise-level on most
 parents, beneficial on the fragile one, parent-locked under transfer.
-Attribute robustness across model seeds, not only damage seeds ---
-and across initial-state provenance.
+Attribute robustness across model seeds and initial-state
+provenance, not only damage seeds.
 
 \clearpage
 \section*{Acknowledgements}
@@ -681,14 +681,14 @@ present}, not modulatory experience: any effect must act through
 initialization or through training with the enlarged input layer. At
 $n{=}5$ the preregistered 5/5 outcome is a one-sided sign test at
 $p{\approx}0.031$ (the $\geq 4/5$ bar corresponds to $p{\approx}0.19$
-under a symmetric null) --- consistent with a real effect, but not
+under a symmetric null), consistent with a real effect but not
 separable from initialization luck, and further entangled with the
 shared-state asymmetry of \S\ref{sec:design}. Retraining parents with
 random modulator inputs and adding $K{=}0$/$K{=}3$ initialization
 pairs have since been run under preregistration
 (Appendix~\ref{app:p1}): exercised-channel parents gain a genuine
 corrected-protocol advantage ($5/5$), while fresh silent pairs show
-none --- the training effect is real exactly when the channels are
+none: the training effect is real exactly when the channels are
 exercised. Unaffected by this confound: the
 evaluation-time probes, since constant levels alone swing mean Hamming
 from $0.003$ to $0.93$ through the same (randomly initialized) channel
@@ -879,7 +879,7 @@ Three readings. (i) The shared-state protocol itself flips one seed: on
 plain Hamming from own-grown states, s4 reverses ($0.029$ vs.\
 $0.033$), breaking the $5/5$. (ii) The fragile s1 pair is hit hardest:
 from its own state, final Hamming halves ($0.161 \to 0.088$) and
-survival rises from $0.10$ to $0.50$ ($0.675$ aligned) --- yet a clear
+survival rises from $0.10$ to $0.50$ ($0.675$ aligned), yet a clear
 gap remains ($0.026$ vs.\ $0.071$ aligned), so the fragility is
 substantially intrinsic to that initialization draw, amplified but not
 created by the shared state. (iii) Aligned scoring dissolves the
@@ -915,7 +915,7 @@ Both arms retrain fresh parent pairs per seed with the study recipe
 and evaluate with the Appendix~\ref{app:posthoc} battery.
 \textbf{P1} (seeds 0--4) trains each pair's $K{=}3$ parent with
 \emph{random} modulator inputs during training ($c_t \sim U[-1,1]^3$
-drawn per pre-/post-damage phase --- the intended use of the
+drawn per pre-/post-damage phase; this is the intended use of the
 \texttt{mod\_noise} flag, which was off for the study parents).
 \textbf{P1b} (seeds 10--13) retrains the original \emph{silent}-channel
 condition on fresh draws, measuring the init-luck null of the paired
@@ -958,7 +958,7 @@ rule is met).
 \paragraph{P1b: silent channels alone do not.}
 The fresh silent pairs show no corrected-protocol effect ($2/4$
 positive, $|\Delta| \le 0.015$) while the \emph{original} protocol
-scores $3/4$ of the same pairs as large positives (up to $+0.079$) ---
+scores $3/4$ of the same pairs as large positives (up to $+0.079$):
 a controlled reproduction of the manufacturing process behind the
 study's 5/5. The shared-state penalty on $K{=}0$ replicates across the
 new pairs (e.g.\ P1 s2's $K{=}0$ parent: survival $0.95$ from its own
@@ -967,7 +967,7 @@ state, $0.17$ from the shared state).
 \paragraph{Reading.}
 Because P1 modulates with \emph{random} inputs, the restored effect is
 developmental channel exercise, not control: what training needs is
-signal in the channels, not a policy choosing it --- the mirror image
+signal in the channels, not a policy choosing it; this is the mirror image
 of the run-time finding that evolved policies reduce to tonics.
 Together with Appendix~\ref{app:posthoc}, the attribution reads:
 silent architecture alone, no effect (the original $5/5$ was protocol
