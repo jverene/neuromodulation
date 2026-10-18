@@ -36,15 +36,16 @@ modulator channels, and held-out damage seeds. On a single trained model, the
 experiment looked like a success. However, crossing five independently trained
 parent seeds (two independent controller evolutions each;
 preregistered) dissolves that success into three findings. First, the robustness we had attributed to control is
-not a property of the controller: parents trained with the channel
-architecture present --- the channels themselves silent throughout
-training --- beat unmodulated siblings in five of five seeds under the
-preregistered metric (median final-Hamming reduction $0.008$, up to
-$\approx 0.14$ on the most fragile parent) with modulation pinned to
-neutral; post-hoc controls (each parent from its own-grown initial
-state, translation-aligned scoring) reduce this to a single-seed effect
-on the fragile s1 pair, implicating parent initialization and protocol
-provenance rather than channel experience. Second, evolved controllers add little on
+an effect of training, not control --- but only when the channels
+actually carry signal: the study's parents (channels present yet
+silent throughout training) beat unmodulated siblings in five of five
+seeds under the preregistered metric, yet post-hoc controls
+(own-grown initial states, translation-aligned scoring) reduce that to
+a single-seed effect, while fresh preregistered retrains with random
+modulator inputs beat paired $K{=}0$ siblings in five of five seeds
+\emph{under the corrected protocol}. Growing up under modulation ---
+even random modulation --- is what confers robustness; the original
+comparison never exercised the channels it credited. Second, evolved controllers add little on
 top: on four parents the effect is absent or noise-level; on the fragile
 parent both evolutions reproducibly help ($0.035$--$0.038 \to
 0.029$--$0.030$, survival $0.975 \to 1.00$); yet its tonic vector is
@@ -253,7 +254,10 @@ effect cannot be modulatory experience (Appendix~\ref{app:model}), and
 the $K{=}0$ sibling starts from the $K{=}3$-grown state
 (\S\ref{sec:design}). Appendix~\ref{app:posthoc} separates what these
 confounds leave separable: the 5/5 reduces to protocol and drift
-effects on healthy parents plus one genuinely fragile parent (s1).
+effects on healthy parents plus one genuinely fragile parent (s1);
+preregistered retrains with exercised channels
+(Appendix~\ref{app:p1}) restore a genuine $5/5$ training effect on
+the corrected protocol.
 
 \paragraph{What the controller actually emits.}
 All ten evolved controllers emit a \emph{constant at a nonzero level}:
@@ -319,7 +323,13 @@ within noise and nominally favor $K{=}0$ --- only the fragile s1 pair
 retains a clear gap (aligned $0.026$ vs.\ $0.071$), a substantially
 intrinsic fragility of that parent draw that the shared-state protocol
 amplified (survival $0.10 \to 0.50$ from its own state;
-Appendix~\ref{app:posthoc}). What evolution adds is
+Appendix~\ref{app:posthoc}). Preregistered retrains close the loop
+(Appendix~\ref{app:p1}): parents trained with random modulator inputs
+beat fresh paired $K{=}0$ siblings in $5/5$ seeds on the corrected
+protocol (median gap $+0.012$), while fresh silent-channel pairs show
+no such effect --- restoring the scaffold reading in its precise form:
+\emph{channel exercise during training}, not architecture or
+initialization luck, is what transfers robustness. What evolution adds is
 narrow: nothing measurable on four parents; on the fragile parent, a
 final stabilization that both independent evolutions find. Since that
 parent's tonic vector is nearly identical to a sibling's that gains
@@ -350,23 +360,23 @@ argue against reading the null as pure search failure: both independent
 evolutions converged to the same tonic family on every parent, and the
 pathway is high-gain (random actuation is lethal; constant levels
 alone swing mean Hamming from $0.003$ to $0.93$), so exploitable signal
-was available. Decisive next steps: parents retrained with random
-modulator inputs, added $K{=}0$/$K{=}3$ initialization pairs,
-co-trained parent--controller loops, and non-stationary
+was available. The random-input retrains and added initialization
+pairs are now run (Appendix~\ref{app:p1}); the open steps are
+co-trained parent--controller loops and non-stationary,
 diversity-driven damage, for which this benchmark is the controlled
 baseline.
 
 \paragraph{Conclusion.}\label{sec:conclusion}
-In regenerative NCAs under adversarial recurring damage, robustness
-travels with the trained organism rather than the run-time controller:
-5/5 parents trained with the (silent) channel architecture beat their
-$K{=}0$ siblings under the preregistered comparison, but own-state,
-translation-aligned controls reduce that effect to the fragile s1
-pair, implicating parent draw and protocol provenance over channel
-experience; evolved modulation is a parent-dependent tonic calibration, noise-level
-on most parents, beneficial on the fragile one, parent-locked under
-transfer. Attribute robustness across model seeds, not only damage
-seeds --- and across initial-state provenance.
+In regenerative NCAs under adversarial recurring damage, robustness is
+built in development, not by the run-time controller: the study's
+silent-channel comparison dissolves under corrected controls, while
+fresh preregistered retrains --- channels exercised by random inputs
+--- restore a genuine $5/5$ advantage: growing up under modulation,
+even random modulation, is what confers robustness. Evolved modulation
+remains a parent-dependent tonic calibration, noise-level on most
+parents, beneficial on the fragile one, parent-locked under transfer.
+Attribute robustness across model seeds, not only damage seeds ---
+and across initial-state provenance.
 
 \clearpage
 \section*{Acknowledgements}
@@ -671,7 +681,11 @@ under a symmetric null) --- consistent with a real effect, but not
 separable from initialization luck, and further entangled with the
 shared-state asymmetry of \S\ref{sec:design}. Retraining parents with
 random modulator inputs and adding $K{=}0$/$K{=}3$ initialization
-pairs are the planned resolution. Unaffected by this confound: the
+pairs have since been run under preregistration
+(Appendix~\ref{app:p1}): exercised-channel parents gain a genuine
+corrected-protocol advantage ($5/5$), while fresh silent pairs show
+none --- the training effect is real exactly when the channels are
+exercised. Unaffected by this confound: the
 evaluation-time probes, since constant levels alone swing mean Hamming
 from $0.003$ to $0.93$ through the same (randomly initialized) channel
 weights, the pathway the controllers and transplants act on.
@@ -878,6 +892,75 @@ of the planned follow-up (\S5). Script:
 \texttt{src/posthoc\_metrics.py}; data:
 \texttt{experiment\_results/20261011\_posthoc\_controls/}.
 
+\section{Preregistered resolution: channel-exercise retrains and init-luck nulls}
+\label{app:p1}
+
+Added at revision, preregistered before any run (decision rules fixed
+in \texttt{experiment\_results/20261012\_p1\_p1b/PREREGISTRATION.md}).
+Both arms retrain fresh parent pairs per seed with the study recipe
+(Adam $10^{-3}$, 8000 steps, all else per Appendix~\ref{app:model})
+and evaluate with the Appendix~\ref{app:posthoc} battery.
+\textbf{P1} (seeds 0--4) trains each pair's $K{=}3$ parent with
+\emph{random} modulator inputs during training ($c_t \sim U[-1,1]^3$
+drawn per pre-/post-damage phase --- the intended use of the
+\texttt{mod\_noise} flag, which was off for the study parents).
+\textbf{P1b} (seeds 10--13) retrains the original \emph{silent}-channel
+condition on fresh draws, measuring the init-luck null of the paired
+gap.
+
+\begin{table}[h]
+\centering
+\small
+\caption{P1/P1b fresh pairs under the Appendix~\ref{app:posthoc}
+battery (mean over 40 runs; survival in parentheses where below
+$1.00$). $g^{\mathrm{ali}}_{\mathrm{own}}$ = aligned, own-grown gap,
+positive favoring $K{=}3$; $g^{\mathrm{pln}}_{\mathrm{shr}}$ = the same
+pair under the original protocol (plain, shared state).}
+\label{tab:p1}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccccc}
+\toprule
+Pair & $K{=}3$ own (pln/ali) & $K{=}0$ shared (pln/ali) & $K{=}0$ own (pln/ali) & $g^{\mathrm{ali}}_{\mathrm{own}}$ & $g^{\mathrm{pln}}_{\mathrm{shr}}$ \\
+\midrule
+P1 s0 & 0.026/0.010 & 0.071/0.054 (0.88) & 0.025/0.018 & $+0.008$ & $+0.045$ \\
+P1 s1 & 0.030/0.016 & 0.046/0.046 & 0.046/0.046 & $+0.030$ & $+0.016$ \\
+P1 s2 & 0.026/0.009 & 0.125/0.107 (0.17) & 0.045/0.032 (0.95) & $+0.023$ & $+0.099$ \\
+P1 s3 & 0.021/0.010 & 0.051/0.031 & 0.034/0.022 & $+0.012$ & $+0.031$ \\
+P1 s4 & 0.035/0.017 & 0.062/0.044 & 0.030/0.020 & $+0.003$ & $+0.026$ \\
+P1b t10 & 0.028/0.014 & 0.059/0.026 (0.97) & 0.029/0.012 & $-0.002$ & $+0.031$ \\
+P1b t11 & 0.030/0.012 & 0.068/0.040 (0.97) & 0.033/0.028 & $+0.015$ & $+0.037$ \\
+P1b t12 & 0.035/0.019 (0.90) & 0.114/0.098 (0.33) & 0.022/0.014 & $-0.005$ & $+0.079$ \\
+P1b t13 & 0.029/0.010 & 0.024/0.015 & 0.020/0.012 & $+0.002$ & $-0.005$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{P1: channel exercise restores the effect.}
+Exercised-channel parents beat their paired $K{=}0$ siblings in $5/5$
+seeds under the corrected protocol (median
+$g^{\mathrm{ali}}_{\mathrm{own}} = +0.012 > 0.005$; the preregistered
+rule is met).
+
+\paragraph{P1b: silent channels alone do not.}
+The fresh silent pairs show no corrected-protocol effect ($2/4$
+positive, $|\Delta| \le 0.015$) while the \emph{original} protocol
+scores $3/4$ of the same pairs as large positives (up to $+0.079$) ---
+a controlled reproduction of the manufacturing process behind the
+study's 5/5. The shared-state penalty on $K{=}0$ replicates across the
+new pairs (e.g.\ P1 s2's $K{=}0$ parent: survival $0.95$ from its own
+state, $0.17$ from the shared state).
+
+\paragraph{Reading.}
+Because P1 modulates with \emph{random} inputs, the restored effect is
+developmental channel exercise, not control: what training needs is
+signal in the channels, not a policy choosing it --- the mirror image
+of the run-time finding that evolved policies reduce to tonics.
+Together with Appendix~\ref{app:posthoc}, the attribution reads:
+silent architecture alone, no effect (the original $5/5$ was protocol
+artifact); exercised channels, robustness; closed-loop control over
+exercised channels, nothing beyond a setpoint.
+
 \section{Reproducibility}
 \label{app:repro}
 
@@ -897,7 +980,9 @@ tonic-transplant matrices), and the camera-ready control script
 (\texttt{src/posthoc\_metrics.py}; data in
 \texttt{experiment\_results/20261011\_posthoc\_controls/}) are in the
 same repository, and \texttt{paper\_drafts/make\_figures.py} maps each
-figure to its data file. Code is available at
+figure to its data file. The preregistered follow-up (P1/P1b: 18 fresh
+parent checkpoints, per-pair CSVs, mechanical analysis) is under
+\texttt{experiment\_results/20261012\_p1\_p1b/}. Code is available at
 \url{https://github.com/jverene/neuromodulation}.
 
 \end{document}
