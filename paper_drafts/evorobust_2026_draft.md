@@ -329,7 +329,11 @@ beat fresh paired $K{=}0$ siblings in $5/5$ seeds on the corrected
 protocol (median gap $+0.012$), while fresh silent-channel pairs show
 no such effect --- restoring the scaffold reading in its precise form:
 \emph{channel exercise during training}, not architecture or
-initialization luck, is what transfers robustness. What evolution adds is
+initialization luck, is what transfers robustness. (The title's
+``channel-aware training'' should be read in this exercised sense ---
+training with signal in the channels, as in the retrained pairs ---
+not as the study's silent-architecture variant, whose apparent effect
+the corrected controls dissolve.) What evolution adds is
 narrow: nothing measurable on four parents; on the fragile parent, a
 final stabilization that both independent evolutions find. Since that
 parent's tonic vector is nearly identical to a sibling's that gains
@@ -891,6 +895,15 @@ residual architecture effect requires the added initialization pairs
 of the planned follow-up (\S5). Script:
 \texttt{src/posthoc\_metrics.py}; data:
 \texttt{experiment\_results/20261011\_posthoc\_controls/}.
+
+\paragraph{The s1 controller benefit under the corrected metric.}
+A further recheck (same battery, closed-loop conditions, both
+controller replicas) verifies the one positive controller result: on
+the fragile s1 parent the evolved controller beats $m{=}0$ under the
+aligned metric in both evolutions (e1: $0.026 \to 0.015$; e2:
+$0.022 \to 0.015$; survival $0.975 \to 1.00$), so the preregistered
+Outcome~C benefit is not a drift artifact. Data:
+\texttt{experiment\_results/20261018\_s1\_aligned\_recheck/}.
 
 \section{Preregistered resolution: channel-exercise retrains and init-luck nulls}
 \label{app:p1}

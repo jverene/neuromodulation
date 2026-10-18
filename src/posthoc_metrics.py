@@ -57,6 +57,8 @@ def main() -> None:
     parser.add_argument("--label", required=True, help="e.g. s0_e1 (parent seed, replica)")
     parser.add_argument("--out", required=True)
     parser.add_argument("--max-shift", type=int, default=10)
+    parser.add_argument("--controller", default=None,
+                        help="evolved controller pkl; adds a k3_ctrl closed-loop condition")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -79,12 +81,20 @@ def main() -> None:
     eps = cfg["eval"]["survival_eps"]
     T = rc["T"]
 
-    # (name, model, K, state0) — every condition m-pinned (ablated mode).
+    # (name, model, K, state0, mode, params) — ablated rows pin m=0.
     conditions = [
-        ("k3_m0_shared", cs_k3, rc["K"], state0_k3),
-        ("k0_shared", cs_k0, 0, state0_k3),
-        ("k0_own", cs_k0, 0, state0_k0),
+        ("k3_m0_shared", cs_k3, rc["K"], state0_k3, "ablated", None),
+        ("k0_shared", cs_k0, 0, state0_k3, "ablated", None),
+        ("k0_own", cs_k0, 0, state0_k0, "ablated", None),
     ]
+    if args.controller:
+        with open(args.controller, "rb") as f:
+            import pickle
+            ctrl_params = pickle.load(f)
+        conditions = [
+            ("k3_m0_shared", cs_k3, rc["K"], state0_k3, "ablated", None),
+            ("k3_ctrl", cs_k3, rc["K"], state0_k3, "closed_loop", ctrl_params),
+        ]
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -93,13 +103,16 @@ def main() -> None:
     print(f"post-hoc metrics: {args.label}, {S} held-out damage seeds x {n_cond} condition seeds, "
           f"T={T}, max_shift={args.max_shift}")
     print("-" * 78)
-    for name, cs_c, K_c, state0 in conditions:
-        eval_fn = make_eval_fn(cfg, target_mask, "ablated", K_c)
+    for name, cs_c, K_c, state0, mode, params in conditions:
+        eval_fn = make_eval_fn(cfg, target_mask, mode, K_c)
         plain, aligned = [], []
         for cond_seed in range(n_cond):
             states = jnp.concatenate([state0[None]] * S)
             rkeys = jax.random.split(jax.random.key(cfg["seed"] + 1000 * cond_seed), S)
-            states_f, (hamming, _) = eval_fn(cs_c, states, None, schedules, rkeys)
+            pb = None
+            if params is not None:
+                pb = jax.tree.map(lambda x: jnp.stack([jnp.array(x)] * S), params)
+            states_f, (hamming, _) = eval_fn(cs_c, states, pb, schedules, rkeys)
             alpha_bin = np.asarray(states_f[..., -1] > 0.5)
             for d in range(S):
                 plain.append(float(hamming[d, -1]))
