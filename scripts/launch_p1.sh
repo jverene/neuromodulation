@@ -10,13 +10,13 @@ OUT_REL="experiment_results/20261012_p1_p1b"
 
 echo "[1/5] checking auth + picking offer..."
 vastai --raw show instances >/dev/null 2>&1 || { echo "FAIL: vastai CLI has no valid API key (run: vastai set api-key <KEY>)"; exit 1; }
-OFFER=$(vastai --raw search offers 'reliability>0.98 cuda_vers>=12.0 gpu_ram>=16 num_gpus=1 inet_down>=50 disk>=20' 2>/dev/null | python3 -c "
+OFFER=$(vastai --raw search offers 'reliability>0.98 cuda_vers>=12.0 gpu_ram>=16 num_gpus=1 inet_down>=50 disk_space>=20' 2>/dev/null | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 offers = d if isinstance(d,list) else d.get('offers',[])
 cand=[o for o in offers if o.get('gpu_name') in ('RTX 3090','RTX 4090','A100')]
-cand.sort(key=lambda o:o.get('dph', 99))
-if cand: print(cand[0]['id'], cand[0]['gpu_name'], round(cand[0]['dph'],3))
+cand.sort(key=lambda o:o.get('dph_total', 99))
+if cand: print(cand[0]['id'], cand[0]['gpu_name'], round(cand[0]['dph_total'],3))
 ")
 [ -z "${OFFER:-}" ] && { echo "FAIL: no suitable offer"; exit 1; }
 OID=$(echo $OFFER | cut -d' ' -f1); ONAME=$(echo $OFFER | cut -d' ' -f2); ODPH=$(echo $OFFER | cut -d' ' -f3)
