@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Regime-structure design: does temporal structure break tonic degeneracy?</title>
+<style>
+	@page { size: Letter; margin: 0.95in; }
+	html, body { margin: 0; padding: 0; background: #ffffff; }
+	body { font-family: Georgia, "Times New Roman", serif; color: #1a1a1a; font-size: 11pt; line-height: 1.5; }
+	h1 { font-size: 15pt; line-height: 1.3; margin: 0 0 4pt 0; }
+	.byline { font-size: 9.5pt; color: #444; margin-bottom: 14pt; }
+	h2 { font-size: 11.5pt; margin: 14pt 0 5pt 0; break-after: avoid; page-break-after: avoid; }
+	p { margin: 0 0 8pt 0; text-align: justify; }
+	ul { margin: 0 0 8pt 0; padding-left: 18pt; }
+	li { margin-bottom: 4pt; }
+</style>
+</head>
+<body>
+
+<h1>Regime-structure design: does temporal structure break tonic degeneracy?</h1>
+<div class="byline">Harry (Bowen) Jiang, Toronto &middot; October 2026 &middot; preregisterable design, no data collected</div>
+
+<p>This design grew out of a correspondence with Dr. Giovanni Sena, whose distinction between exposure-produced change (biological habituation) and optimizer artifacts in stationary regimes motivated the experiment. It tests that distinction directly.</p>
+
+<h2>Background</h2>
+<p>In &ldquo;Channel-Aware Training, Not Closed-Loop Control, Drives Robust Regeneration in Neural Cellular Automata&rdquo; (EvoRobust Workshop, NeurIPS 2026), every controller evolved for regenerative NCAs converged to a flat, organism-specific constant, and the benefit of control was approximately zero across preregistered comparisons. The paper&rsquo;s own interpretation is that the damage process was stationary and memoryless, leaving no temporal structure for an adaptive policy to exploit. The question this design asks is whether that degeneracy is a property of the controllers or of the regime: when the damage process carries temporal structure, do evolved controllers stop emitting constants and start emitting policies, and does control then beat a tuned constant dose?</p>
+
+<h2>Design</h2>
+<p>Everything inherits the published pipeline (five parent seeds, channel-aware training, CMA-ES controllers, held-out damage seeds). Only the damage process varies, in four regimes:</p>
+<ul>
+	<li><b>R0, stationary memoryless:</b> i.i.d. lesions at fixed intervals (the published regime). Baseline; should replicate.</li>
+	<li><b>R1, bursty:</b> lesion rate driven by a two-state Markov process (calm/storm) with dwell times far exceeding the lesion interval. Memoryful, statistically stable.</li>
+	<li><b>R2, periodic:</b> lesion clusters on a fixed period. Predictable.</li>
+	<li><b>R3, reactive:</b> lesion probability increases with recent repair success. The environment responds to the organism, the in-silico analogue of exposure-produced change.</li>
+</ul>
+<p>Per regime, three conditions on held-out seeds: modulation pinned to zero; the organism&rsquo;s own evolved controller; and a tuned constant (a grid-searched fixed dose calibrated under the same regime). The tuned-constant condition is the addition the published study lacked, and it makes this design directly comparable to a planned organismal experiment on electrically stimulated mycelium (fixed recipe versus closed loop).</p>
+
+<h2>Metrics</h2>
+<p>(1) Tonic index: within-rollout variability of controller output, plus its response-lockedness to current state. (2) Controller benefit over zero modulation. (3) Policy benefit over the tuned constant. (4) Transfer: controllers evolved under R1 and evaluated under R0.</p>
+
+<h2>Registered predictions</h2>
+<ul>
+	<li><b>P1:</b> Under R0, replication: flat tonics; no benefit over the tuned constant.</li>
+	<li><b>P2 (the hypothesis under test):</b> Under R1 through R3, the tonic index rises with structure strength and policy benefit over the tuned constant becomes positive in the strongest-structure regimes.</li>
+	<li><b>P3:</b> Controllers evolved under R1 fall back toward tonic behavior under R0: any policy-ness is structure-seeking rather than intrinsic.</li>
+	<li><b>P4 (optional):</b> Policy benefit as a function of R1 dwell time locates the boundary between the tonic regime and the tracking regime.</li>
+</ul>
+<p>Either outcome is informative: confirmation grounds a prediction for the organismal drift-block experiment; refutation means tonic degeneracy survives exploitable structure, which strengthens and generalizes the training-dominates claim.</p>
+
+<h2>Scale</h2>
+<p>Five parents, two evolutions, four regimes, reusing existing code; roughly four times the published study&rsquo;s compute.</p>
+
+</body>
+</html>
